@@ -6,6 +6,17 @@ const noteModal = document.getElementById("note-modal");
 const noteForm = document.getElementById("note-form");
 
 /**
+ * Mapeo de traducciones para la interfaz
+ */
+const priorityLabels = { high: "Alta", medium: "Media", low: "Baja" };
+const categoryLabels = {
+  work: "Trabajo",
+  meeting: "Reunión",
+  personal: "Personal",
+  urgent: "Otros",
+};
+
+/**
  * Lógica de ordenación solicitada:
  * 1. Prioridad primero, 2. Alarmas, 3. Por hora
  */
@@ -15,6 +26,11 @@ const sortNotesLogic = (a, b) => {
   const pB = priorityMap[b.priority] ?? 1;
 
   if (pA !== pB) return pA - pB;
+
+  // Misma prioridad: Comparar por fecha (más antiguas primero)
+  if (a.date && b.date && a.date !== b.date) return a.date.localeCompare(b.date);
+  if (a.date && !b.date) return -1;
+  if (!a.date && b.date) return 1;
 
   if (a.alarm !== b.alarm) return a.alarm ? -1 : 1;
 
@@ -29,6 +45,7 @@ const sortNotesLogic = (a, b) => {
 export function renderView(filteredNotes = null) {
   if (state.currentView === "calendar") renderCalendar();
   else if (state.currentView === "dashboard") renderDashboard();
+  else if (state.currentView === "no-date-notes") renderNoDateNotes();
   else renderAllNotes(filteredNotes);
 }
 
@@ -36,6 +53,11 @@ export function updateUIStats() {
   const stats = getters.getStats();
   document.getElementById("stat-pending").innerText = stats.pending;
   document.getElementById("stat-urgent").innerText = stats.urgent;
+
+  document.getElementById("count-all").innerText = stats.all;
+  document.getElementById("count-no-date").innerText = stats.noDate;
+  document.getElementById("count-calendar").innerText = stats.withDate;
+  document.getElementById("count-tags").innerText = stats.tags;
 }
 
 export function openNoteModal(id = null, defaultDate = null) {
@@ -185,6 +207,9 @@ function renderDashboard() {
   const tomorrowTasks = state.notes
     .filter((n) => n.date === tomorrowStr)
     .sort(sortNotesLogic);
+  const noDateTasks = state.notes
+    .filter((n) => !n.date)
+    .sort(sortNotesLogic);
 
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
@@ -193,6 +218,9 @@ function renderDashboard() {
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
             ${renderDashboardColumn("Notas de Hoy", todayTasks, "fa-calendar-day", "var(--primary)")}
             ${renderDashboardColumn("Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)")}
+        </div>
+        <div style="margin-top: 2rem;">
+            ${renderDashboardColumn("Notas sin fecha", noDateTasks, "fa-inbox", "var(--text-muted)")}
         </div>
     </div>`;
 }
@@ -340,7 +368,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
         <div class="card" data-note-id="${n.id}" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">
             <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                    <span class="note-pill priority-${n.priority}" style="margin:0">${n.priority.toUpperCase()}</span>
+                    <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                     <h3 style="margin: 0;">${n.title}</h3>
                 </div>
                 <div style="display: flex; gap: 6px; margin-bottom: 10px;">
@@ -348,7 +376,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
                     ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                    <span><i class="fas fa-tag"></i> ${n.category}</span>
+                    <span><i class="fas fa-tag"></i> ${categoryLabels[n.category] || n.category}</span>
                     ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                 </div>
                 <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
@@ -380,6 +408,11 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
     </div>`;
 }
 
+function renderNoDateNotes() {
+  const noDateNotes = state.notes.filter((n) => !n.date).sort(sortNotesLogic);
+  renderNoteList("Notas sin fecha", noDateNotes);
+}
+
 function renderTagPills(tagIds = []) {
   if (!tagIds) return "";
   return tagIds
@@ -392,17 +425,38 @@ function renderTagPills(tagIds = []) {
 }
 
 function renderAllNotes(filtered = null) {
-  const data = [...(filtered || state.notes)].sort((a, b) => {
-    // Agrupamos primero por fecha para que el listado global sea coherente
-    if (a.date !== b.date) return a.date.localeCompare(b.date);
-    return sortNotesLogic(a, b);
+  const baseData = filtered || state.notes;
+  const filteredData = baseData.filter((n) => {
+    if (state.allNotesFilterWithDate && !!n.date) return true;
+    if (state.allNotesFilterNoDate && !n.date) return true;
+    return false;
   });
 
+  const sortedData = [...filteredData].sort(sortNotesLogic);
+  renderNoteList("Todas las Notas", sortedData);
+}
+
+function renderNoteList(title, data) {
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <h2>Todas las Notas</h2>
-            <span style="color: var(--text-muted); font-weight: 500;">${data.length} registros</span>
+            <h2>${title}</h2>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                ${state.currentView === 'all-notes' ? `
+                <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border);">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
+                        <span>Con fecha</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
+                        <span>Sin fecha</span>
+                    </label>
+                </div>` : ''}
+                <span style="color: var(--text-muted); font-weight: 500; min-width: 100px; text-align: right;">${data.length} registros</span>
+            </div>
         </div>
         <div style="display: grid; gap: 1.5rem;">
             ${
@@ -417,16 +471,16 @@ function renderAllNotes(filtered = null) {
                 <div class="card" data-note-id="${n.id}" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease;" onclick="window.openNoteModal('${n.id}')">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                            <span class="note-pill priority-${n.priority}">${n.priority.toUpperCase()}</span>
+                            <span class="note-pill priority-${n.priority}">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                             <h3 style="margin: 0;">${n.title}</h3>
                         </div>
                         <div style="display: flex; gap: 6px; margin-bottom: 10px;">
                             ${renderTagPills(n.tags)}
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
-                        <span><i class="far fa-calendar-alt"></i> ${dateUtils.formatDisplayDate(n.date)}</span>
+                        <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : (n.time ? "Sin fecha (Recurrente)" : "Sin fecha")}</span>
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                            <span><i class="fas fa-tag"></i> ${n.category}</span>
+                            <span><i class="fas fa-tag"></i> ${categoryLabels[n.category] || n.category}</span>
                             ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                         </div>
                         <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
@@ -451,6 +505,16 @@ window.closeToast = (el) => {
   if (!document.querySelector(".toast.high")) {
     document.body.classList.remove("alarm-active");
   }
+};
+window.toggleAllNotesFilter = (type, val) => {
+  if (type === 'withDate') {
+    if (!val && !state.allNotesFilterNoDate) return renderView(); // Impedir desactivar ambos
+    state.allNotesFilterWithDate = val;
+  } else {
+    if (!val && !state.allNotesFilterWithDate) return renderView(); // Impedir desactivar ambos
+    state.allNotesFilterNoDate = val;
+  }
+  renderView();
 };
 window.goToday = () => {
   const now = new Date();
@@ -518,8 +582,8 @@ const tooltip = document.getElementById("note-tooltip");
 document.addEventListener("mouseover", (e) => {
   const target = e.target.closest("[data-note-id]");
   
-  // No mostrar tooltip en vistas que ya muestran toda la información (Todas las notas y Vista de día)
-  const isFullView = state.currentView === "all-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
+  // No mostrar tooltip en vistas que ya muestran toda la información (Todas las notas, Notas sin fecha y Vista de día)
+  const isFullView = state.currentView === "all-notes" || state.currentView === "no-date-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
 
   if (target && !e.target.closest(".modal") && !isFullView) {
     const id = target.dataset.noteId;
@@ -532,7 +596,7 @@ document.addEventListener("mouseover", (e) => {
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
           <i class="far fa-calendar-alt"></i> ${dateUtils.formatDisplayDate(note.date)} 
           ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
-          <span style="margin-left:8px"><i class="fas fa-tag"></i> ${note.category}</span>
+          <span style="margin-left:8px"><i class="fas fa-tag"></i> ${categoryLabels[note.category] || note.category}</span>
         </div>
         <div style="margin-bottom: 8px;">${renderTagPills(note.tags)}</div>
         <div style="color: var(--text-main); font-size: 0.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
@@ -605,7 +669,9 @@ window.addEventListener("search-notes", (e) => {
       (id) => state.tags.find((t) => t.id === id)?.name.toLowerCase() || "",
     );
     const inTags = tagNames.some((name) => name.includes(query));
-    return inTitle || inTags;
+    const categoryName = (categoryLabels[n.category] || n.category || "").toLowerCase();
+    const inCategory = categoryName.includes(query);
+    return inTitle || inTags || inCategory;
   });
   if (state.currentView !== "all-notes") {
     state.currentView = "all-notes";

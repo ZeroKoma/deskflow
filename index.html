@@ -28,12 +28,19 @@
           </button>
           <button class="nav-item" data-view="calendar">
             <i class="fas fa-calendar-alt"></i> Calendario
+            <span class="nav-badge" id="count-calendar">0</span>
           </button>
           <button class="nav-item" data-view="all-notes">
             <i class="fas fa-sticky-note"></i> Todas las Notas
+            <span class="nav-badge" id="count-all">0</span>
+          </button>
+          <button class="nav-item" data-view="no-date-notes">
+            <i class="fas fa-inbox"></i> Notas sin fecha
+            <span class="nav-badge" id="count-no-date">0</span>
           </button>
           <button class="nav-item" id="manage-tags-btn">
             <i class="fas fa-tags"></i> Gestionar Tags
+            <span class="nav-badge" id="count-tags">0</span>
           </button>
         </nav>
 
@@ -112,11 +119,21 @@
           <div class="form-row">
             <div class="form-group">
               <label><i class="far fa-calendar"></i> Fecha</label>
-              <input type="date" id="date" required />
+              <div style="display: flex; gap: 8px;">
+                <input type="date" id="date" style="flex: 1" />
+                <button type="button" id="clear-date" class="btn-ghost" style="padding: 0 10px; border: 1px solid var(--border);" title="Eliminar fecha">
+                  <i class="fas fa-eraser"></i>
+                </button>
+              </div>
             </div>
             <div class="form-group">
               <label><i class="far fa-clock"></i> Hora</label>
-              <input type="time" id="time" />
+              <div style="display: flex; gap: 8px;">
+                <input type="time" id="time" style="flex: 1" />
+                <button type="button" id="clear-time" class="btn-ghost" style="padding: 0 10px; border: 1px solid var(--border);" title="Eliminar hora">
+                  <i class="fas fa-eraser"></i>
+                </button>
+              </div>
             </div>
           </div>
           <div class="form-row">
@@ -131,9 +148,9 @@
             <div class="form-group">
               <label><i class="fas fa-tag"></i> Categoría</label>
               <select id="category">
-                <option value="work">Trabajo</option>
-                <option value="meeting">Reunión</option>
-                <option value="personal">Personal</option>
+                <option value="Trabajo">Trabajo</option>
+                <option value="Reunión">Reunión</option>
+                <option value="Personal">Personal</option>
                 <option value="Otros">Otros</option>
               </select>
             </div>

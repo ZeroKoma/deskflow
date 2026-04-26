@@ -85,6 +85,7 @@ function setupGlobalEvents() {
     document.getElementById("tag-submit-btn").innerText = "Añadir";
     renderTagManager();
     renderView();
+    updateUIStats();
   });
 
   window.editTag = (id) => {
@@ -103,6 +104,7 @@ function setupGlobalEvents() {
       renderTagManager();
       renderView();
       showToast("Tag eliminado de todas las notas", "info");
+      updateUIStats();
     });
   };
 
@@ -116,6 +118,15 @@ function setupGlobalEvents() {
     } else {
       alarmInput.disabled = false;
     }
+  });
+
+  document.getElementById("clear-date").addEventListener("click", () => {
+    document.getElementById("date").value = "";
+  });
+
+  document.getElementById("clear-time").addEventListener("click", () => {
+    timeInput.value = "";
+    timeInput.dispatchEvent(new Event('input'));
   });
 
   // Exportar y Buscar
@@ -176,10 +187,15 @@ function playAlarmSound() {
 function startAlarmService() {
   setInterval(() => {
     const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const currentDate = dateUtils.getTodayStr();
+    const currentMinuteKey = currentDate + "_" + currentTime;
 
     state.notes.forEach((note) => {
-      if (note.alarm && note.date === currentDate && note.time) {
+      // Si no hay fecha, es una nota recurrente diaria
+      const isScheduledToday = !note.date || note.date === currentDate;
+
+      if (note.alarm && isScheduledToday && note.time) {
         const [hrs, mins] = note.time.split(':').map(Number);
         const noteTime = new Date();
         noteTime.setHours(hrs, mins, 0, 0);
@@ -188,7 +204,7 @@ function startAlarmService() {
 
         // --- Lógica de Pre-Alarma (5 minutos antes) ---
         const preAlarmDiff = now - (noteTime.getTime() - 5 * 60000);
-        if (preAlarmDiff >= 0 && preAlarmDiff < 60000 && !note.preAlarmFired) {
+        if (preAlarmDiff >= 0 && preAlarmDiff < 60000 && note.lastPreAlarmKey !== currentMinuteKey) {
           if ("Notification" in window && Notification.permission === "granted") {
             new Notification("DeskFlow: Aviso (5 min)", {
               body: `Próximamente: ${note.title}`,
@@ -197,12 +213,12 @@ function startAlarmService() {
             });
           }
           showToast(`Aviso previo (5 min): ${note.title}`, "info");
-          note.preAlarmFired = true;
+          note.lastPreAlarmKey = currentMinuteKey;
           mutations.saveNotes();
         }
 
         // Comprobamos si ya es la hora o si ya pasó (máximo 2 minutos de retraso por throttling)
-        if (diff >= 0 && diff < 120000) { 
+        if (diff >= 0 && diff < 120000 && note.lastAlarmKey !== currentMinuteKey) { 
         playAlarmSound();
 
         // Notificación Nativa del Sistema Operativo
@@ -220,8 +236,14 @@ function startAlarmService() {
         }
 
         showToast(`¡ALERTA!: ${note.title}`, "high", note.id);
-        note.alarm = false;
-        delete note.preAlarmFired;
+        
+        // Si tiene fecha específica, desactivamos alarma permanentemente.
+        // Si no tiene fecha, es recurrente: solo marcamos que ya sonó hoy en este minuto.
+        if (note.date) {
+          note.alarm = false;
+        }
+        
+        note.lastAlarmKey = currentMinuteKey;
         mutations.saveNotes();
         renderView();
         }
