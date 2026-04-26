@@ -145,7 +145,11 @@ export function showToast(msg, type = "info", noteId = null) {
     document.body.classList.add("alarm-active");
   }
   container.appendChild(toast);
-  if (type !== "high") setTimeout(() => toast.remove(), 4000);
+
+  // Las alarmas (high) y los avisos previos (Aviso previo) son permanentes hasta cierre manual
+  const isPermanent = type === "high" || msg.includes("Aviso previo");
+  
+  if (!isPermanent) setTimeout(() => toast.remove(), 4000);
 }
 
 export function showConfirmModal(message, onConfirm) {
@@ -577,6 +581,7 @@ window.snoozeNote = (id) => {
     note.date = dateUtils.formatYYYYMMDD(date);
     note.time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
     note.alarm = true; // Reactivar la alarma para la nueva hora
+    delete note.preAlarmFired; // Permitir aviso previo para la nueva hora
 
     mutations.saveNotes();
     const toast = document.getElementById(`toast-${id}`);

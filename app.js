@@ -184,9 +184,24 @@ function startAlarmService() {
         const noteTime = new Date();
         noteTime.setHours(hrs, mins, 0, 0);
 
-        // Comprobamos si ya es la hora o si ya pasó (máximo 2 minutos de retraso por throttling)
-        // Esto evita que se pierda la alarma si el navegador congela la pestaña un momento.
         const diff = now - noteTime;
+
+        // --- Lógica de Pre-Alarma (5 minutos antes) ---
+        const preAlarmDiff = now - (noteTime.getTime() - 5 * 60000);
+        if (preAlarmDiff >= 0 && preAlarmDiff < 60000 && !note.preAlarmFired) {
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("DeskFlow: Aviso (5 min)", {
+              body: `Próximamente: ${note.title}`,
+              icon: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/layer-group.svg",
+              requireInteraction: true
+            });
+          }
+          showToast(`Aviso previo (5 min): ${note.title}`, "info");
+          note.preAlarmFired = true;
+          mutations.saveNotes();
+        }
+
+        // Comprobamos si ya es la hora o si ya pasó (máximo 2 minutos de retraso por throttling)
         if (diff >= 0 && diff < 120000) { 
         playAlarmSound();
 
@@ -206,6 +221,7 @@ function startAlarmService() {
 
         showToast(`¡ALERTA!: ${note.title}`, "high", note.id);
         note.alarm = false;
+        delete note.preAlarmFired;
         mutations.saveNotes();
         renderView();
         }
