@@ -43,11 +43,11 @@ const sortNotesLogic = (a, b) => {
   return 0;
 };
 
-export function renderView(filteredNotes = null) {
+export function renderView() {
   if (state.currentView === "calendar") renderCalendar();
   else if (state.currentView === "dashboard") renderDashboard();
   else if (state.currentView === "no-date-notes") renderNoDateNotes();
-  else renderAllNotes(filteredNotes);
+  else renderAllNotes();
 }
 
 export function updateUIStats() {
@@ -298,7 +298,9 @@ function renderCalendar() {
 
   if (state.calendarSubView === "week") {
     const start = new Date(focusDate);
-    start.setDate(focusDate.getDate() - focusDate.getDay());
+    const day = focusDate.getDay();
+    const diff = focusDate.getDate() - day + (day === 0 ? -6 : 1);
+    start.setDate(diff);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
     title = `${start.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(start)} - ${end.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(end)}`;
@@ -441,7 +443,22 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
 }
 
 function renderNoDateNotes() {
-  const noDateNotes = state.notes.filter((n) => !n.date).sort(sortNotesLogic);
+  const query = document.getElementById("global-search")?.value.toLowerCase() || "";
+  const noDateNotes = state.notes
+    .filter((n) => {
+      if (!!n.date) return false;
+
+      const inTitle = n.title.toLowerCase().includes(query);
+      const tagNames = (n.tags || []).map(
+        (id) => state.tags.find((t) => t.id === id)?.name.toLowerCase() || "",
+      );
+      const inTags = tagNames.some((name) => name.includes(query));
+      const categoryName = getCategoryInfo(n.category).name.toLowerCase();
+      const inCategory = categoryName.includes(query);
+
+      return inTitle || inTags || inCategory;
+    })
+    .sort(sortNotesLogic);
   renderNoteList("Notas sin fecha", noDateNotes);
 }
 
@@ -693,19 +710,8 @@ window.snoozeNote = (id) => {
 };
 
 // --- Listener para búsqueda ---
-window.addEventListener("search-notes", (e) => {
-  const query = e.detail.toLowerCase();
-  const filtered = state.notes.filter((n) => {
-    const inTitle = n.title.toLowerCase().includes(query);
-    const tagNames = (n.tags || []).map(
-      (id) => state.tags.find((t) => t.id === id)?.name.toLowerCase() || "",
-    );
-    const inTags = tagNames.some((name) => name.includes(query));
-    const categoryName = getCategoryInfo(n.category).name.toLowerCase();
-    const inCategory = categoryName.includes(query);
-    return inTitle || inTags || inCategory;
-  });
-  if (state.currentView !== "all-notes") {
+window.addEventListener("search-notes", () => {
+  if (state.currentView !== "all-notes" && state.currentView !== "no-date-notes") {
     state.currentView = "all-notes";
     document
       .querySelectorAll(".nav-item")
@@ -713,5 +719,5 @@ window.addEventListener("search-notes", (e) => {
         b.classList.toggle("active", b.dataset.view === "all-notes"),
       );
   }
-  renderAllNotes(filtered);
+  renderView();
 });
