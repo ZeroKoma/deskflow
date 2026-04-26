@@ -528,6 +528,7 @@ document.addEventListener("mouseover", (e) => {
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
           <i class="far fa-calendar-alt"></i> ${dateUtils.formatDisplayDate(note.date)} 
           ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
+          <span style="margin-left:8px"><i class="fas fa-tag"></i> ${note.category}</span>
         </div>
         <div style="margin-bottom: 8px;">${renderTagPills(note.tags)}</div>
         <div style="color: var(--text-main); font-size: 0.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">

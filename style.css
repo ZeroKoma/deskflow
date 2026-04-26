@@ -104,8 +104,10 @@ body {
 
 .nav-item:hover,
 .nav-item.active {
-  background: var(--primary);
-  color: white;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  border-left: 4px solid var(--primary);
+  border-radius: 0 8px 8px 0;
 }
 
 .sidebar-stats {
@@ -314,41 +316,40 @@ body {
 
 /* Buttons & Forms */
 .btn-primary {
-  background: var(--primary);
-  color: white;
+  background: transparent;
+  color: var(--primary);
   padding: 0.7rem 1.5rem;
-  border: none;
+  border: 2px solid var(--primary);
   border-radius: var(--radius);
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 8px 15px -3px rgba(37, 99, 235, 0.3);
+  transform: translateY(-2px);
 }
 
 .btn-primary:active {
-  transform: translateY(0);
-  filter: brightness(0.9);
+  transform: translateY(0) scale(0.98);
 }
 
 .btn-secondary {
-  background: var(--bg-sidebar);
+  background: transparent;
   color: var(--text-main);
   padding: 0.7rem 1.5rem;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -356,9 +357,10 @@ body {
 }
 
 .btn-secondary:hover {
-  background: var(--bg-main);
-  border-color: var(--text-muted);
+  background: rgba(37, 99, 235, 0.05);
+  border-color: var(--primary);
   color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
