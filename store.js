@@ -16,7 +16,8 @@ export const state = {
   calendarSubView: "month",
   theme: localStorage.getItem("deskflow_theme") || "dark",
   allNotesFilterWithDate: true,
-  allNotesFilterNoDate: true
+  allNotesFilterNoDate: true,
+  allNotesPriorityFilter: null
 };
 
 export const mutations = {
@@ -101,8 +102,9 @@ export const mutations = {
 export const getters = {
   getStats() {
     return {
-      pending: state.notes.length,
-      urgent: state.notes.filter(n => n.priority === "high").length,
+      high: state.notes.filter(n => n.priority === "high").length,
+      medium: state.notes.filter(n => n.priority === "medium").length,
+      low: state.notes.filter(n => n.priority === "low").length,
       all: state.notes.length,
       noDate: state.notes.filter(n => !n.date).length,
       withDate: state.notes.filter(n => !!n.date).length,

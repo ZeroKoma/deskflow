@@ -34,7 +34,21 @@ function setupGlobalEvents() {
     btn.addEventListener("click", (e) => {
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       e.currentTarget.classList.add("active");
+      state.allNotesPriorityFilter = null;
       state.currentView = e.currentTarget.dataset.view;
+      renderView();
+    });
+  });
+
+  // Resumen Prioridades Clicks
+  document.querySelectorAll(".sidebar-stats .stat-item").forEach(item => {
+    item.addEventListener("click", () => {
+      state.allNotesPriorityFilter = item.dataset.priority;
+      state.currentView = "all-notes";
+      // Actualizar visualmente la navegación del sidebar
+      document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+      const allNotesBtn = document.querySelector('[data-view="all-notes"]');
+      if (allNotesBtn) allNotesBtn.classList.add("active");
       renderView();
     });
   });

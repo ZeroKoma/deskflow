@@ -52,8 +52,9 @@ export function renderView() {
 
 export function updateUIStats() {
   const stats = getters.getStats();
-  document.getElementById("stat-pending").innerText = stats.pending;
-  document.getElementById("stat-urgent").innerText = stats.urgent;
+  document.getElementById("stat-high").innerText = stats.high;
+  document.getElementById("stat-medium").innerText = stats.medium;
+  document.getElementById("stat-low").innerText = stats.low;
 
   document.getElementById("count-all").innerText = stats.all;
   document.getElementById("count-no-date").innerText = stats.noDate;
@@ -474,8 +475,21 @@ function renderTagPills(tagIds = []) {
 }
 
 function renderAllNotes(filtered = null) {
-  const baseData = filtered || state.notes;
-  const filteredData = baseData.filter((n) => {
+  const query = document.getElementById("global-search")?.value.toLowerCase() || "";
+
+  const filteredData = state.notes.filter((n) => {
+    // 1. Filtrado por texto (Buscador)
+    const inTitle = n.title.toLowerCase().includes(query);
+    const tagNames = (n.tags || []).map(id => state.tags.find(t => t.id === id)?.name.toLowerCase() || "");
+    const inTags = tagNames.some(name => name.includes(query));
+    const categoryName = getCategoryInfo(n.category).name.toLowerCase();
+    const inCategory = categoryName.includes(query);
+    if (!(inTitle || inTags || inCategory)) return false;
+
+    // 2. Filtrado por Prioridad (procedente del click en el resumen lateral)
+    if (state.allNotesPriorityFilter && n.priority !== state.allNotesPriorityFilter) return false;
+
+    // 3. Filtrado por Fecha (Checks de la vista)
     if (state.allNotesFilterWithDate && !!n.date) return true;
     if (state.allNotesFilterNoDate && !n.date) return true;
     return false;
@@ -492,6 +506,12 @@ function renderNoteList(title, data) {
             <h2>${title}</h2>
             <div style="display: flex; align-items: center; gap: 15px;">
                 ${state.currentView === 'all-notes' ? `
+                ${state.allNotesPriorityFilter ? `
+                <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--primary);">
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Prioridad: ${priorityLabels[state.allNotesPriorityFilter]}</span>
+                    <i class="fas fa-times" style="cursor: pointer; font-size: 0.8rem; color: var(--text-muted);" title="Quitar filtro" onclick="window.clearPriorityFilter()"></i>
+                </div>
+                ` : ''}
                 <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border);">
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
                         <input type="checkbox" class="round-checkbox" 
@@ -554,6 +574,10 @@ window.closeToast = (el) => {
   if (!document.querySelector(".toast.high")) {
     document.body.classList.remove("alarm-active");
   }
+};
+window.clearPriorityFilter = () => {
+  state.allNotesPriorityFilter = null;
+  renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
   if (type === 'withDate') {

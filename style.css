@@ -141,6 +141,16 @@ body {
   justify-content: space-between;
   font-size: 0.9rem;
   margin-top: 0.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  transform: translateX(4px);
 }
 
 .theme-switch {
