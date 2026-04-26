@@ -316,33 +316,64 @@ body {
 .btn-primary {
   background: var(--primary);
   color: white;
-  padding: 0.6rem 1.2rem;
+  padding: 0.7rem 1.5rem;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
   font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  filter: brightness(0.9);
 }
 
 .btn-secondary {
   background: var(--bg-sidebar);
   color: var(--text-main);
-  padding: 0.6rem 1.2rem;
+  padding: 0.7rem 1.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-main);
+  border-color: var(--text-muted);
+  color: var(--primary);
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
-  padding: 0.6rem 1.2rem;
+  padding: 0.6rem 1.25rem;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
   font-weight: 500;
-  transition: 0.2s;
-  display: flex;
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-ghost:hover {
@@ -633,4 +664,22 @@ input:checked + .slider:before {
 
 body.alarm-active .alarm-overlay {
   display: block;
+}
+
+.note-tooltip {
+  position: fixed;
+  z-index: 10000;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  display: none;
+  max-width: 280px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  backdrop-filter: blur(10px);
+  transition: opacity 0.2s ease;
+  border-left: 5px solid var(--primary);
 }

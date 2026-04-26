@@ -22,7 +22,7 @@ const sortNotesLogic = (a, b) => {
     if (a.time !== b.time) return a.time.localeCompare(b.time);
   } else if (a.time) return -1;
   else if (b.time) return 1;
-  
+
   return 0;
 };
 
@@ -92,8 +92,8 @@ function renderTagSelection(selectedIds) {
     chip.addEventListener("click", () => {
       const cb = chip.querySelector("input");
       cb.checked = !cb.checked;
-      chip.classList.toggle('selected');
-      chip.classList.toggle('inactive');
+      chip.classList.toggle("selected");
+      chip.classList.toggle("inactive");
     });
   });
 }
@@ -205,7 +205,7 @@ function renderDashboardColumn(title, tasks, icon, color) {
                 ? tasks
                     .map(
                       (t) => `
-                <div style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
+                <div class="dashboard-note-item" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
                     <div style="display: flex; flex-direction: column; gap: 4px;">
                         <span style="font-weight: 500;">${t.title}</span>
                         <div style="display: flex; gap: 4px; flex-wrap: wrap;">${renderTagPills(t.tags)}</div>
@@ -333,7 +333,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
     .map((n) => {
       if (isFull) {
         return `
-        <div class="card" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">
+        <div class="card" data-note-id="${n.id}" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">
             <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                     <span class="note-pill priority-${n.priority}" style="margin:0">${n.priority.toUpperCase()}</span>
@@ -354,16 +354,17 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
             </div>
         </div>`;
       }
-      return `<div class="note-pill priority-${n.priority}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">${n.title}</div>`;
+      return `<div class="note-pill priority-${n.priority}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">${n.title}</div>`;
     })
     .join("");
 
-  const finalNotesHtml = (isFull && dayNotes.length === 0) 
-    ? `<div style="text-align: center; padding: 3rem; color: var(--text-muted); border: 2px dashed var(--border); border-radius: var(--radius);">
+  const finalNotesHtml =
+    isFull && dayNotes.length === 0
+      ? `<div style="text-align: center; padding: 3rem; color: var(--text-muted); border: 2px dashed var(--border); border-radius: var(--radius);">
         <i class="fas fa-calendar-day" style="font-size: 2rem; margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
         No hay notas programadas para este día.
        </div>`
-    : notesHtml;
+      : notesHtml;
 
   return `
     <div class="calendar-day ${isToday ? "current-day" : ""}" 
@@ -409,7 +410,7 @@ function renderAllNotes(filtered = null) {
                 : data
                     .map(
                       (n) => `
-                <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow);">
+                <div class="card" data-note-id="${n.id}" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease;" onclick="window.openNoteModal('${n.id}')">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                             <span class="note-pill priority-${n.priority}">${n.priority.toUpperCase()}</span>
@@ -427,8 +428,7 @@ function renderAllNotes(filtered = null) {
                         <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
                     </div>
                     <div style="display: flex; gap: 8px; margin-left: 20px;">
-                        <button class="btn-secondary" onclick="window.openNoteModal('${n.id}')" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: var(--bg-main); color: var(--text-main);"><i class="fas fa-pencil-alt"></i></button>
-                        <button class="btn-secondary" onclick="window.deleteNote('${n.id}')" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: var(--bg-main); color: var(--high);"><i class="fas fa-trash"></i></button>
+                        <button class="btn-secondary" onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: var(--bg-main); color: var(--high);"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`,
                     )
@@ -507,6 +507,61 @@ window.navigateCalendar = (diff) => {
   );
   renderView();
 };
+
+// --- Sistema de Tooltips ---
+const tooltip = document.getElementById("note-tooltip");
+
+document.addEventListener("mouseover", (e) => {
+  const target = e.target.closest("[data-note-id]");
+  
+  // No mostrar tooltip en vistas que ya muestran toda la información (Todas las notas y Vista de día)
+  const isFullView = state.currentView === "all-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
+
+  if (target && !e.target.closest(".modal") && !isFullView) {
+    const id = target.dataset.noteId;
+    const note = getters.getNoteById(id);
+    if (note) {
+      tooltip.style.display = "block";
+      tooltip.style.borderLeftColor = `var(--${note.priority})`;
+      tooltip.innerHTML = `
+        <div style="font-weight: 700; margin-bottom: 5px;">${note.title}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+          <i class="far fa-calendar-alt"></i> ${dateUtils.formatDisplayDate(note.date)} 
+          ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
+        </div>
+        <div style="margin-bottom: 8px;">${renderTagPills(note.tags)}</div>
+        <div style="color: var(--text-main); font-size: 0.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+          ${note.description || "<i>Sin descripción</i>"}
+        </div>
+      `;
+    }
+  }
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (tooltip.style.display === "block") {
+    const offset = 15;
+    let x = e.clientX + offset;
+    let y = e.clientY + offset;
+
+    // Mantener dentro de la pantalla
+    if (x + tooltip.offsetWidth > window.innerWidth) {
+      x = e.clientX - tooltip.offsetWidth - offset;
+    }
+    if (y + tooltip.offsetHeight > window.innerHeight) {
+      y = e.clientY - tooltip.offsetHeight - offset;
+    }
+
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+  }
+});
+
+document.addEventListener("mouseout", (e) => {
+  if (e.target.closest("[data-note-id]")) {
+    tooltip.style.display = "none";
+  }
+});
 
 window.snoozeNote = (id) => {
   const note = getters.getNoteById(id);
