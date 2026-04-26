@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DeskFlow | Gestión de Productividad</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Iconos vía FontAwesome (Opcional, pero recomendado para el look profesional) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <div>
+            <i class="fas fa-layer-group"></i>
+            <span>DeskFlow</span>
+          </div>
+          <div class="author">By ZeroKoma</div>
+        </div>
+        <nav class="nav-menu">
+          <button class="nav-item active" data-view="dashboard">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </button>
+          <button class="nav-item" data-view="calendar">
+            <i class="fas fa-calendar-alt"></i> Calendario
+          </button>
+          <button class="nav-item" data-view="all-notes">
+            <i class="fas fa-sticky-note"></i> Todas las Notas
+          </button>
+          <button class="nav-item" id="manage-tags-btn">
+            <i class="fas fa-tags"></i> Gestionar Tags
+          </button>
+        </nav>
+
+        <div class="sidebar-stats">
+          <h3>Resumen</h3>
+          <div class="stat-item">
+            <span>Pendientes</span>
+            <span id="stat-pending">0</span>
+          </div>
+          <div class="stat-item urgent">
+            <span>Urgentes</span>
+            <span id="stat-urgent">0</span>
+          </div>
+        </div>
+
+        <div class="theme-switch">
+          <div class="theme-info">
+            <i class="fas fa-moon"></i>
+            <span>Modo Oscuro</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="theme-toggle" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <header class="top-bar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              id="global-search"
+              placeholder="Buscar notas..."
+            />
+          </div>
+          <div class="actions">
+            <button id="export-data" class="btn-secondary" title="Exportar CSV">
+              <i class="fas fa-file-export"></i>
+            </button>
+            <button id="add-note-btn" class="btn-primary">
+              <i class="fas fa-plus"></i> Nueva Nota
+            </button>
+          </div>
+        </header>
+
+        <!-- Dynamic Views Container -->
+        <section id="view-container">
+          <!-- El contenido se genera dinámicamente con JS -->
+        </section>
+      </main>
+    </div>
+
+    <!-- Modal para Notas -->
+    <div id="note-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Nueva Nota</h2>
+          <button type="button" class="close-icon-btn" id="modal-x">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="note-form">
+          <input type="hidden" id="note-id" />
+          <div class="form-group">
+            <label><i class="fas fa-heading"></i> Título</label>
+            <input
+              type="text"
+              id="title"
+              required
+              placeholder="Ej: Reunión de ventas"
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="far fa-calendar"></i> Fecha</label>
+              <input type="date" id="date" required />
+            </div>
+            <div class="form-group">
+              <label><i class="far fa-clock"></i> Hora</label>
+              <input type="time" id="time" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-flag"></i> Prioridad</label>
+              <select id="priority">
+                <option value="low">Baja</option>
+                <option value="medium" selected>Media</option>
+                <option value="high">Alta</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-tag"></i> Categoría</label>
+              <select id="category">
+                <option value="work">Trabajo</option>
+                <option value="meeting">Reunión</option>
+                <option value="personal">Personal</option>
+                <option value="urgent">Urgente</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-align-left"></i> Descripción</label>
+            <textarea
+              id="description"
+              rows="3"
+              placeholder="Detalles adicionales..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-tags"></i> Tags</label>
+            <div id="tag-selection-container" class="tag-selection-list"></div>
+          </div>
+          <div class="form-group alarm-toggle">
+            <label class="switch">
+              <input type="checkbox" id="alarm" />
+              <span class="slider"></span>
+            </label>
+            <span class="alarm-text">Activar recordatorio sonoro</span>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn-ghost"
+              id="delete-note-modal"
+              style="color: var(--high); margin-right: auto; display: none"
+            >
+              <i class="fas fa-trash" style="margin-right: 0.25rem"></i>
+              Eliminar
+            </button>
+            <button type="button" class="btn-ghost" id="close-modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmación Personalizado -->
+    <div id="confirm-modal" class="modal">
+      <div
+        class="modal-content"
+        style="max-width: 400px; text-align: center; padding: 2rem"
+      >
+        <div style="color: var(--high); font-size: 3rem; margin-bottom: 1rem">
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h3
+          id="confirm-message"
+          style="margin-bottom: 1.5rem; color: var(--text-main)"
+        >
+          ¿Estás seguro?
+        </h3>
+        <div class="modal-actions" style="justify-content: center; gap: 1rem">
+          <button type="button" class="btn-ghost" id="confirm-cancel">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-primary"
+            id="confirm-ok"
+            style="background: var(--high)"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Gestión de Tags -->
+    <div id="tag-manager-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Gestionar Tags</h2>
+          <button type="button" class="close-icon-btn" id="close-tag-manager">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="tag-manager-body">
+          <form id="tag-form">
+            <input type="hidden" id="tag-id">
+            <input type="text" id="tag-name" placeholder="Nuevo tag..." required style="flex: 1;">
+            <input type="color" id="tag-color" value="#2563eb">
+            <button type="submit" class="btn-primary" id="tag-submit-btn">Añadir</button>
+          </form>
+          <div id="tags-list-container" style="max-height: 300px; overflow-y: auto;">
+            <!-- Lista de tags dinámicos -->
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" id="close-tag-manager-btn">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay para alarmas activas (bloqueo y difuminado) -->
+    <div id="alarm-overlay" class="alarm-overlay"></div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
