@@ -1,12 +1,12 @@
 :root {
   --primary: #2563eb;
   --primary-dark: #1d4ed8;
-  --bg-main: #f1f5f9;
-  --bg-sidebar: #f8fafc;
+  --bg-main: #e2e8f0;
+  --bg-sidebar: #f1f5f9;
   --text-main: #1e293b;
   --text-muted: #64748b;
   --border: #cbd5e1;
-  --white: #f8fafc;
+  --white: #f1f5f9;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --radius: 12px;
 
