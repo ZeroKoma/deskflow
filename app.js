@@ -1,5 +1,5 @@
 import { state, mutations } from './store.js';
-import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal } from './view.js';
+import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './view.js';
 import { dateUtils, downloadCSV } from './utils.js';
 
 document.addEventListener("DOMContentLoaded", init);
@@ -105,6 +105,56 @@ function setupGlobalEvents() {
       renderView();
       showToast("Tag eliminado de todas las notas", "info");
       updateUIStats();
+    });
+  };
+
+  // Category Manager
+  const catModal = document.getElementById("category-manager-modal");
+  document.getElementById("manage-categories-btn").addEventListener("click", () => {
+    document.getElementById("category-form").reset();
+    document.getElementById("category-id").value = "";
+    document.getElementById("category-submit-btn").innerText = "Añadir";
+    renderCategoryManager();
+    catModal.style.display = "flex";
+  });
+  document.getElementById("close-category-manager").onclick = () => catModal.style.display = "none";
+  document.getElementById("close-category-manager-btn").onclick = () => catModal.style.display = "none";
+
+  document.getElementById("category-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const id = document.getElementById("category-id").value;
+    const name = document.getElementById("category-name").value;
+    const color = document.getElementById("category-color").value;
+    if (id) {
+      mutations.updateCategory(id, { name, color });
+      showToast("Categoría actualizada");
+    } else {
+      mutations.addCategory({ id: Date.now().toString(), name, color });
+      showToast("Categoría creada");
+    }
+    e.target.reset();
+    renderCategoryManager();
+    renderView();
+    updateUIStats();
+  });
+
+  window.editCategory = (id) => {
+    const cat = state.categories.find(c => c.id === id);
+    if (cat) {
+      document.getElementById("category-id").value = cat.id;
+      document.getElementById("category-name").value = cat.name;
+      document.getElementById("category-color").value = cat.color;
+      document.getElementById("category-submit-btn").innerText = "Guardar";
+    }
+  };
+
+  window.deleteCategory = (id) => {
+    showConfirmModal("¿Eliminar esta categoría? Las notas asociadas pasarán a 'Otros'.", () => {
+      mutations.deleteCategory(id);
+      renderCategoryManager();
+      renderView();
+      updateUIStats();
+      showToast("Categoría eliminada", "info");
     });
   };
 

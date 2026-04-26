@@ -9,11 +9,12 @@ const noteForm = document.getElementById("note-form");
  * Mapeo de traducciones para la interfaz
  */
 const priorityLabels = { high: "Alta", medium: "Media", low: "Baja" };
-const categoryLabels = {
-  work: "Trabajo",
-  meeting: "Reunión",
-  personal: "Personal",
-  urgent: "Otros",
+
+const getCategoryInfo = (id) => {
+  const cat = state.categories.find(c => c.id === id);
+  if (cat) return cat;
+  // Fallback para datos antiguos o borrados
+  return { name: id || 'Otros', color: 'var(--text-muted)' };
 };
 
 /**
@@ -58,6 +59,7 @@ export function updateUIStats() {
   document.getElementById("count-no-date").innerText = stats.noDate;
   document.getElementById("count-calendar").innerText = stats.withDate;
   document.getElementById("count-tags").innerText = stats.tags;
+  document.getElementById("count-categories").innerText = stats.categories;
 }
 
 export function openNoteModal(id = null, defaultDate = null) {
@@ -66,6 +68,11 @@ export function openNoteModal(id = null, defaultDate = null) {
   const timeInput = document.getElementById("time");
   const alarmInput = document.getElementById("alarm");
   const deleteBtn = document.getElementById("delete-note-modal");
+
+  // Poblar select de categorías dinámicamente
+  const categorySelect = document.getElementById("category");
+  categorySelect.innerHTML = state.categories.map(c => 
+    `<option value="${c.id}">${c.name}</option>`).join('');
 
   if (id) {
     const note = getters.getNoteById(id);
@@ -136,6 +143,25 @@ export function renderTagManager() {
       </div>
     </div>
   `,
+    )
+    .join("");
+}
+
+export function renderCategoryManager() {
+  const container = document.getElementById("categories-list-container");
+  container.innerHTML = state.categories
+    .map(
+      (cat) => `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 15px; height: 15px; border-radius: 50%; background: ${cat.color}"></div>
+        <span>${cat.name}</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button onclick="window.editCategory('${cat.id}')" style="color: var(--primary); background:none; border:none; cursor:pointer;"><i class="fas fa-pencil-alt"></i></button>
+        <button onclick="window.deleteCategory('${cat.id}')" style="color: var(--high); background:none; border:none; cursor:pointer;"><i class="fas fa-times"></i></button>
+      </div>
+    </div>`,
     )
     .join("");
 }
@@ -238,9 +264,15 @@ function renderDashboardColumn(title, tasks, icon, color) {
                     .map(
                       (t) => `
                 <div class="dashboard-note-item" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                         <span style="font-weight: 500;">${t.title}</span>
-                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">${renderTagPills(t.tags)}</div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            ${renderTagPills(t.tags)}
+                            <span style="font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-folder" style="color: ${getCategoryInfo(t.category).color}; font-size: 0.6rem;"></i> 
+                                ${getCategoryInfo(t.category).name}
+                            </span>
+                        </div>
                     </div>
                     <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
                 </div>`,
@@ -376,7 +408,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
                     ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                    <span><i class="fas fa-tag"></i> ${categoryLabels[n.category] || n.category}</span>
+                    <span><i class="fas fa-tag" style="color: ${getCategoryInfo(n.category).color}"></i> ${getCategoryInfo(n.category).name}</span>
                     ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                 </div>
                 <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
@@ -480,7 +512,7 @@ function renderNoteList(title, data) {
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
                         <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : (n.time ? "Sin fecha (Recurrente)" : "Sin fecha")}</span>
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                            <span><i class="fas fa-tag"></i> ${categoryLabels[n.category] || n.category}</span>
+                            <span><i class="fas fa-tag" style="color: ${getCategoryInfo(n.category).color}"></i> ${getCategoryInfo(n.category).name}</span>
                             ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                         </div>
                         <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
@@ -596,7 +628,7 @@ document.addEventListener("mouseover", (e) => {
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
           <i class="far fa-calendar-alt"></i> ${dateUtils.formatDisplayDate(note.date)} 
           ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
-          <span style="margin-left:8px"><i class="fas fa-tag"></i> ${categoryLabels[note.category] || note.category}</span>
+          <span style="margin-left:8px"><i class="fas fa-folder" style="color: ${getCategoryInfo(note.category).color}"></i> ${getCategoryInfo(note.category).name}</span>
         </div>
         <div style="margin-bottom: 8px;">${renderTagPills(note.tags)}</div>
         <div style="color: var(--text-main); font-size: 0.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
@@ -669,7 +701,7 @@ window.addEventListener("search-notes", (e) => {
       (id) => state.tags.find((t) => t.id === id)?.name.toLowerCase() || "",
     );
     const inTags = tagNames.some((name) => name.includes(query));
-    const categoryName = (categoryLabels[n.category] || n.category || "").toLowerCase();
+    const categoryName = getCategoryInfo(n.category).name.toLowerCase();
     const inCategory = categoryName.includes(query);
     return inTitle || inTags || inCategory;
   });

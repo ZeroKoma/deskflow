@@ -1,6 +1,14 @@
+const defaultCategories = [
+  { id: 'Trabajo', name: 'Trabajo', color: '#2563eb' },
+  { id: 'Reunión', name: 'Reunión', color: '#10b981' },
+  { id: 'Personal', name: 'Personal', color: '#f59e0b' },
+  { id: 'Otros', name: 'Otros', color: '#64748b' }
+];
+
 export const state = {
   notes: JSON.parse(localStorage.getItem("deskflow_notes")) || [],
   tags: JSON.parse(localStorage.getItem("deskflow_tags")) || [],
+  categories: JSON.parse(localStorage.getItem("deskflow_categories")) || defaultCategories,
   currentView: "dashboard",
   currentMonth: new Date().getMonth(),
   currentYear: new Date().getFullYear(),
@@ -18,6 +26,10 @@ export const mutations = {
   
   saveTags() {
     localStorage.setItem("deskflow_tags", JSON.stringify(state.tags));
+  },
+
+  saveCategories() {
+    localStorage.setItem("deskflow_categories", JSON.stringify(state.categories));
   },
 
   addNote(noteData) {
@@ -56,6 +68,24 @@ export const mutations = {
     this.saveNotes();
   },
 
+  addCategory(category) {
+    state.categories.push(category);
+    this.saveCategories();
+  },
+
+  updateCategory(id, catData) {
+    state.categories = state.categories.map(c => c.id === id ? { ...c, ...catData } : c);
+    this.saveCategories();
+  },
+
+  deleteCategory(id) {
+    state.categories = state.categories.filter(c => c.id !== id);
+    // Las notas que usaban esta categoría pasan a 'Otros' o quedan sin categoría
+    state.notes = state.notes.map(n => n.category === id ? { ...n, category: 'Otros' } : n);
+    this.saveCategories();
+    this.saveNotes();
+  },
+
   setTheme(theme) {
     state.theme = theme;
     localStorage.setItem("deskflow_theme", theme);
@@ -76,7 +106,8 @@ export const getters = {
       all: state.notes.length,
       noDate: state.notes.filter(n => !n.date).length,
       withDate: state.notes.filter(n => !!n.date).length,
-      tags: state.tags.length
+      tags: state.tags.length,
+      categories: state.categories.length
     };
   },
   getNoteById(id) {
