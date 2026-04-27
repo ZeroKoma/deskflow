@@ -78,7 +78,7 @@ const sortNotesLogic = (a, b) => {
 export function renderView() {
   if (state.currentView === "calendar") renderCalendar();
   else if (state.currentView === "dashboard") renderDashboard();
-  else if (state.currentView === "no-date-notes") renderNoDateNotes();
+  else if (state.currentView === "expired-notes") renderExpiredNotes();
   else renderAllNotes();
 }
 
@@ -89,7 +89,7 @@ export function updateUIStats() {
   document.getElementById("stat-low").innerText = stats.low;
 
   document.getElementById("count-all").innerText = stats.all;
-  document.getElementById("count-no-date").innerText = stats.noDate;
+  document.getElementById("count-expired").innerText = stats.expired;
   document.getElementById("count-calendar").innerText = stats.withDate;
   document.getElementById("count-tags").innerText = stats.tags;
   document.getElementById("count-categories").innerText = stats.categories;
@@ -269,9 +269,6 @@ function renderDashboard() {
   const tomorrowTasks = state.notes
     .filter((n) => n.date === tomorrowStr && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
-  const noDateTasks = state.notes
-    .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
-    .sort(sortNotesLogic);
 
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
@@ -280,9 +277,6 @@ function renderDashboard() {
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
             ${renderDashboardColumn("Notas de Hoy", todayTasks, "fa-calendar-day", "var(--primary)")}
             ${renderDashboardColumn("Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)")}
-        </div>
-        <div style="margin-top: 2rem;">
-            ${renderDashboardColumn("Notas sin fecha", noDateTasks, "fa-inbox", "var(--text-muted)")}
         </div>
     </div>`;
 }
@@ -303,8 +297,8 @@ function renderDashboardColumn(title, tasks, icon, color) {
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                         <span style="font-weight: 500;">${t.title}</span>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            ${renderTagPills(t.tags)}
                             ${renderCategoryBadge(t.category)}
+                            ${renderTagPills(t.tags)}
                         </div>
                     </div>
                     <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
@@ -441,12 +435,12 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
                     <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                     <h3 style="margin: 0;">${n.title}</h3>
                 </div>
-                <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                    ${renderCategoryBadge(n.category)}
                     ${renderTagPills(n.tags)}
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
                     ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                    ${renderCategoryBadge(n.category)}
                     ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                 </div>
                 <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
@@ -478,14 +472,15 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
     </div>`;
 }
 
-function renderNoDateNotes() {
+function renderExpiredNotes() {
   const query = document.getElementById("global-search")?.value || "";
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
-  const noDateNotes = state.notes
-    .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
+  const todayStr = dateUtils.getTodayStr();
+  const expiredNotes = state.notes
+    .filter((n) => n.date && n.date < todayStr && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
-  renderNoteList("Notas sin fecha", noDateNotes);
+  renderNoteList("Notas Caducadas", expiredNotes);
 }
 
 function renderTagPills(tagIds = []) {
@@ -494,7 +489,7 @@ function renderTagPills(tagIds = []) {
     .map((id) => {
       const tag = state.tags.find((t) => t.id === id);
       if (!tag) return "";
-      return `<span class="tag-pill" style="background: ${tag.color}15; color: ${tag.color}; border-color: ${tag.color}44;">#${tag.name}</span>`;
+      return `<span class="tag-pill" style="background: ${tag.color}15; color: ${tag.color}; border-color: ${tag.color}44;"><span style="font-size: 1.3em; margin-right: 2px; font-weight: 800; line-height: 1;">#</span>${tag.name}</span>`;
     })
     .join("");
 }
@@ -503,9 +498,13 @@ function renderAllNotes(filtered = null) {
   const query = document.getElementById("global-search")?.value || "";
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
+  const todayStr = dateUtils.getTodayStr();
 
   const filteredData = state.notes.filter((n) => {
     if (!matchesSearch(n, query, incTags, incCats)) return false;
+
+    // Ocultar notas cuya fecha ya ha pasado
+    if (n.date && n.date < todayStr) return false;
 
     // 2. Filtrado por Prioridad (procedente del click en el resumen lateral)
     if (state.allNotesPriorityFilter && n.priority !== state.allNotesPriorityFilter) return false;
@@ -565,8 +564,8 @@ function renderNoteList(title, data) {
                             <h3 style="margin: 0;">${n.title}</h3>
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-                            ${renderTagPills(n.tags)}
                             ${renderCategoryBadge(n.category)}
+                            ${renderTagPills(n.tags)}
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
                             <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : (n.time ? "Sin fecha (Recurrente)" : "Sin fecha")}</span>
@@ -676,8 +675,8 @@ const tooltip = document.getElementById("note-tooltip");
 document.addEventListener("mouseover", (e) => {
   const target = e.target.closest("[data-note-id]");
   
-  // No mostrar tooltip en vistas que ya muestran toda la información (Todas las notas, Notas sin fecha y Vista de día)
-  const isFullView = state.currentView === "all-notes" || state.currentView === "no-date-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
+  // No mostrar tooltip en vistas que ya muestran toda la información (Todas las notas, Notas caducadas y Vista de día)
+  const isFullView = state.currentView === "all-notes" || state.currentView === "expired-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
 
   if (target && !e.target.closest(".modal") && !isFullView) {
     const id = target.dataset.noteId;
@@ -688,13 +687,13 @@ document.addEventListener("mouseover", (e) => {
       tooltip.innerHTML = `
         <div style="font-weight: 700; margin-bottom: 5px;">${note.title}</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-          <i class="far fa-calendar-alt"></i> ${dateUtils.formatDisplayDate(note.date)} 
+          <i class="far fa-calendar-alt"></i> ${note.date ? dateUtils.formatDisplayDate(note.date) : "--"}
           ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
           ${note.alarm ? `<span style="color: var(--primary); margin-left: 8px;"><i class="fas fa-bell"></i> Alarma</span>` : ""}
         </div>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-          ${renderTagPills(note.tags)}
           ${renderCategoryBadge(note.category)}
+          ${renderTagPills(note.tags)}
         </div>
         <div style="color: var(--text-main); font-size: 0.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
           ${note.description || "<i>Sin descripción</i>"}

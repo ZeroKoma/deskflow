@@ -15,8 +15,11 @@ export const dateUtils = {
 
   formatDisplayDate(dateStr) {
     if (!dateStr) return "";
-    const [year, month, day] = dateStr.split("-");
-    return `${day}/${month}/${year}`;
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    const dayName = new Intl.DateTimeFormat("es-ES", { weekday: "long" }).format(date);
+    const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+    return `${capitalizedDay} ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${String(year).slice(-2)}`;
   }
 };
 

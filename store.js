@@ -101,12 +101,15 @@ export const mutations = {
 
 export const getters = {
   getStats() {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const activeNotes = state.notes.filter(n => !n.date || n.date >= todayStr);
     return {
-      high: state.notes.filter(n => n.priority === "high").length,
-      medium: state.notes.filter(n => n.priority === "medium").length,
-      low: state.notes.filter(n => n.priority === "low").length,
-      all: state.notes.length,
-      noDate: state.notes.filter(n => !n.date).length,
+      high: activeNotes.filter(n => n.priority === "high").length,
+      medium: activeNotes.filter(n => n.priority === "medium").length,
+      low: activeNotes.filter(n => n.priority === "low").length,
+      all: activeNotes.length,
+      expired: state.notes.filter(n => n.date && n.date < todayStr).length,
       withDate: state.notes.filter(n => !!n.date).length,
       tags: state.tags.length,
       categories: state.categories.length
