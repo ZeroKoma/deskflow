@@ -421,7 +421,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
                 <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
             </div>
             <div style="display: flex; gap: 8px; margin-left: 20px;">
-                <button class="btn-ghost" onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="color: var(--high); padding: 8px;"><i class="fas fa-trash"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="background: none; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--high); padding: 8px 12px; transition: all 0.2s;"><i class="fas fa-trash"></i></button>
             </div>
         </div>`;
       }
@@ -559,7 +559,7 @@ function renderNoteList(title, data) {
                         <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
                     </div>
                     <div style="display: flex; gap: 8px; margin-left: 20px;">
-                        <button class="btn-secondary" onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: var(--bg-main); color: var(--high);"><i class="fas fa-trash"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--high); padding: 8px 12px; transition: all 0.2s;"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`,
                     )

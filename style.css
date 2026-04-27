@@ -418,6 +418,27 @@ body {
   color: var(--text-main);
 }
 
+.btn-danger {
+  background: var(--high);
+  color: white !important;
+  padding: 0.7rem 1.5rem;
+  border: 2px solid var(--high);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-danger:hover {
+  filter: brightness(0.9);
+  box-shadow: 0 8px 15px -3px rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+}
+
 .modal {
   display: none;
   position: fixed;
