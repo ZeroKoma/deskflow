@@ -180,6 +180,7 @@ function setupGlobalEvents() {
       alarmInput.checked = false;
       alarmInput.disabled = true;
     } else {
+      if (alarmInput.disabled) alarmInput.checked = true;
       alarmInput.disabled = false;
     }
   });
