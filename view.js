@@ -25,6 +25,31 @@ function renderCategoryBadge(categoryId) {
 }
 
 /**
+ * Auxiliar para determinar si una nota coincide con los criterios de búsqueda actuales
+ */
+const matchesSearch = (note, query, includeTags, includeCats) => {
+  if (!query) return true;
+  const q = query.toLowerCase();
+
+  // Si no hay filtros específicos activos, buscamos por nombre de nota (título)
+  if (!includeTags && !includeCats) {
+    return note.title.toLowerCase().includes(q);
+  }
+
+  // Si hay filtros activos, el nombre de la nota ya no se busca (según petición)
+  let found = false;
+  if (includeTags) {
+    const tagNames = (note.tags || []).map(id => state.tags.find(t => t.id === id)?.name.toLowerCase() || "");
+    if (tagNames.some(name => name.includes(q))) found = true;
+  }
+  if (includeCats && !found) {
+    const categoryName = getCategoryInfo(note.category).name.toLowerCase();
+    if (categoryName.includes(q)) found = true;
+  }
+  return found;
+};
+
+/**
  * Lógica de ordenación solicitada:
  * 1. Prioridad primero, 2. Alarmas, 3. Por hora
  */
@@ -233,16 +258,19 @@ export function showConfirmModal(message, onConfirm) {
 
 // --- Renderizadores Específicos ---
 function renderDashboard() {
+  const query = document.getElementById("global-search")?.value || "";
+  const incTags = document.getElementById("search-tags")?.checked;
+  const incCats = document.getElementById("search-categories")?.checked;
   const todayStr = dateUtils.getTodayStr();
   const tomorrowStr = dateUtils.getTomorrowStr();
   const todayTasks = state.notes
-    .filter((n) => n.date === todayStr)
+    .filter((n) => n.date === todayStr && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
   const tomorrowTasks = state.notes
-    .filter((n) => n.date === tomorrowStr)
+    .filter((n) => n.date === tomorrowStr && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
   const noDateTasks = state.notes
-    .filter((n) => !n.date)
+    .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
 
   viewContainer.innerHTML = `
@@ -396,8 +424,11 @@ function renderCalendarGrid(focusDate) {
 }
 
 function renderDayCell(label, dateStr, isToday = false, isFull = false) {
+  const query = document.getElementById("global-search")?.value || "";
+  const incTags = document.getElementById("search-tags")?.checked;
+  const incCats = document.getElementById("search-categories")?.checked;
   const dayNotes = state.notes
-    .filter((n) => n.date === dateStr)
+    .filter((n) => n.date === dateStr && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
 
   const notesHtml = dayNotes
@@ -448,21 +479,11 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
 }
 
 function renderNoDateNotes() {
-  const query = document.getElementById("global-search")?.value.toLowerCase() || "";
+  const query = document.getElementById("global-search")?.value || "";
+  const incTags = document.getElementById("search-tags")?.checked;
+  const incCats = document.getElementById("search-categories")?.checked;
   const noDateNotes = state.notes
-    .filter((n) => {
-      if (!!n.date) return false;
-
-      const inTitle = n.title.toLowerCase().includes(query);
-      const tagNames = (n.tags || []).map(
-        (id) => state.tags.find((t) => t.id === id)?.name.toLowerCase() || "",
-      );
-      const inTags = tagNames.some((name) => name.includes(query));
-      const categoryName = getCategoryInfo(n.category).name.toLowerCase();
-      const inCategory = categoryName.includes(query);
-
-      return inTitle || inTags || inCategory;
-    })
+    .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
   renderNoteList("Notas sin fecha", noDateNotes);
 }
@@ -479,16 +500,12 @@ function renderTagPills(tagIds = []) {
 }
 
 function renderAllNotes(filtered = null) {
-  const query = document.getElementById("global-search")?.value.toLowerCase() || "";
+  const query = document.getElementById("global-search")?.value || "";
+  const incTags = document.getElementById("search-tags")?.checked;
+  const incCats = document.getElementById("search-categories")?.checked;
 
   const filteredData = state.notes.filter((n) => {
-    // 1. Filtrado por texto (Buscador)
-    const inTitle = n.title.toLowerCase().includes(query);
-    const tagNames = (n.tags || []).map(id => state.tags.find(t => t.id === id)?.name.toLowerCase() || "");
-    const inTags = tagNames.some(name => name.includes(query));
-    const categoryName = getCategoryInfo(n.category).name.toLowerCase();
-    const inCategory = categoryName.includes(query);
-    if (!(inTitle || inTags || inCategory)) return false;
+    if (!matchesSearch(n, query, incTags, incCats)) return false;
 
     // 2. Filtrado por Prioridad (procedente del click en el resumen lateral)
     if (state.allNotesPriorityFilter && n.priority !== state.allNotesPriorityFilter) return false;
@@ -740,13 +757,5 @@ window.snoozeNote = (id) => {
 
 // --- Listener para búsqueda ---
 window.addEventListener("search-notes", () => {
-  if (state.currentView !== "all-notes" && state.currentView !== "no-date-notes") {
-    state.currentView = "all-notes";
-    document
-      .querySelectorAll(".nav-item")
-      .forEach((b) =>
-        b.classList.toggle("active", b.dataset.view === "all-notes"),
-      );
-  }
   renderView();
 });

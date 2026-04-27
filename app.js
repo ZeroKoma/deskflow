@@ -205,6 +205,10 @@ function setupGlobalEvents() {
     // Lógica de filtrado delegada a view.js
     window.dispatchEvent(new CustomEvent('search-notes', { detail: e.target.value }));
   });
+
+  // Refrescar al cambiar opciones de búsqueda
+  document.getElementById("search-tags").addEventListener("change", () => renderView());
+  document.getElementById("search-categories").addEventListener("change", () => renderView());
 }
 
 function handleFormSubmit(e) {

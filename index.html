@@ -79,13 +79,31 @@
       <!-- Main Content -->
       <main class="main-content">
         <header class="top-bar">
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input
-              type="text"
-              id="global-search"
-              placeholder="Buscar notas..."
-            />
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                id="global-search"
+                placeholder="Buscar notas..."
+              />
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-main);">Tags</span>
+                <label class="switch">
+                  <input type="checkbox" id="search-tags">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-main);">Categoría</span>
+                <label class="switch">
+                  <input type="checkbox" id="search-categories">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
           </div>
           <div class="actions">
             <button id="export-data" class="btn-secondary" title="Exportar CSV">
