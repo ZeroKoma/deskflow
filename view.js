@@ -494,9 +494,9 @@ function renderTagPills(tagIds = []) {
     .map((id) => {
       const tag = state.tags.find((t) => t.id === id);
       if (!tag) return "";
-      return `<span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">#${tag.name}</span>`;
+      return `<span class="tag-pill" style="background: ${tag.color}15; color: ${tag.color}; border-color: ${tag.color}44;">#${tag.name}</span>`;
     })
-    .join('<span style="color: var(--border); margin: 0 -2px;"> </span>');
+    .join("");
 }
 
 function renderAllNotes(filtered = null) {
@@ -564,13 +564,13 @@ function renderNoteList(title, data) {
                             <span class="note-pill priority-${n.priority}">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                             <h3 style="margin: 0;">${n.title}</h3>
                         </div>
-                        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
                             ${renderTagPills(n.tags)}
+                            ${renderCategoryBadge(n.category)}
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
-                        <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : (n.time ? "Sin fecha (Recurrente)" : "Sin fecha")}</span>
+                            <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : (n.time ? "Sin fecha (Recurrente)" : "Sin fecha")}</span>
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                            ${renderCategoryBadge(n.category)}
                             ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                         </div>
                         <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
@@ -690,9 +690,12 @@ document.addEventListener("mouseover", (e) => {
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
           <i class="far fa-calendar-alt"></i> ${dateUtils.formatDisplayDate(note.date)} 
           ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
-          <span style="margin-left:8px">${renderCategoryBadge(note.category)}</span>
+          ${note.alarm ? `<span style="color: var(--primary); margin-left: 8px;"><i class="fas fa-bell"></i> Alarma</span>` : ""}
         </div>
-        <div style="margin-bottom: 8px;">${renderTagPills(note.tags)}</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+          ${renderTagPills(note.tags)}
+          ${renderCategoryBadge(note.category)}
+        </div>
         <div style="color: var(--text-main); font-size: 0.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
           ${note.description || "<i>Sin descripción</i>"}
         </div>
