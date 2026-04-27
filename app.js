@@ -194,11 +194,64 @@ function setupGlobalEvents() {
     timeInput.dispatchEvent(new Event('input'));
   });
 
-  // Exportar y Buscar
+  // Exportar e Importar
   document.getElementById("export-data").addEventListener("click", () => {
-    const content = "Titulo,Fecha,Prioridad,Categoria\n" + 
-      state.notes.map(n => `${n.title},${n.date},${n.priority},${n.category}`).join("\n");
+    const headers = "Titulo,Fecha,Hora,Prioridad,Categoria,Descripcion,Alarma,Tags";
+    const content = headers + "\n" + 
+      state.notes.map(n => {
+        const tags = (n.tags || []).join(';');
+        // Reemplazamos comas por punto y coma en textos para evitar romper el CSV simple
+        const safeTitle = (n.title || "").replace(/,/g, ";").replace(/\n/g, " ");
+        const safeDesc = (n.description || "").replace(/,/g, ";").replace(/\n/g, " ");
+        return `${safeTitle},${n.date || ""},${n.time || ""},${n.priority},${n.category},${safeDesc},${n.alarm},${tags}`;
+      }).join("\n");
     downloadCSV("deskflow_export.csv", content);
+  });
+
+  const importInput = document.getElementById("import-data-input");
+  document.getElementById("import-data-btn").addEventListener("click", () => importInput.click());
+
+  importInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target.result;
+        const lines = text.split("\n");
+        let importedCount = 0;
+        
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const v = line.split(",");
+          
+          mutations.addNote({
+            id: Date.now().toString() + "_" + i,
+            title: v[0] || "Nota Importada",
+            date: v[1] || "",
+            time: v[2] || "",
+            priority: v[3] || "medium",
+            category: v[4] || "Otros",
+            description: v[5] || "",
+            alarm: v[6] === "true",
+            tags: v[7] ? v[7].split(";") : [],
+            lastAlarmKey: null,
+            lastPreAlarmKey: null
+          });
+          importedCount++;
+        }
+        showToast(`Se han importado ${importedCount} notas correctamente`);
+        renderView();
+        updateUIStats();
+      } catch (err) {
+        showToast("Error al leer el archivo CSV", "error");
+      } finally {
+        importInput.value = "";
+      }
+    };
+    reader.readAsText(file);
   });
 
   document.getElementById("global-search").addEventListener("input", (e) => {
