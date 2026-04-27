@@ -722,7 +722,8 @@ window.snoozeNote = (id) => {
     note.date = dateUtils.formatYYYYMMDD(date);
     note.time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
     note.alarm = true; // Reactivar la alarma para la nueva hora
-    delete note.preAlarmFired; // Permitir aviso previo para la nueva hora
+    note.lastAlarmKey = null; // Resetear rastreo para que pueda sonar de nuevo
+    note.lastPreAlarmKey = null;
 
     mutations.saveNotes();
     const toast = document.getElementById(`toast-${id}`);

@@ -210,6 +210,10 @@ function setupGlobalEvents() {
 function handleFormSubmit(e) {
   e.preventDefault();
   const id = document.getElementById('note-id').value;
+  const timeValue = document.getElementById("time").value;
+  const dateValue = document.getElementById("date").value;
+  const existingNote = id ? state.notes.find(n => n.id === id) : null;
+
   const selectedTags = Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value);
   
   const noteData = {
@@ -221,7 +225,9 @@ function handleFormSubmit(e) {
     category: document.getElementById("category").value,
     description: document.getElementById("description").value,
     alarm: document.getElementById("alarm").checked,
-    tags: selectedTags
+    tags: selectedTags,
+    lastAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastAlarmKey : null,
+    lastPreAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastPreAlarmKey : null
   };
 
   id ? mutations.updateNote(id, noteData) : mutations.addNote(noteData);
@@ -269,7 +275,7 @@ function startAlarmService() {
 
         // --- Lógica de Pre-Alarma (5 minutos antes) ---
         const preAlarmDiff = now - (noteTime.getTime() - 5 * 60000);
-        if (preAlarmDiff >= 0 && preAlarmDiff < 60000 && note.lastPreAlarmKey !== currentMinuteKey) {
+        if (preAlarmDiff >= 0 && preAlarmDiff < 60000 && note.lastPreAlarmKey !== currentDate) {
           if ("Notification" in window && Notification.permission === "granted") {
             new Notification("DeskFlow: Aviso (5 min)", {
               body: `Próximamente: ${note.title}`,
@@ -278,12 +284,12 @@ function startAlarmService() {
             });
           }
           showToast(`Aviso previo (5 min): ${note.title}`, "info");
-          note.lastPreAlarmKey = currentMinuteKey;
+          note.lastPreAlarmKey = currentDate;
           mutations.saveNotes();
         }
 
-        // Comprobamos si ya es la hora o si ya pasó (máximo 2 minutos de retraso por throttling)
-        if (diff >= 0 && diff < 120000 && note.lastAlarmKey !== currentMinuteKey) { 
+        // Comprobamos si ya es la hora o si ya pasó (ventana de 2 min) y si no ha sonado HOY
+        if (diff >= 0 && diff < 120000 && note.lastAlarmKey !== currentDate) { 
         playAlarmSound();
 
         // Notificación Nativa del Sistema Operativo
@@ -308,7 +314,7 @@ function startAlarmService() {
           note.alarm = false;
         }
         
-        note.lastAlarmKey = currentMinuteKey;
+        note.lastAlarmKey = currentDate;
         mutations.saveNotes();
         renderView();
         }
