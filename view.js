@@ -289,6 +289,13 @@ function renderDashboard() {
   const weekGridHtml = renderCalendarGrid(focusDate);
   state.calendarSubView = originalSubView;
 
+  // Filtrar notas sin fecha para el listado inferior
+  const noDateTasksFull = state.notes
+    .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
+    .sort(sortNotesLogic);
+  const noDateTotal = noDateTasksFull.length;
+  const noDateLimited = noDateTasksFull.slice(0, 5);
+
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
         <h1 style="margin-bottom: 0.5rem;">Panel de Control</h1>
@@ -299,12 +306,44 @@ function renderDashboard() {
             ${renderDashboardColumn("Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", todayStr)}
         </div>
 
-        <div>
-            <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+        <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 3rem; display: block; cursor: default;">
+            <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; margin-top: 0;">
                 <i class="fas fa-calendar-week" style="color: var(--primary)"></i> Planificación Semanal
             </h3>
             <div class="calendar-grid week" style="margin: 0; background: var(--border);">
                 ${weekGridHtml}
+            </div>
+        </div>
+
+        <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                    <i class="fas fa-sticky-note" style="color: var(--primary)"></i> Notas Rápidas (${noDateTotal})
+                </h3>
+                <button class="btn-ghost" onclick="window.seeAllNoDateNotes()" style="font-size: 0.85rem; padding: 6px 12px; border: 1px solid var(--border);">
+                    Ver todas <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                ${
+                  noDateLimited.length > 0
+                    ? noDateLimited
+                        .map(
+                          (t) => `
+                    <div class="dashboard-note-item" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                            <span style="font-weight: 600;">${t.title}</span>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                ${renderCategoryBadge(t.category)}
+                                ${renderTagPills(t.tags)}
+                            </div>
+                        </div>
+                        <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
+                    </div>`
+                        )
+                        .join("")
+                    : '<p style="color: var(--text-muted); text-align: center; width: 100%;">No hay notas sin fecha.</p>'
+                }
             </div>
         </div>
     </div>`;
@@ -312,7 +351,7 @@ function renderDashboard() {
 
 function renderDashboardColumn(title, tasks, icon, color, todayStr) {
   return `
-    <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);">
+    <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
         <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
             <i class="fas ${icon}" style="color: ${color}"></i> ${title}
         </h3>
@@ -681,6 +720,18 @@ window.toggleAllNotesFilter = (type, val) => {
       state.allNotesFilterNoDate = state.allNotesPrevNoDate;
     }
   }
+  renderView();
+};
+window.seeAllNoDateNotes = () => {
+  state.currentView = "all-notes";
+  state.allNotesFilterNoDate = true;
+  state.allNotesFilterWithDate = false;
+  state.allNotesFilterExpired = false;
+  state.allNotesPriorityFilter = null;
+  // Actualizar visualmente la navegación del sidebar
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  const allNotesBtn = document.querySelector('[data-view="all-notes"]');
+  if (allNotesBtn) allNotesBtn.classList.add("active");
   renderView();
 };
 window.goToday = () => {
