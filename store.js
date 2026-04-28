@@ -20,6 +20,9 @@ export const state = {
   allNotesFilterWithDate: true,
   allNotesFilterNoDate: true,
   allNotesPriorityFilter: null,
+  allNotesFilterExpired: false,
+  allNotesPrevWithDate: true,
+  allNotesPrevNoDate: true,
 };
 
 export const mutations = {
@@ -143,6 +146,8 @@ export const getters = {
       all: activeNotes.length,
       expired: state.notes.filter((n) => n.date && n.date < todayStr).length,
       withDate: state.notes.filter((n) => !!n.date).length,
+      activeWithDate: activeNotes.filter((n) => !!n.date).length,
+      activeNoDate: activeNotes.filter((n) => !n.date).length,
       tags: state.tags.length,
       categories: state.categories.length,
     };

@@ -81,7 +81,6 @@ const sortNotesLogic = (a, b) => {
 export function renderView() {
   if (state.currentView === "calendar") renderCalendar();
   else if (state.currentView === "dashboard") renderDashboard();
-  else if (state.currentView === "expired-notes") renderExpiredNotes();
   else renderAllNotes();
 }
 
@@ -92,7 +91,8 @@ export function updateUIStats() {
   document.getElementById("stat-low").innerText = stats.low;
 
   document.getElementById("count-all").innerText = stats.all;
-  document.getElementById("count-expired").innerText = stats.expired;
+  const expiredBadge = document.getElementById("count-expired");
+  if (expiredBadge) expiredBadge.innerText = stats.expired;
   document.getElementById("count-calendar").innerText = stats.withDate;
   document.getElementById("count-tags").innerText = stats.tags;
   document.getElementById("count-categories").innerText = stats.categories;
@@ -287,13 +287,13 @@ function renderDashboard() {
         <h1 style="margin-bottom: 0.5rem;">Panel de Control</h1>
         <p style="color: var(--text-muted); margin-bottom: 2rem;">Vista general</p>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-            ${renderDashboardColumn("Notas de Hoy", todayTasks, "fa-calendar-day", "var(--primary)")}
-            ${renderDashboardColumn("Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)")}
+            ${renderDashboardColumn("Notas de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
+            ${renderDashboardColumn("Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", todayStr)}
         </div>
     </div>`;
 }
 
-function renderDashboardColumn(title, tasks, icon, color) {
+function renderDashboardColumn(title, tasks, icon, color, todayStr) {
   return `
     <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);">
         <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
@@ -304,8 +304,10 @@ function renderDashboardColumn(title, tasks, icon, color) {
               tasks.length > 0
                 ? tasks
                     .map(
-                      (t) => `
-                <div class="dashboard-note-item" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
+                      (t) => {
+                        const isPast = t.date && t.date < todayStr;
+                        return `
+                <div class="dashboard-note-item ${isPast ? 'expired' : ''}" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                         <span style="font-weight: 500;">${t.title}</span>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -314,7 +316,8 @@ function renderDashboardColumn(title, tasks, icon, color) {
                         </div>
                     </div>
                     <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
-                </div>`,
+                </div>`;
+                      }
                     )
                     .join("")
                 : '<p style="color: var(--text-muted); text-align: center;">Sin notas.</p>'
@@ -433,6 +436,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
   const query = document.getElementById("global-search")?.value || "";
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
+  const todayStr = dateUtils.getTodayStr();
   const dayNotes = state.notes
     .filter(
       (n) => n.date === dateStr && matchesSearch(n, query, incTags, incCats),
@@ -441,9 +445,12 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
 
   const notesHtml = dayNotes
     .map((n) => {
+      const isPast = n.date && n.date < todayStr;
+      const expiredClass = isPast ? "expired" : "";
+
       if (isFull) {
         return `
-        <div class="card" data-note-id="${n.id}" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">
+        <div class="card ${expiredClass}" data-note-id="${n.id}" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">
             <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                     <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
@@ -464,7 +471,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
             </div>
         </div>`;
       }
-      return `<div class="note-pill priority-${n.priority}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">${n.title}</div>`;
+      return `<div class="note-pill priority-${n.priority} ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">${n.title}</div>`;
     })
     .join("");
 
@@ -484,22 +491,6 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
             ${finalNotesHtml}
         </div>
     </div>`;
-}
-
-function renderExpiredNotes() {
-  const query = document.getElementById("global-search")?.value || "";
-  const incTags = document.getElementById("search-tags")?.checked;
-  const incCats = document.getElementById("search-categories")?.checked;
-  const todayStr = dateUtils.getTodayStr();
-  const expiredNotes = state.notes
-    .filter(
-      (n) =>
-        n.date &&
-        n.date < todayStr &&
-        matchesSearch(n, query, incTags, incCats),
-    )
-    .sort(sortNotesLogic);
-  renderNoteList("Notas Caducadas", expiredNotes);
 }
 
 function renderTagPills(tagIds = []) {
@@ -522,8 +513,14 @@ function renderAllNotes(filtered = null) {
   const filteredData = state.notes.filter((n) => {
     if (!matchesSearch(n, query, incTags, incCats)) return false;
 
-    // Ocultar notas cuya fecha ya ha pasado
-    if (n.date && n.date < todayStr) return false;
+    const isPast = n.date && n.date < todayStr;
+
+    // Lógica del nuevo switch: Ver SOLO caducadas o ver el resto
+    if (state.allNotesFilterExpired) {
+      if (!isPast) return false;
+    } else {
+      if (isPast) return false;
+    }
 
     // 2. Filtrado por Prioridad (procedente del click en el resumen lateral)
     if (
@@ -531,6 +528,10 @@ function renderAllNotes(filtered = null) {
       n.priority !== state.allNotesPriorityFilter
     )
       return false;
+
+    // Si estamos viendo caducadas, ya no aplicamos los filtros de "Con fecha/Sin fecha"
+    // ya que por definición las caducadas tienen fecha.
+    if (state.allNotesFilterExpired) return true;
 
     // 3. Filtrado por Fecha (Checks de la vista)
     if (state.allNotesFilterWithDate && !!n.date) return true;
@@ -543,6 +544,8 @@ function renderAllNotes(filtered = null) {
 }
 
 function renderNoteList(title, data) {
+  const stats = getters.getStats();
+  const todayStr = dateUtils.getTodayStr();
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
@@ -562,15 +565,22 @@ function renderNoteList(title, data) {
                     : ""
                 }
                 <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border);">
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--high); cursor: pointer;">
                         <input type="checkbox" class="round-checkbox" 
-                               ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
-                        <span>Con fecha</span>
+                               ${state.allNotesFilterExpired ? "checked" : ""} onchange="window.toggleAllNotesFilter('expired', this.checked)"> 
+                        <span>Caducadas (${stats.expired})</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; ${state.allNotesFilterExpired ? "opacity: 0.5;" : ""}">
                         <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterExpired ? "disabled" : ""}
+                               ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
+                        <span>Con fecha (${stats.activeWithDate})</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; ${state.allNotesFilterExpired ? "opacity: 0.5;" : ""}">
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterExpired ? "disabled" : ""}
                                ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
-                        <span>Sin fecha</span>
+                        <span>Sin fecha (${stats.activeNoDate})</span>
                     </label>
                 </div>`
                     : ""
@@ -586,9 +596,11 @@ function renderNoteList(title, data) {
                     <p style="color: var(--text-muted);">No se encontraron notas</p>
                  </div>`
                 : data
-                    .map(
-                      (n) => `
-                <div class="card" data-note-id="${n.id}" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease;" onclick="window.openNoteModal('${n.id}')">
+                    .map((n) => {
+                      const isPast = n.date && n.date < todayStr;
+                      const expiredClass = isPast ? "expired" : "";
+                      return `
+                <div class="card ${expiredClass}" data-note-id="${n.id}" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease;" onclick="window.openNoteModal('${n.id}')">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                             <span class="note-pill priority-${n.priority}">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
@@ -608,8 +620,8 @@ function renderNoteList(title, data) {
                     <div style="display: flex; gap: 8px; margin-left: 20px;">
                         <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--high); padding: 8px 12px; transition: all 0.2s;"><i class="fas fa-trash"></i></button>
                     </div>
-                </div>`,
-                    )
+                </div>`;
+                    })
                     .join("")
             }
         </div>
@@ -628,15 +640,29 @@ window.closeToast = (el) => {
 };
 window.clearPriorityFilter = () => {
   state.allNotesPriorityFilter = null;
+  state.allNotesFilterExpired = false;
   renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
   if (type === "withDate") {
-    if (!val && !state.allNotesFilterNoDate) return renderView(); // Impedir desactivar ambos
+    if (!val && !state.allNotesFilterNoDate && !state.allNotesFilterExpired) return renderView(); 
     state.allNotesFilterWithDate = val;
-  } else {
-    if (!val && !state.allNotesFilterWithDate) return renderView(); // Impedir desactivar ambos
+  } else if (type === "noDate") {
+    if (!val && !state.allNotesFilterWithDate && !state.allNotesFilterExpired) return renderView();
     state.allNotesFilterNoDate = val;
+  } else if (type === "expired") {
+    state.allNotesFilterExpired = val;
+    if (val) {
+      // Al activar caducadas, guardamos el estado actual y desactivamos el resto
+      state.allNotesPrevWithDate = state.allNotesFilterWithDate;
+      state.allNotesPrevNoDate = state.allNotesFilterNoDate;
+      state.allNotesFilterWithDate = false;
+      state.allNotesFilterNoDate = false;
+    } else {
+      // Al desactivar caducadas, restauramos el estado previo
+      state.allNotesFilterWithDate = state.allNotesPrevWithDate;
+      state.allNotesFilterNoDate = state.allNotesPrevNoDate;
+    }
   }
   renderView();
 };

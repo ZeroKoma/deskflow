@@ -811,3 +811,22 @@ body.alarm-active .alarm-overlay {
   align-items: center;
   border: 1px solid transparent;
 }
+
+/* Notas Caducadas / Archivo */
+.card.expired,
+.dashboard-note-item.expired,
+.note-pill.expired {
+  opacity: 0.5 !important;
+  filter: grayscale(1) !important;
+  cursor: default;
+}
+
+.card.expired,
+.dashboard-note-item.expired {
+  border: 1px dashed var(--text-muted) !important;
+  background: var(
+    --bg-main
+  ) !important; /* Usamos background para anular el inline style */
+  box-shadow: none !important;
+  transform: none !important;
+}
