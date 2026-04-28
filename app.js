@@ -229,16 +229,30 @@ function setupGlobalEvents() {
     reader.onload = (event) => {
       try {
         const text = event.target.result;
-        const lines = text.split("\n");
+        const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+
+        if (lines.length < 2) {
+          showToast("El archivo está vacío o no contiene datos válidos", "error");
+          return;
+        }
+
+        // Validación de cabecera: comprobar si existen campos clave
+        const header = lines[0].toLowerCase();
+        if (!header.includes("titulo") || !header.includes("prioridad") || !header.includes("categoria")) {
+          showToast("Formato CSV no válido. Use un archivo exportado por DeskFlow.", "error");
+          return;
+        }
+
         let importedCount = 0;
-        
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i].trim();
           if (!line) continue;
           const v = line.split(",");
           
+          if (v.length < 5) continue; // Ignorar líneas malformadas
+
           mutations.addNote({
-            id: Date.now().toString() + "_" + i,
+            id: Date.now().toString() + "_" + Math.random().toString(36).substr(2, 5),
             title: v[0] || "Nota Importada",
             date: v[1] || "",
             time: v[2] || "",
@@ -252,9 +266,14 @@ function setupGlobalEvents() {
           });
           importedCount++;
         }
-        showToast(`Se han importado ${importedCount} notas correctamente`);
-        renderView();
-        updateUIStats();
+
+        if (importedCount > 0) {
+          showToast(`Se han importado ${importedCount} notas correctamente`, "info");
+          renderView();
+          updateUIStats();
+        } else {
+          showToast("No se encontraron notas válidas para importar", "error");
+        }
       } catch (err) {
         showToast("Error al leer el archivo CSV", "error");
       } finally {

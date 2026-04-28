@@ -24,7 +24,10 @@ export const dateUtils = {
 };
 
 export function downloadCSV(filename, content) {
-  const encodedUri = encodeURI("data:text/csv;charset=utf-8," + content);
-  const link = Object.assign(document.createElement("a"), { href: encodedUri, download: filename });
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = Object.assign(document.createElement("a"), { href: url, download: filename });
   document.body.appendChild(link); link.click(); link.remove();
+  // Liberar memoria
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
