@@ -38,6 +38,11 @@ export const mutations = {
     this.saveNotes();
   },
 
+  clearNotes() {
+    state.notes = [];
+    this.saveNotes();
+  },
+
   updateNote(id, noteData) {
     state.notes = state.notes.map(n => n.id === id ? noteData : n);
     this.saveNotes();
@@ -96,6 +101,20 @@ export const mutations = {
     state.currentYear = year;
     state.currentMonth = month;
     state.currentDay = day;
+  },
+
+  resetApp() {
+    state.notes = [];
+    state.tags = [];
+    state.categories = JSON.parse(JSON.stringify(defaultCategories));
+    this.saveNotes();
+    this.saveTags();
+    this.saveCategories();
+  },
+
+  deletePastNotes(todayStr) {
+    state.notes = state.notes.filter(n => !n.date || n.date >= todayStr);
+    this.saveNotes();
   }
 };
 

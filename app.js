@@ -42,10 +42,12 @@ function setupGlobalEvents() {
   // Navegación Sidebar
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", (e) => {
+      const view = e.currentTarget.dataset.view;
+      if (!view) return;
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       e.currentTarget.classList.add("active");
       state.allNotesPriorityFilter = null;
-      state.currentView = e.currentTarget.dataset.view;
+      state.currentView = view;
       renderView();
     });
   });
@@ -182,6 +184,44 @@ function setupGlobalEvents() {
     });
   };
 
+  // Configuración y Reset
+  const settingsModal = document.getElementById("settings-modal");
+  document.getElementById("manage-settings-btn").addEventListener("click", () => {
+    settingsModal.style.display = "flex";
+  });
+  
+  const closeSettings = () => settingsModal.style.display = "none";
+  document.getElementById("close-settings-x").onclick = closeSettings;
+  document.getElementById("close-settings-btn").onclick = closeSettings;
+
+  document.getElementById("delete-past-notes-btn").addEventListener("click", () => {
+    const todayStr = dateUtils.getTodayStr();
+    const pastNotesCount = state.notes.filter(n => n.date && n.date < todayStr).length;
+
+    if (pastNotesCount === 0) {
+      showToast("No hay notas con fecha pasada para eliminar.", "info");
+      return;
+    }
+
+    showConfirmModal(`¿Deseas eliminar permanentemente ${pastNotesCount} nota(s) con fecha anterior a hoy?`, () => {
+      mutations.deletePastNotes(todayStr);
+      showToast(`${pastNotesCount} notas antiguas eliminadas`, "info");
+      renderView();
+      updateUIStats();
+      closeSettings();
+    });
+  });
+
+  document.getElementById("reset-app-btn").addEventListener("click", () => {
+    showConfirmModal("¿ESTÁS SEGURO? Esta acción borrará todas tus notas, categorías y etiquetas. No se puede deshacer.", () => {
+      mutations.resetApp();
+      showToast("Aplicación reseteada correctamente", "info");
+      closeSettings();
+      renderView();
+      updateUIStats();
+    });
+  });
+
   // Control del switch de alarma basado en la hora
   const timeInput = document.getElementById("time");
   const alarmInput = document.getElementById("alarm");
@@ -227,57 +267,67 @@ function setupGlobalEvents() {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const text = event.target.result;
-        const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+      const text = event.target.result;
 
-        if (lines.length < 2) {
-          showToast("El archivo está vacío o no contiene datos válidos", "error");
-          return;
+      const performImport = (shouldClear) => {
+        try {
+          if (shouldClear) mutations.clearNotes();
+
+          const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+          if (lines.length < 2) {
+            showToast("El archivo está vacío o no contiene datos válidos", "error");
+            return;
+          }
+
+          const header = lines[0].toLowerCase();
+          if (!header.includes("titulo") || !header.includes("prioridad") || !header.includes("categoria")) {
+            showToast("Formato CSV no válido. Use un archivo exportado por DeskFlow.", "error");
+            return;
+          }
+
+          let importedCount = 0;
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            const v = line.split(",");
+            if (v.length < 5) continue;
+
+            mutations.addNote({
+              id: Date.now().toString() + "_" + Math.random().toString(36).substr(2, 5),
+              title: v[0] || "Nota Importada",
+              date: v[1] || "",
+              time: v[2] || "",
+              priority: v[3] || "medium",
+              category: v[4] || "Otros",
+              description: v[5] || "",
+              alarm: v[6] === "true",
+              tags: v[7] ? v[7].split(";") : [],
+              lastAlarmKey: null,
+              lastPreAlarmKey: null
+            });
+            importedCount++;
+          }
+
+          if (importedCount > 0) {
+            showToast(`Se han importado ${importedCount} notas correctamente`, "info");
+            renderView();
+            updateUIStats();
+          }
+        } catch (err) {
+          showToast("Error al procesar el archivo CSV", "error");
+        } finally {
+          importInput.value = "";
         }
+      };
 
-        // Validación de cabecera: comprobar si existen campos clave
-        const header = lines[0].toLowerCase();
-        if (!header.includes("titulo") || !header.includes("prioridad") || !header.includes("categoria")) {
-          showToast("Formato CSV no válido. Use un archivo exportado por DeskFlow.", "error");
-          return;
-        }
-
-        let importedCount = 0;
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-          const v = line.split(",");
-          
-          if (v.length < 5) continue; // Ignorar líneas malformadas
-
-          mutations.addNote({
-            id: Date.now().toString() + "_" + Math.random().toString(36).substr(2, 5),
-            title: v[0] || "Nota Importada",
-            date: v[1] || "",
-            time: v[2] || "",
-            priority: v[3] || "medium",
-            category: v[4] || "Otros",
-            description: v[5] || "",
-            alarm: v[6] === "true",
-            tags: v[7] ? v[7].split(";") : [],
-            lastAlarmKey: null,
-            lastPreAlarmKey: null
-          });
-          importedCount++;
-        }
-
-        if (importedCount > 0) {
-          showToast(`Se han importado ${importedCount} notas correctamente`, "info");
-          renderView();
-          updateUIStats();
-        } else {
-          showToast("No se encontraron notas válidas para importar", "error");
-        }
-      } catch (err) {
-        showToast("Error al leer el archivo CSV", "error");
-      } finally {
-        importInput.value = "";
+      if (state.notes.length > 0) {
+        showConfirmModal(
+          "¿Deseas borrar todas las notas actuales antes de importar? (Pulsa 'Eliminar' para limpiar la lista o 'Cancelar' para añadir las nuevas a las existentes)",
+          () => performImport(true),
+          () => performImport(false)
+        );
+      } else {
+        performImport(false);
       }
     };
     reader.readAsText(file);

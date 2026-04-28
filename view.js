@@ -233,7 +233,7 @@ export function showToast(msg, type = "info", noteId = null) {
   if (!isPermanent) setTimeout(() => toast.remove(), 4000);
 }
 
-export function showConfirmModal(message, onConfirm) {
+export function showConfirmModal(message, onConfirm, onCancel = null) {
   const confirmModal = document.getElementById("confirm-modal");
   const msgEl = document.getElementById("confirm-message");
   const okBtn = document.getElementById("confirm-ok");
@@ -253,7 +253,10 @@ export function showConfirmModal(message, onConfirm) {
     cleanup();
   };
 
-  cancelBtn.onclick = cleanup;
+  cancelBtn.onclick = () => {
+    if (onCancel) onCancel();
+    cleanup();
+  };
 }
 
 // --- Renderizadores Específicos ---
