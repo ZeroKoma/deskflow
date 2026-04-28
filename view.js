@@ -282,13 +282,30 @@ function renderDashboard() {
     )
     .sort(sortNotesLogic);
 
+  // Generar la vista semanal para el Dashboard (usando la fecha actual)
+  const focusDate = new Date();
+  const originalSubView = state.calendarSubView;
+  state.calendarSubView = "week"; // Forzamos subvista semanal temporalmente
+  const weekGridHtml = renderCalendarGrid(focusDate);
+  state.calendarSubView = originalSubView;
+
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
         <h1 style="margin-bottom: 0.5rem;">Panel de Control</h1>
         <p style="color: var(--text-muted); margin-bottom: 2rem;">Vista general</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
             ${renderDashboardColumn("Notas de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
             ${renderDashboardColumn("Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", todayStr)}
+        </div>
+
+        <div>
+            <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                <i class="fas fa-calendar-week" style="color: var(--primary)"></i> Planificación Semanal
+            </h3>
+            <div class="calendar-grid week" style="margin: 0; background: var(--border);">
+                ${weekGridHtml}
+            </div>
         </div>
     </div>`;
 }
