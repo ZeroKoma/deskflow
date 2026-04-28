@@ -249,6 +249,10 @@ body {
   position: relative; /* Para asegurar que el borde se vea bien */
 }
 
+.calendar-grid.week .calendar-day {
+  min-height: 200px; /* Aumentamos el espacio para las notas en vista semanal */
+}
+
 .calendar-grid.day .calendar-day.current-day {
   border: none;
   box-shadow: none;
