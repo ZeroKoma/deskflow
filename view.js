@@ -577,30 +577,15 @@ function renderAllNotes(filtered = null) {
 
   const filteredData = state.notes.filter((n) => {
     if (!matchesSearch(n, query, incTags, incCats)) return false;
+    if (state.allNotesPriorityFilter && n.priority !== state.allNotesPriorityFilter) return false;
 
     const isPast = n.date && n.date < todayStr;
 
-    // Lógica del nuevo switch: Ver SOLO caducadas o ver el resto
-    if (state.allNotesFilterExpired) {
-      if (!isPast) return false;
-    } else {
-      if (isPast) return false;
-    }
+    if (state.allNotesFilterAll) return true;
+    if (state.allNotesFilterExpired) return isPast;
+    if (state.allNotesFilterWithDate) return !!n.date && !isPast;
+    if (state.allNotesFilterNoDate) return !n.date;
 
-    // 2. Filtrado por Prioridad (procedente del click en el resumen lateral)
-    if (
-      state.allNotesPriorityFilter &&
-      n.priority !== state.allNotesPriorityFilter
-    )
-      return false;
-
-    // Si estamos viendo caducadas, ya no aplicamos los filtros de "Con fecha/Sin fecha"
-    // ya que por definición las caducadas tienen fecha.
-    if (state.allNotesFilterExpired) return true;
-
-    // 3. Filtrado por Fecha (Checks de la vista)
-    if (state.allNotesFilterWithDate && !!n.date) return true;
-    if (state.allNotesFilterNoDate && !n.date) return true;
     return false;
   });
 
@@ -629,28 +614,31 @@ function renderNoteList(title, data) {
                 `
                     : ""
                 }
-                <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); flex: 1; min-width: 600px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterAll ? "checked" : ""} onchange="window.toggleAllNotesFilter('all', this.checked)"> 
+                        <span>Todas (${stats.all_total})</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
+                        <span>Con fecha (${stats.activeWithDate})</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
+                        <span>Sin fecha (${stats.activeNoDate})</span>
+                    </label>
+                    <div style="flex-grow: 1;"></div>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--high); cursor: pointer;">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterExpired ? "checked" : ""} onchange="window.toggleAllNotesFilter('expired', this.checked)"> 
                         <span>Caducadas (${stats.expired})</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; ${state.allNotesFilterExpired ? "opacity: 0.5;" : ""}">
-                        <input type="checkbox" class="round-checkbox" 
-                               ${state.allNotesFilterExpired ? "disabled" : ""}
-                               ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
-                        <span>Con fecha (${stats.activeWithDate})</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; ${state.allNotesFilterExpired ? "opacity: 0.5;" : ""}">
-                        <input type="checkbox" class="round-checkbox" 
-                               ${state.allNotesFilterExpired ? "disabled" : ""}
-                               ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
-                        <span>Sin fecha (${stats.activeNoDate})</span>
-                    </label>
                 </div>`
                     : ""
                 }
-                <span style="color: var(--text-muted); font-weight: 500; min-width: 100px; text-align: right;">${data.length} registros</span>
             </div>
         </div>
         <div style="display: grid; gap: 1.5rem;">
@@ -705,34 +693,22 @@ window.closeToast = (el) => {
 };
 window.clearPriorityFilter = () => {
   state.allNotesPriorityFilter = null;
+  state.allNotesFilterAll = true;
+  state.allNotesFilterWithDate = false;
+  state.allNotesFilterNoDate = false;
   state.allNotesFilterExpired = false;
   renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
-  if (type === "withDate") {
-    if (!val && !state.allNotesFilterNoDate && !state.allNotesFilterExpired) return renderView(); 
-    state.allNotesFilterWithDate = val;
-  } else if (type === "noDate") {
-    if (!val && !state.allNotesFilterWithDate && !state.allNotesFilterExpired) return renderView();
-    state.allNotesFilterNoDate = val;
-  } else if (type === "expired") {
-    state.allNotesFilterExpired = val;
-    if (val) {
-      // Al activar caducadas, guardamos el estado actual y desactivamos el resto
-      state.allNotesPrevWithDate = state.allNotesFilterWithDate;
-      state.allNotesPrevNoDate = state.allNotesFilterNoDate;
-      state.allNotesFilterWithDate = false;
-      state.allNotesFilterNoDate = false;
-    } else {
-      // Al desactivar caducadas, restauramos el estado previo
-      state.allNotesFilterWithDate = state.allNotesPrevWithDate;
-      state.allNotesFilterNoDate = state.allNotesPrevNoDate;
-    }
-  }
+  state.allNotesFilterAll = (type === 'all');
+  state.allNotesFilterWithDate = (type === 'withDate');
+  state.allNotesFilterNoDate = (type === 'noDate');
+  state.allNotesFilterExpired = (type === 'expired');
   renderView();
 };
 window.seeAllNoDateNotes = () => {
   state.currentView = "all-notes";
+  state.allNotesFilterAll = false;
   state.allNotesFilterNoDate = true;
   state.allNotesFilterWithDate = false;
   state.allNotesFilterExpired = false;

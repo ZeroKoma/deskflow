@@ -17,12 +17,11 @@ export const state = {
   currentDay: new Date().getDate(),
   calendarSubView: "month",
   theme: localStorage.getItem("deskflow_theme") || "dark",
-  allNotesFilterWithDate: true,
-  allNotesFilterNoDate: true,
+  allNotesFilterAll: true,
+  allNotesFilterWithDate: false,
+  allNotesFilterNoDate: false,
   allNotesPriorityFilter: null,
   allNotesFilterExpired: false,
-  allNotesPrevWithDate: true,
-  allNotesPrevNoDate: true,
 };
 
 export const mutations = {
@@ -144,6 +143,7 @@ export const getters = {
       medium: activeNotes.filter((n) => n.priority === "medium").length,
       low: activeNotes.filter((n) => n.priority === "low").length,
       all: activeNotes.length,
+      all_total: state.notes.length,
       expired: state.notes.filter((n) => n.date && n.date < todayStr).length,
       withDate: state.notes.filter((n) => !!n.date).length,
       activeWithDate: activeNotes.filter((n) => !!n.date).length,

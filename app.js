@@ -56,8 +56,9 @@ function setupGlobalEvents() {
   document.querySelectorAll(".sidebar-stats .stat-item").forEach(item => {
     item.addEventListener("click", () => {
       state.allNotesPriorityFilter = item.dataset.priority;
-      state.allNotesFilterWithDate = true;
-      state.allNotesFilterNoDate = true;
+      state.allNotesFilterAll = true;
+      state.allNotesFilterWithDate = false;
+      state.allNotesFilterNoDate = false;
       state.allNotesFilterExpired = false; // Asegurar que vemos notas activas al filtrar prioridad
       state.currentView = "all-notes";
       // Actualizar visualmente la navegación del sidebar
