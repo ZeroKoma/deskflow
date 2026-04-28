@@ -340,9 +340,31 @@ function setupGlobalEvents() {
     window.dispatchEvent(new CustomEvent('search-notes', { detail: e.target.value }));
   });
 
+  const updateSearchPlaceholder = () => {
+    const searchInput = document.getElementById("global-search");
+    const tagsActive = document.getElementById("search-tags").checked;
+    const catsActive = document.getElementById("search-categories").checked;
+
+    if (tagsActive && catsActive) {
+      searchInput.placeholder = "Buscar notas por tag o categoría";
+    } else if (tagsActive) {
+      searchInput.placeholder = "Buscar notas por tag";
+    } else if (catsActive) {
+      searchInput.placeholder = "Buscar notas por categoría";
+    } else {
+      searchInput.placeholder = "Buscar notas por nombre...";
+    }
+  };
+
   // Refrescar al cambiar opciones de búsqueda
-  document.getElementById("search-tags").addEventListener("change", () => renderView());
-  document.getElementById("search-categories").addEventListener("change", () => renderView());
+  document.getElementById("search-tags").addEventListener("change", () => {
+    updateSearchPlaceholder();
+    renderView();
+  });
+  document.getElementById("search-categories").addEventListener("change", () => {
+    updateSearchPlaceholder();
+    renderView();
+  });
 }
 
 function handleFormSubmit(e) {
