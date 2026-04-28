@@ -382,6 +382,24 @@ body {
   transform: translateY(-2px);
 }
 
+.btn-primary:disabled,
+.btn-primary.disabled-btn {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-main); /* Cambiar fondo para que parezca menos clicable */
+  color: var(--text-muted);
+  border-color: var(--border);
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-primary:disabled:hover,
+.btn-primary.disabled-btn:hover {
+  background: var(--bg-main);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
 .btn-primary:active {
   transform: translateY(0) scale(0.98);
 }

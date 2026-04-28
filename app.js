@@ -376,6 +376,12 @@ function handleFormSubmit(e) {
   const dateValue = document.getElementById("date").value;
   const existingNote = id ? state.notes.find(n => n.id === id) : null;
 
+  // Evitar crear o mover notas a fechas pasadas
+  if (dateValue && dateValue < dateUtils.getTodayStr()) {
+    showToast("No se pueden programar notas en fechas pasadas", "error");
+    return;
+  }
+
   const selectedTags = Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value);
   
   const noteData = {

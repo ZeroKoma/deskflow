@@ -104,6 +104,7 @@ export function openNoteModal(id = null, defaultDate = null) {
   const timeInput = document.getElementById("time");
   const alarmInput = document.getElementById("alarm");
   const deleteBtn = document.getElementById("delete-note-modal");
+  document.getElementById("date").min = dateUtils.getTodayStr();
 
   // Poblar select de categorías dinámicamente
   const categorySelect = document.getElementById("category");
@@ -388,6 +389,9 @@ function renderCalendar() {
     state.currentMonth,
     state.currentDay,
   );
+  const todayStr = dateUtils.getTodayStr();
+  const focusDateStr = dateUtils.formatYYYYMMDD(focusDate);
+  const isPastDay = focusDateStr < todayStr;
 
   let title = new Intl.DateTimeFormat("es-ES", {
     month: "long",
@@ -414,8 +418,13 @@ function renderCalendar() {
         <div style="display: flex; align-items: center; gap: 20px;">
             <h2 style="margin:0; text-transform: capitalize;">${title}</h2>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-primary" style="padding: 5px 15px;" onclick="window.goToday()">Hoy</button>
-                ${state.calendarSubView === "day" ? `<button class="btn-primary" style="padding: 5px 15px; font-size: 0.8rem;" onclick="window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')"><i class="fas fa-plus"></i> Nueva Nota</button>` : ""}
+                <button class="btn-primary" style="padding: 5px 15px;" onclick="window.goToday()">Hoy</button>                
+                ${state.calendarSubView === "day" ? `
+                    <button class="btn-primary ${isPastDay ? 'disabled-btn' : ''}" style="padding: 5px 15px; font-size: 0.8rem;"
+                            ${isPastDay ? 'disabled' : ''}
+                            onclick="${isPastDay ? '' : `window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')`}">
+                        <i class="fas fa-plus"></i> Nueva Nota
+                    </button>` : ""}
             </div>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
