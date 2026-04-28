@@ -758,6 +758,13 @@ window.selectDayView = (d) => {
   const [y, m, day] = d.split("-").map(Number);
   mutations.updateCalendarState(y, m - 1, day);
   state.calendarSubView = "day";
+  state.currentView = "calendar";
+  
+  // Actualizar visualmente la navegación del sidebar para reflejar que estamos en Calendario
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  const calendarBtn = document.querySelector('[data-view="calendar"]');
+  if (calendarBtn) calendarBtn.classList.add("active");
+
   renderView();
 };
 window.deleteNote = (id) => {
