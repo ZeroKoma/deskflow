@@ -1,14 +1,16 @@
 const defaultCategories = [
-  { id: 'Trabajo', name: 'Trabajo', color: '#2563eb' },
-  { id: 'Reunión', name: 'Reunión', color: '#10b981' },
-  { id: 'Personal', name: 'Personal', color: '#f59e0b' },
-  { id: 'Otros', name: 'Otros', color: '#64748b' }
+  { id: "Categoría 1", name: "Categoría 1", color: "#2563eb" },
+  { id: "Categoría 2", name: "Categoría 2", color: "#10b981" },
+  { id: "Personal", name: "Personal", color: "#f59e0b" },
+  { id: "Otros", name: "Otros", color: "#64748b" },
 ];
 
 export const state = {
   notes: JSON.parse(localStorage.getItem("deskflow_notes")) || [],
   tags: JSON.parse(localStorage.getItem("deskflow_tags")) || [],
-  categories: JSON.parse(localStorage.getItem("deskflow_categories")) || defaultCategories,
+  categories:
+    JSON.parse(localStorage.getItem("deskflow_categories")) ||
+    defaultCategories,
   currentView: "dashboard",
   currentMonth: new Date().getMonth(),
   currentYear: new Date().getFullYear(),
@@ -17,20 +19,23 @@ export const state = {
   theme: localStorage.getItem("deskflow_theme") || "dark",
   allNotesFilterWithDate: true,
   allNotesFilterNoDate: true,
-  allNotesPriorityFilter: null
+  allNotesPriorityFilter: null,
 };
 
 export const mutations = {
   saveNotes() {
     localStorage.setItem("deskflow_notes", JSON.stringify(state.notes));
   },
-  
+
   saveTags() {
     localStorage.setItem("deskflow_tags", JSON.stringify(state.tags));
   },
 
   saveCategories() {
-    localStorage.setItem("deskflow_categories", JSON.stringify(state.categories));
+    localStorage.setItem(
+      "deskflow_categories",
+      JSON.stringify(state.categories),
+    );
   },
 
   addNote(noteData) {
@@ -44,12 +49,12 @@ export const mutations = {
   },
 
   updateNote(id, noteData) {
-    state.notes = state.notes.map(n => n.id === id ? noteData : n);
+    state.notes = state.notes.map((n) => (n.id === id ? noteData : n));
     this.saveNotes();
   },
 
   deleteNote(id) {
-    state.notes = state.notes.filter(n => n.id !== id);
+    state.notes = state.notes.filter((n) => n.id !== id);
     this.saveNotes();
   },
 
@@ -59,16 +64,18 @@ export const mutations = {
   },
 
   updateTag(id, tagData) {
-    state.tags = state.tags.map(t => t.id === id ? { ...t, ...tagData } : t);
+    state.tags = state.tags.map((t) =>
+      t.id === id ? { ...t, ...tagData } : t,
+    );
     this.saveTags();
   },
 
   deleteTag(id) {
-    state.tags = state.tags.filter(t => t.id !== id);
+    state.tags = state.tags.filter((t) => t.id !== id);
     // Limpiar el tag de las notas que lo usen
-    state.notes = state.notes.map(n => ({
+    state.notes = state.notes.map((n) => ({
       ...n,
-      tags: n.tags ? n.tags.filter(tId => tId !== id) : []
+      tags: n.tags ? n.tags.filter((tId) => tId !== id) : [],
     }));
     this.saveTags();
     this.saveNotes();
@@ -80,14 +87,18 @@ export const mutations = {
   },
 
   updateCategory(id, catData) {
-    state.categories = state.categories.map(c => c.id === id ? { ...c, ...catData } : c);
+    state.categories = state.categories.map((c) =>
+      c.id === id ? { ...c, ...catData } : c,
+    );
     this.saveCategories();
   },
 
   deleteCategory(id) {
-    state.categories = state.categories.filter(c => c.id !== id);
+    state.categories = state.categories.filter((c) => c.id !== id);
     // Las notas que usaban esta categoría pasan a 'Otros' o quedan sin categoría
-    state.notes = state.notes.map(n => n.category === id ? { ...n, category: 'Otros' } : n);
+    state.notes = state.notes.map((n) =>
+      n.category === id ? { ...n, category: "Otros" } : n,
+    );
     this.saveCategories();
     this.saveNotes();
   },
@@ -113,28 +124,30 @@ export const mutations = {
   },
 
   deletePastNotes(todayStr) {
-    state.notes = state.notes.filter(n => !n.date || n.date >= todayStr);
+    state.notes = state.notes.filter((n) => !n.date || n.date >= todayStr);
     this.saveNotes();
-  }
+  },
 };
 
 export const getters = {
   getStats() {
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    const activeNotes = state.notes.filter(n => !n.date || n.date >= todayStr);
+    const activeNotes = state.notes.filter(
+      (n) => !n.date || n.date >= todayStr,
+    );
     return {
-      high: activeNotes.filter(n => n.priority === "high").length,
-      medium: activeNotes.filter(n => n.priority === "medium").length,
-      low: activeNotes.filter(n => n.priority === "low").length,
+      high: activeNotes.filter((n) => n.priority === "high").length,
+      medium: activeNotes.filter((n) => n.priority === "medium").length,
+      low: activeNotes.filter((n) => n.priority === "low").length,
       all: activeNotes.length,
-      expired: state.notes.filter(n => n.date && n.date < todayStr).length,
-      withDate: state.notes.filter(n => !!n.date).length,
+      expired: state.notes.filter((n) => n.date && n.date < todayStr).length,
+      withDate: state.notes.filter((n) => !!n.date).length,
       tags: state.tags.length,
-      categories: state.categories.length
+      categories: state.categories.length,
     };
   },
   getNoteById(id) {
-    return state.notes.find(n => n.id === id);
-  }
+    return state.notes.find((n) => n.id === id);
+  },
 };

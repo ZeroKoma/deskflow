@@ -11,10 +11,10 @@ const noteForm = document.getElementById("note-form");
 const priorityLabels = { high: "Alta", medium: "Media", low: "Baja" };
 
 const getCategoryInfo = (id) => {
-  const cat = state.categories.find(c => c.id === id);
+  const cat = state.categories.find((c) => c.id === id);
   if (cat) return cat;
   // Fallback para datos antiguos o borrados
-  return { name: id || 'Otros', color: 'var(--text-muted)' };
+  return { name: id || "Otros", color: "var(--text-muted)" };
 };
 
 function renderCategoryBadge(categoryId) {
@@ -39,8 +39,10 @@ const matchesSearch = (note, query, includeTags, includeCats) => {
   // Si hay filtros activos, el nombre de la nota ya no se busca (según petición)
   let found = false;
   if (includeTags) {
-    const tagNames = (note.tags || []).map(id => state.tags.find(t => t.id === id)?.name.toLowerCase() || "");
-    if (tagNames.some(name => name.includes(q))) found = true;
+    const tagNames = (note.tags || []).map(
+      (id) => state.tags.find((t) => t.id === id)?.name.toLowerCase() || "",
+    );
+    if (tagNames.some((name) => name.includes(q))) found = true;
   }
   if (includeCats && !found) {
     const categoryName = getCategoryInfo(note.category).name.toLowerCase();
@@ -61,7 +63,8 @@ const sortNotesLogic = (a, b) => {
   if (pA !== pB) return pA - pB;
 
   // Misma prioridad: Comparar por fecha (más antiguas primero)
-  if (a.date && b.date && a.date !== b.date) return a.date.localeCompare(b.date);
+  if (a.date && b.date && a.date !== b.date)
+    return a.date.localeCompare(b.date);
   if (a.date && !b.date) return -1;
   if (!a.date && b.date) return 1;
 
@@ -104,8 +107,9 @@ export function openNoteModal(id = null, defaultDate = null) {
 
   // Poblar select de categorías dinámicamente
   const categorySelect = document.getElementById("category");
-  categorySelect.innerHTML = state.categories.map(c => 
-    `<option value="${c.id}">${c.name}</option>`).join('');
+  categorySelect.innerHTML = state.categories
+    .map((c) => `<option value="${c.id}">${c.name}</option>`)
+    .join("");
 
   if (id) {
     const note = getters.getNoteById(id);
@@ -171,8 +175,8 @@ export function renderTagManager() {
         <span>${tag.name}</span>
       </div>
       <div style="display: flex; gap: 10px;">
-        <button onclick="window.editTag('${tag.id}')" style="color: var(--primary); background:none; border:none; cursor:pointer;"><i class="fas fa-pencil-alt"></i></button>
-        <button onclick="window.deleteTag('${tag.id}')" style="color: var(--high); background:none; border:none; cursor:pointer;"><i class="fas fa-times"></i></button>
+        <button onclick="window.editTag('${tag.id}')" style="font-size: 16px; color: var(--primary); background:none; border:none; cursor:pointer;"><i class="fas fa-pencil-alt"></i></button>
+        <button onclick="window.deleteTag('${tag.id}')" style="font-size: 16px; color: var(--high); background:none; border:none; cursor:pointer;"><i class="fas fa-times"></i></button>
       </div>
     </div>
   `,
@@ -191,8 +195,8 @@ export function renderCategoryManager() {
         <span>${cat.name}</span>
       </div>
       <div style="display: flex; gap: 10px;">
-        <button onclick="window.editCategory('${cat.id}')" style="color: var(--primary); background:none; border:none; cursor:pointer;"><i class="fas fa-pencil-alt"></i></button>
-        <button onclick="window.deleteCategory('${cat.id}')" style="color: var(--high); background:none; border:none; cursor:pointer;"><i class="fas fa-times"></i></button>
+        <button onclick="window.editCategory('${cat.id}')" style="font-size: 16px; color: var(--primary); background:none; border:none; cursor:pointer;"><i class="fas fa-pencil-alt"></i></button>
+        <button onclick="window.deleteCategory('${cat.id}')" style="font-size: 16px; color: var(--high); background:none; border:none; cursor:pointer;"><i class="fas fa-times"></i></button>
       </div>
     </div>`,
     )
@@ -229,7 +233,7 @@ export function showToast(msg, type = "info", noteId = null) {
 
   // Las alarmas (high) y los avisos previos (Aviso previo) son permanentes hasta cierre manual
   const isPermanent = type === "high" || msg.includes("Aviso previo");
-  
+
   if (!isPermanent) setTimeout(() => toast.remove(), 4000);
 }
 
@@ -267,10 +271,15 @@ function renderDashboard() {
   const todayStr = dateUtils.getTodayStr();
   const tomorrowStr = dateUtils.getTomorrowStr();
   const todayTasks = state.notes
-    .filter((n) => n.date === todayStr && matchesSearch(n, query, incTags, incCats))
+    .filter(
+      (n) => n.date === todayStr && matchesSearch(n, query, incTags, incCats),
+    )
     .sort(sortNotesLogic);
   const tomorrowTasks = state.notes
-    .filter((n) => n.date === tomorrowStr && matchesSearch(n, query, incTags, incCats))
+    .filter(
+      (n) =>
+        n.date === tomorrowStr && matchesSearch(n, query, incTags, incCats),
+    )
     .sort(sortNotesLogic);
 
   viewContainer.innerHTML = `
@@ -425,7 +434,9 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
   const dayNotes = state.notes
-    .filter((n) => n.date === dateStr && matchesSearch(n, query, incTags, incCats))
+    .filter(
+      (n) => n.date === dateStr && matchesSearch(n, query, incTags, incCats),
+    )
     .sort(sortNotesLogic);
 
   const notesHtml = dayNotes
@@ -481,7 +492,12 @@ function renderExpiredNotes() {
   const incCats = document.getElementById("search-categories")?.checked;
   const todayStr = dateUtils.getTodayStr();
   const expiredNotes = state.notes
-    .filter((n) => n.date && n.date < todayStr && matchesSearch(n, query, incTags, incCats))
+    .filter(
+      (n) =>
+        n.date &&
+        n.date < todayStr &&
+        matchesSearch(n, query, incTags, incCats),
+    )
     .sort(sortNotesLogic);
   renderNoteList("Notas Caducadas", expiredNotes);
 }
@@ -510,7 +526,11 @@ function renderAllNotes(filtered = null) {
     if (n.date && n.date < todayStr) return false;
 
     // 2. Filtrado por Prioridad (procedente del click en el resumen lateral)
-    if (state.allNotesPriorityFilter && n.priority !== state.allNotesPriorityFilter) return false;
+    if (
+      state.allNotesPriorityFilter &&
+      n.priority !== state.allNotesPriorityFilter
+    )
+      return false;
 
     // 3. Filtrado por Fecha (Checks de la vista)
     if (state.allNotesFilterWithDate && !!n.date) return true;
@@ -528,13 +548,19 @@ function renderNoteList(title, data) {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <h2>${title}</h2>
             <div style="display: flex; align-items: center; gap: 15px;">
-                ${state.currentView === 'all-notes' ? `
-                ${state.allNotesPriorityFilter ? `
+                ${
+                  state.currentView === "all-notes"
+                    ? `
+                ${
+                  state.allNotesPriorityFilter
+                    ? `
                 <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--primary);">
                     <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Prioridad: ${priorityLabels[state.allNotesPriorityFilter]}</span>
                     <i class="fas fa-times" style="cursor: pointer; font-size: 0.8rem; color: var(--text-muted);" title="Quitar filtro" onclick="window.clearPriorityFilter()"></i>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border);">
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
                         <input type="checkbox" class="round-checkbox" 
@@ -546,7 +572,9 @@ function renderNoteList(title, data) {
                                ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
                         <span>Sin fecha</span>
                     </label>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
                 <span style="color: var(--text-muted); font-weight: 500; min-width: 100px; text-align: right;">${data.length} registros</span>
             </div>
         </div>
@@ -571,7 +599,7 @@ function renderNoteList(title, data) {
                             ${renderTagPills(n.tags)}
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
-                            <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : (n.time ? "Sin fecha (Recurrente)" : "Sin fecha")}</span>
+                            <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? "Sin fecha (Recurrente)" : "Sin fecha"}</span>
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                             ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                         </div>
@@ -603,7 +631,7 @@ window.clearPriorityFilter = () => {
   renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
-  if (type === 'withDate') {
+  if (type === "withDate") {
     if (!val && !state.allNotesFilterNoDate) return renderView(); // Impedir desactivar ambos
     state.allNotesFilterWithDate = val;
   } else {
@@ -677,9 +705,12 @@ const tooltip = document.getElementById("note-tooltip");
 
 document.addEventListener("mouseover", (e) => {
   const target = e.target.closest("[data-note-id]");
-  
+
   // No mostrar tooltip en vistas que ya muestran toda la información (Todas las notas, Notas caducadas y Vista de día)
-  const isFullView = state.currentView === "all-notes" || state.currentView === "expired-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
+  const isFullView =
+    state.currentView === "all-notes" ||
+    state.currentView === "expired-notes" ||
+    (state.currentView === "calendar" && state.calendarSubView === "day");
 
   if (target && !e.target.closest(".modal") && !isFullView) {
     const id = target.dataset.noteId;
