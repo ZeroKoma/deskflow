@@ -312,6 +312,7 @@ function setupGlobalEvents() {
             showToast(`Se han importado ${importedCount} notas correctamente`, "info");
             renderView();
             updateUIStats();
+            closeSettings();
           }
         } catch (err) {
           showToast("Error al procesar el archivo CSV", "error");

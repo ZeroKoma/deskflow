@@ -109,13 +109,6 @@
             </div>
           </div>
           <div class="actions">
-            <button id="export-data" class="btn-secondary" title="Exportar CSV">
-              <i class="fas fa-file-export"></i>
-            </button>
-            <button id="import-data-btn" class="btn-secondary" title="Importar CSV">
-              <i class="fas fa-file-import"></i>
-            </button>
-            <input type="file" id="import-data-input" accept=".csv" style="display: none;" />
             <button id="add-note-btn" class="btn-primary">
               <i class="fas fa-plus"></i> Nueva Nota
             </button>
@@ -234,6 +227,18 @@
         </div>
         <div class="settings-body" style="display: flex; flex-direction: column; gap: 1rem;">
           <section>
+            <h4 style="margin-bottom: 0.5rem; color: var(--text-muted);">Gestión de Datos</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <button id="export-data" class="btn-secondary" style="width: 100%;">
+                <i class="fas fa-file-export"></i> Exportar Notas (CSV)
+              </button>
+              <button id="import-data-btn" class="btn-secondary" style="width: 100%;">
+                <i class="fas fa-file-import"></i> Importar Notas (CSV)
+              </button>
+              <input type="file" id="import-data-input" accept=".csv" style="display: none;" />
+            </div>
+          </section>
+          <section style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
             <h4 style="margin-bottom: 0.5rem; color: var(--text-muted);">Mantenimiento</h4>
             <button id="delete-past-notes-btn" class="btn-secondary" style="width: 100%; border-color: var(--medium); color: var(--medium);">
               <i class="fas fa-broom"></i> Limpiar Notas Pasadas
