@@ -529,7 +529,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
                     ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                     ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                 </div>
-                <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
+                <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem; white-space: pre-wrap;">${n.description || "Sin descripción adicional."}</p>
             </div>
             <div style="display: flex; gap: 8px; margin-left: 20px;">
                         <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="background: none; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--high); padding: 8px 12px; transition: all 0.2s;"><i class="fas fa-trash"></i></button>
@@ -668,7 +668,7 @@ function renderNoteList(title, data) {
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                             ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                         </div>
-                        <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem;">${n.description || "Sin descripción adicional."}</p>
+                        <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem; white-space: pre-wrap;">${n.description || "Sin descripción adicional."}</p>
                     </div>
                     <div style="display: flex; gap: 8px; margin-left: 20px;">
                         <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--high); padding: 8px 12px; transition: all 0.2s;"><i class="fas fa-trash"></i></button>
@@ -815,9 +815,7 @@ document.addEventListener("mouseover", (e) => {
           ${renderCategoryBadge(note.category)}
           ${renderTagPills(note.tags)}
         </div>
-        <div style="color: var(--text-main); font-size: 0.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
-          ${note.description || "<i>Sin descripción</i>"}
-        </div>
+        <div style="color: var(--text-main); font-size: 0.8rem; white-space: pre-wrap;">${note.description || "<i>Sin descripción</i>"}</div>
       `;
     }
   }
