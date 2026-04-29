@@ -427,6 +427,18 @@ function handleFormSubmit(e) {
   
   const isAlarmActive = document.getElementById("alarm").checked;
 
+  // Validar que no se active la alarma para un momento que ya ha pasado
+  if (isAlarmActive) {
+    const todayStr = dateUtils.getTodayStr();
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+    if ((!dateValue || dateValue === todayStr) && timeValue && timeValue <= currentTime) {
+      showToast("No se puede activar la alarma para una hora o momento que ya ha pasado", "error");
+      return;
+    }
+  }
+
   const alarmTag = state.tags.find(t => t.name === "Alarma");
 
   // Sincronizar automáticamente el tag "Alarma" según el estado del checkbox
