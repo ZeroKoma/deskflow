@@ -61,7 +61,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 280px;
+  width: 290px;
   flex-shrink: 0;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
@@ -386,7 +386,9 @@ body {
 .btn-primary.disabled-btn {
   opacity: 0.6;
   cursor: not-allowed;
-  background: var(--bg-main); /* Cambiar fondo para que parezca menos clicable */
+  background: var(
+    --bg-main
+  ); /* Cambiar fondo para que parezca menos clicable */
   color: var(--text-muted);
   border-color: var(--border);
   box-shadow: none;
