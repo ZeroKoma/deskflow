@@ -322,8 +322,8 @@ body {
   gap: 6px;
 }
 
-.tag-chip.selected {
-  box-shadow: 0 0 0 2px var(--primary);
+.tag-chip.protected-tag {
+  cursor: not-allowed;
 }
 
 .tag-chip.inactive {

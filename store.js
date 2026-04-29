@@ -5,9 +5,13 @@ const defaultCategories = [
   { id: "Otros", name: "Otros", color: "#64748b" },
 ];
 
+const defaultTags = [
+  { id: "tag-alarm-default", name: "Alarma", color: "#ef4444" }
+];
+
 export const state = {
   notes: JSON.parse(localStorage.getItem("deskflow_notes")) || [],
-  tags: JSON.parse(localStorage.getItem("deskflow_tags")) || [],
+  tags: JSON.parse(localStorage.getItem("deskflow_tags")) || defaultTags,
   categories:
     JSON.parse(localStorage.getItem("deskflow_categories")) ||
     defaultCategories,
@@ -118,7 +122,7 @@ export const mutations = {
 
   resetApp() {
     state.notes = [];
-    state.tags = [];
+    state.tags = JSON.parse(JSON.stringify(defaultTags));
     state.categories = JSON.parse(JSON.stringify(defaultCategories));
     this.saveNotes();
     this.saveTags();

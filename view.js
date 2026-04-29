@@ -144,44 +144,60 @@ export function openNoteModal(id = null, defaultDate = null) {
 function renderTagSelection(selectedIds) {
   const container = document.getElementById("tag-selection-container");
   container.innerHTML = state.tags
-    .map(
-      (tag) => `
-    <div class="tag-chip ${selectedIds.includes(tag.id) ? "selected" : "inactive"}"
-         style="background: ${tag.color}22; color: ${tag.color}; border-color: ${tag.color}">
-      <input type="checkbox" name="note-tags" value="${tag.id}" ${selectedIds.includes(tag.id) ? "checked" : ""} style="display:none">
-      ${tag.name}
-    </div>
-  `,
-    )
+    .map((tag) => {
+      const isAlarmTag = tag.name === "Alarma" || tag.id === "tag-alarm-default";
+      const isSelected = selectedIds.includes(tag.id);
+      const disabledAttr = isAlarmTag ? "disabled" : "";
+      const protectedClass = isAlarmTag ? "protected-tag" : "";
+      const titleAttr = isAlarmTag ? 'title="Este tag se activa automáticamente con la alarma y no se puede cambiar manualmente"' : '';
+
+      return `
+        <div class="tag-chip ${isSelected ? "selected" : "inactive"} ${protectedClass}"
+             ${titleAttr}
+             style="background: ${tag.color}22; color: ${tag.color}; border-color: ${tag.color}; display: ${isAlarmTag && !isSelected ? 'none' : 'inline-flex'}">
+          <input type="checkbox" name="note-tags" value="${tag.id}" ${isSelected ? "checked" : ""} ${disabledAttr} style="display:none">
+          ${tag.name}
+        </div>
+      `;
+    })
     .join("");
 
   container.querySelectorAll(".tag-chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const cb = chip.querySelector("input");
-      cb.checked = !cb.checked;
-      chip.classList.toggle("selected");
-      chip.classList.toggle("inactive");
-    });
+    if (!chip.classList.contains("protected-tag")) { // Solo añadir listener si no es un tag protegido
+      chip.addEventListener("click", () => {
+        const cb = chip.querySelector("input");
+        cb.checked = !cb.checked;
+        chip.classList.toggle("selected");
+        chip.classList.toggle("inactive");
+      });
+    }
   });
 }
+
 
 export function renderTagManager() {
   const container = document.getElementById("tags-list-container");
   container.innerHTML = state.tags
-    .map(
-      (tag) => `
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border);">
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <div style="width: 15px; height: 15px; border-radius: 50%; background: ${tag.color}"></div>
-        <span>${tag.name}</span>
+    .map((tag) => {
+      const isProtected =
+        tag.name === "Alarma" || tag.id === "tag-alarm-default";
+      return `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 15px; height: 15px; border-radius: 50%; background: ${tag.color}"></div>
+          <span>${tag.name}</span>
+        </div>
+        ${
+          isProtected
+            ? `<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;" title="Esta etiqueta es esencial para el sistema y no se puede modificar ni eliminar"><i class="fas fa-lock"></i> Sistema</span>`
+            : `<div style="display: flex; gap: 10px;">
+            <button onclick="window.editTag('${tag.id}')" style="font-size: 16px; color: var(--primary); background:none; border:none; cursor:pointer;" title="Editar"><i class="fas fa-pencil-alt"></i></button>
+            <button onclick="window.deleteTag('${tag.id}')" style="font-size: 16px; color: var(--high); background:none; border:none; cursor:pointer;" title="Eliminar"><i class="fas fa-times"></i></button>
+          </div>`
+        }
       </div>
-      <div style="display: flex; gap: 10px;">
-        <button onclick="window.editTag('${tag.id}')" style="font-size: 16px; color: var(--primary); background:none; border:none; cursor:pointer;"><i class="fas fa-pencil-alt"></i></button>
-        <button onclick="window.deleteTag('${tag.id}')" style="font-size: 16px; color: var(--high); background:none; border:none; cursor:pointer;"><i class="fas fa-times"></i></button>
-      </div>
-    </div>
-  `,
-    )
+    `;
+    })
     .join("");
 }
 
@@ -214,12 +230,13 @@ export function showToast(msg, type = "info", noteId = null) {
   let actionButtons = "";
   if (type === "high" && noteId) {
     const note = getters.getNoteById(noteId);
-    const dateBtn = (note && note.date) 
-      ? `<button class="btn-primary" onclick="window.selectDayView('${note.date}'); window.closeToast(this)" style="background: var(--primary); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
+    const dateBtn =
+      note && note.date
+        ? `<button class="btn-primary" onclick="window.selectDayView('${note.date}'); window.closeToast(this)" style="background: var(--primary); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
            <i class="fas fa-calendar-day"></i> Ver día
-         </button>` 
-      : "";
-    
+         </button>`
+        : "";
+
     actionButtons = `
       <div style="display: flex; gap: 10px; margin-top: 15px;">
         ${dateBtn}
@@ -352,7 +369,7 @@ function renderDashboard() {
                             </div>
                         </div>
                         <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
-                    </div>`
+                    </div>`,
                         )
                         .join("")
                     : '<p style="color: var(--text-muted); text-align: center; width: 100%;">No tienes notas sin fecha.</p>'
@@ -372,11 +389,10 @@ function renderDashboardColumn(title, tasks, icon, color, todayStr) {
             ${
               tasks.length > 0
                 ? tasks
-                    .map(
-                      (t) => {
-                        const isPast = t.date && t.date < todayStr;
-                        return `
-                <div class="dashboard-note-item ${isPast ? 'expired' : ''}" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
+                    .map((t) => {
+                      const isPast = t.date && t.date < todayStr;
+                      return `
+                <div class="dashboard-note-item ${isPast ? "expired" : ""}" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                         <span style="font-weight: 500;">${t.title}</span>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -386,8 +402,7 @@ function renderDashboardColumn(title, tasks, icon, color, todayStr) {
                     </div>
                     <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
                 </div>`;
-                      }
-                    )
+                    })
                     .join("")
                 : '<p style="color: var(--text-muted); text-align: center;">Sin recordatorios.</p>'
             }
@@ -431,12 +446,16 @@ function renderCalendar() {
             <h2 style="margin:0; text-transform: capitalize;">${title}</h2>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-primary" style="padding: 5px 15px;" onclick="window.goToday()">Hoy</button>                
-                ${state.calendarSubView === "day" ? `
-                    <button class="btn-primary ${isPastDay ? 'disabled-btn' : ''}" style="padding: 5px 15px; font-size: 0.8rem;"
-                            ${isPastDay ? 'disabled' : ''}
-                            onclick="${isPastDay ? '' : `window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')`}">
+                ${
+                  state.calendarSubView === "day"
+                    ? `
+                    <button class="btn-primary ${isPastDay ? "disabled-btn" : ""}" style="padding: 5px 15px; font-size: 0.8rem;"
+                            ${isPastDay ? "disabled" : ""}
+                            onclick="${isPastDay ? "" : `window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')`}">
                         <i class="fas fa-plus"></i> Nuevo Recordatorio
-                    </button>` : ""}
+                    </button>`
+                    : ""
+                }
             </div>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
@@ -539,7 +558,6 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
                     ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                    ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                 </div>
                 <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem; white-space: pre-wrap;">${n.description || "Sin descripción adicional."}</p>
             </div>
@@ -589,7 +607,11 @@ function renderAllNotes(filtered = null) {
 
   const filteredData = state.notes.filter((n) => {
     if (!matchesSearch(n, query, incTags, incCats)) return false;
-    if (state.allNotesPriorityFilter && n.priority !== state.allNotesPriorityFilter) return false;
+    if (
+      state.allNotesPriorityFilter &&
+      n.priority !== state.allNotesPriorityFilter
+    )
+      return false;
 
     const isPast = n.date && n.date < todayStr;
 
@@ -678,7 +700,6 @@ function renderNoteList(title, data) {
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
                             <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? "Sin fecha (Recurrente)" : "Sin fecha"}</span>
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                            ${n.alarm ? `<span style="color: var(--primary)"><i class="fas fa-bell"></i> Alarma</span>` : ""}
                         </div>
                         <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem; white-space: pre-wrap;">${n.description || "Sin descripción adicional."}</p>
                     </div>
@@ -712,10 +733,10 @@ window.clearPriorityFilter = () => {
   renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
-  state.allNotesFilterAll = (type === 'all');
-  state.allNotesFilterWithDate = (type === 'withDate');
-  state.allNotesFilterNoDate = (type === 'noDate');
-  state.allNotesFilterExpired = (type === 'expired');
+  state.allNotesFilterAll = type === "all";
+  state.allNotesFilterWithDate = type === "withDate";
+  state.allNotesFilterNoDate = type === "noDate";
+  state.allNotesFilterExpired = type === "expired";
   renderView();
 };
 window.seeAllNoDateNotes = () => {
@@ -726,7 +747,9 @@ window.seeAllNoDateNotes = () => {
   state.allNotesFilterExpired = false;
   state.allNotesPriorityFilter = null;
   // Actualizar visualmente la navegación del sidebar
-  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((b) => b.classList.remove("active"));
   const allNotesBtn = document.querySelector('[data-view="all-notes"]');
   if (allNotesBtn) allNotesBtn.classList.add("active");
   renderView();
@@ -756,9 +779,11 @@ window.selectDayView = (d) => {
   mutations.updateCalendarState(y, m - 1, day);
   state.calendarSubView = "day";
   state.currentView = "calendar";
-  
+
   // Actualizar visualmente la navegación del sidebar para reflejar que estamos en Calendario
-  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((b) => b.classList.remove("active"));
   const calendarBtn = document.querySelector('[data-view="calendar"]');
   if (calendarBtn) calendarBtn.classList.add("active");
 
@@ -821,7 +846,6 @@ document.addEventListener("mouseover", (e) => {
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
           <i class="far fa-calendar-alt"></i> ${note.date ? dateUtils.formatDisplayDate(note.date) : "--"}
           ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
-          ${note.alarm ? `<span style="color: var(--primary); margin-left: 8px;"><i class="fas fa-bell"></i> Alarma</span>` : ""}
         </div>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
           ${renderCategoryBadge(note.category)}
@@ -861,14 +885,21 @@ document.addEventListener("mouseout", (e) => {
 window.snoozeNote = (id) => {
   const note = getters.getNoteById(id);
   if (note) {
-    const [year, month, day] = note.date.split("-").map(Number);
+    const date = new Date();
+    if (note.date) {
+      const [year, month, day] = note.date.split("-").map(Number);
+      date.setFullYear(year, month - 1, day);
+    }
+
     const [hours, minutes] = note.time.split(":").map(Number);
-    const date = new Date(year, month - 1, day, hours, minutes);
+    date.setHours(hours, minutes, 0, 0);
 
     // Añadir 5 minutos
     date.setMinutes(date.getMinutes() + 5);
 
-    note.date = dateUtils.formatYYYYMMDD(date);
+    if (note.date) {
+      note.date = dateUtils.formatYYYYMMDD(date);
+    }
     note.time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
     note.alarm = true; // Reactivar la alarma para la nueva hora
     note.lastAlarmKey = null; // Resetear rastreo para que pueda sonar de nuevo

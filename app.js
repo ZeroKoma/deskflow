@@ -102,6 +102,11 @@ function setupGlobalEvents() {
     const name = document.getElementById("tag-name").value;
     const color = document.getElementById("tag-color").value;
 
+    if (name.trim().toLowerCase() === "alarma") {
+      showToast("El nombre 'Alarma' está reservado para el sistema", "error");
+      return;
+    }
+
     if (id) {
       mutations.updateTag(id, { name, color });
       showToast("Tag actualizado");
@@ -120,6 +125,11 @@ function setupGlobalEvents() {
 
   window.editTag = (id) => {
     const tag = state.tags.find(t => t.id === id);
+    if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
+      showToast("Esta etiqueta de sistema no se puede modificar", "error");
+      return;
+    }
+
     if (tag) {
       document.getElementById("tag-id").value = tag.id;
       document.getElementById("tag-name").value = tag.name;
@@ -129,6 +139,12 @@ function setupGlobalEvents() {
   };
 
   window.deleteTag = (id) => {
+    const tag = state.tags.find(t => t.id === id);
+    if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
+      showToast("Esta etiqueta de sistema no se puede eliminar", "error");
+      return;
+    }
+
     showConfirmModal("¿Eliminar este tag de todas las notas? Esta acción no se puede deshacer.", () => {
       mutations.deleteTag(id);
       renderTagManager();
@@ -229,12 +245,34 @@ function setupGlobalEvents() {
   // Control del switch de alarma basado en la hora
   const timeInput = document.getElementById("time");
   const alarmInput = document.getElementById("alarm");
+
+  const syncAlarmTagUI = (isActive) => {
+    const alarmTag = state.tags.find(t => t.name === "Alarma");
+    if (!alarmTag) return;
+    const tagCheckbox = document.querySelector(`input[name="note-tags"][value="${alarmTag.id}"]`);
+    if (tagCheckbox) {
+      tagCheckbox.checked = isActive;
+      const chip = tagCheckbox.closest(".tag-chip");
+      if (chip) {
+        chip.classList.toggle("selected", isActive);
+        chip.classList.toggle("inactive", !isActive);
+        chip.style.display = isActive ? 'inline-flex' : 'none';
+      }
+    }
+  };
+
+  alarmInput.addEventListener("change", (e) => syncAlarmTagUI(e.target.checked));
+
   timeInput.addEventListener("input", () => {
     if (!timeInput.value) {
       alarmInput.checked = false;
       alarmInput.disabled = true;
+      syncAlarmTagUI(false);
     } else {
-      if (alarmInput.disabled) alarmInput.checked = true;
+      if (alarmInput.disabled) {
+        alarmInput.checked = true;
+        syncAlarmTagUI(true);
+      }
       alarmInput.disabled = false;
     }
   });
@@ -385,6 +423,20 @@ function handleFormSubmit(e) {
 
   const selectedTags = Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value);
   
+  const isAlarmActive = document.getElementById("alarm").checked;
+
+  const alarmTag = state.tags.find(t => t.name === "Alarma");
+
+  // Sincronizar automáticamente el tag "Alarma" según el estado del checkbox
+  if (alarmTag) {
+    const tagIndex = selectedTags.indexOf(alarmTag.id);
+    if (isAlarmActive) {
+      if (tagIndex === -1) selectedTags.push(alarmTag.id);
+    } else {
+      if (tagIndex !== -1) selectedTags.splice(tagIndex, 1);
+    }
+  }
+
   const noteData = {
     id: id || Date.now().toString(),
     title: document.getElementById("title").value,
@@ -393,7 +445,7 @@ function handleFormSubmit(e) {
     priority: document.getElementById("priority").value,
     category: document.getElementById("category").value,
     description: document.getElementById("description").value,
-    alarm: document.getElementById("alarm").checked,
+    alarm: isAlarmActive,
     tags: selectedTags,
     lastAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastAlarmKey : null,
     lastPreAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastPreAlarmKey : null
