@@ -400,7 +400,9 @@ function handleFormSubmit(e) {
   };
 
   id ? mutations.updateNote(id, noteData) : mutations.addNote(noteData);
-  showToast(id ? "Nota actualizada" : "Nota creada");
+  
+  const typeLabel = noteData.date ? "Recordatorio" : "Nota";
+  showToast(id ? `${typeLabel} actualizado` : `${typeLabel} creado`);
   
   document.getElementById("note-modal").style.display = "none";
   renderView();

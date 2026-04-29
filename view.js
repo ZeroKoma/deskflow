@@ -114,7 +114,7 @@ export function openNoteModal(id = null, defaultDate = null) {
 
   if (id) {
     const note = getters.getNoteById(id);
-    title.innerText = "Editar Nota";
+    title.innerText = note.date ? "Editar Recordatorio" : "Editar Nota";
     document.getElementById("note-id").value = note.id;
     document.getElementById("title").value = note.title;
     document.getElementById("date").value = note.date;
@@ -131,7 +131,7 @@ export function openNoteModal(id = null, defaultDate = null) {
     deleteBtn.style.display = "inline-flex";
     deleteBtn.onclick = () => window.deleteNote(id);
   } else {
-    title.innerText = "Nueva Nota";
+    title.innerText = defaultDate ? "Nuevo Recordatorio" : "Nueva Nota";
     noteForm.reset();
     document.getElementById("note-id").value = "";
     if (defaultDate) document.getElementById("date").value = defaultDate;
@@ -315,8 +315,8 @@ function renderDashboard() {
         <p style="color: var(--text-muted); margin-bottom: 2rem;">Vista general</p>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
-            ${renderDashboardColumn("Notas de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
-            ${renderDashboardColumn("Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", todayStr)}
+            ${renderDashboardColumn("Recordatorios de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
+            ${renderDashboardColumn("Recordatorios de Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", todayStr)}
         </div>
 
         <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 3rem; display: block; cursor: default;">
@@ -331,7 +331,7 @@ function renderDashboard() {
         <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="display: flex; align-items: center; gap: 10px; margin: 0;">
-                    <i class="fas fa-sticky-note" style="color: var(--primary)"></i> Notas Rápidas (${noDateTotal})
+                    <i class="fas fa-sticky-note" style="color: var(--primary)"></i> Notas (${noDateTotal})
                 </h3>
                 <button class="btn-ghost" onclick="window.seeAllNoDateNotes()" style="font-size: 0.85rem; padding: 6px 12px; border: 1px solid var(--border);">
                     Ver todas <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
@@ -355,7 +355,7 @@ function renderDashboard() {
                     </div>`
                         )
                         .join("")
-                    : '<p style="color: var(--text-muted); text-align: center; width: 100%;">No hay notas sin fecha.</p>'
+                    : '<p style="color: var(--text-muted); text-align: center; width: 100%;">No tienes notas sin fecha.</p>'
                 }
             </div>
         </div>
@@ -389,7 +389,7 @@ function renderDashboardColumn(title, tasks, icon, color, todayStr) {
                       }
                     )
                     .join("")
-                : '<p style="color: var(--text-muted); text-align: center;">Sin notas.</p>'
+                : '<p style="color: var(--text-muted); text-align: center;">Sin recordatorios.</p>'
             }
         </div>
     </div>`;
@@ -435,7 +435,7 @@ function renderCalendar() {
                     <button class="btn-primary ${isPastDay ? 'disabled-btn' : ''}" style="padding: 5px 15px; font-size: 0.8rem;"
                             ${isPastDay ? 'disabled' : ''}
                             onclick="${isPastDay ? '' : `window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')`}">
-                        <i class="fas fa-plus"></i> Nueva Nota
+                        <i class="fas fa-plus"></i> Nuevo Recordatorio
                     </button>` : ""}
             </div>
         </div>
@@ -556,7 +556,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
     isFull && dayNotes.length === 0
       ? `<div style="text-align: center; padding: 3rem; color: var(--text-muted); border: 2px dashed var(--border); border-radius: var(--radius);">
         <i class="fas fa-calendar-day" style="font-size: 2rem; margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
-        No hay notas programadas para este día.
+        No hay recordatorios para este día.
        </div>`
       : notesHtml;
 
@@ -611,7 +611,7 @@ function renderNoteList(title, data) {
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <h2>${title}</h2>
+            <h2>Notas y Recordatorios</h2>
             <div style="display: flex; align-items: center; gap: 15px;">
                 ${
                   state.currentView === "all-notes"
@@ -630,17 +630,17 @@ function renderNoteList(title, data) {
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterAll ? "checked" : ""} onchange="window.toggleAllNotesFilter('all', this.checked)"> 
-                        <span>Todas (${stats.all_total})</span>
+                        <span>Todo (${stats.all_total})</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
-                        <span>Con fecha (${stats.activeWithDate})</span>
+                        <span>Recordatorios (${stats.activeWithDate})</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
-                        <span>Sin fecha (${stats.activeNoDate})</span>
+                        <span>Notas (${stats.activeNoDate})</span>
                     </label>
                     <div style="flex-grow: 1;"></div>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--high); cursor: pointer;">
@@ -658,7 +658,7 @@ function renderNoteList(title, data) {
               data.length === 0
                 ? `<div style="text-align: center; padding: 4rem; background: var(--bg-sidebar); border-radius: var(--radius); border: 2px dashed var(--border);">
                     <i class="fas fa-clipboard-list" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
-                    <p style="color: var(--text-muted);">No se encontraron notas</p>
+                    <p style="color: var(--text-muted);">No se encontraron resultados</p>
                  </div>`
                 : data
                     .map((n) => {
