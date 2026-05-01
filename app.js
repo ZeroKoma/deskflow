@@ -97,10 +97,12 @@ function setupGlobalEvents() {
       sidebarOverlay.classList.toggle('active');
     });
 
-    // Sincronización inicial: Si el sidebar empieza abierto, activar overlay y icono 'X' en móvil
+    // Sincronización inicial: Si el sidebar empieza abierto, actualizar icono y activar overlay (solo en móvil)
     const startOpen = sidebar.classList.contains('open');
     if (startOpen) {
-      sidebarOverlay.classList.add('active');
+      if (window.innerWidth <= 768) {
+        sidebarOverlay.classList.add('active');
+      }
       updateToggleIcons(true);
     }
   }
