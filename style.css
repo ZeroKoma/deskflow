@@ -285,7 +285,7 @@ body {
 
 /* --- App Specific Layout --- */
 .view-container-padding {
-  padding: var(--space-2xl);
+  padding: var(--space-2xl) var(--container-h-padding);
 }
 .view-title {
   margin-bottom: var(--space-s);
@@ -1362,6 +1362,16 @@ body.alarm-active .alarm-overlay {
     --container-h-padding: var(
       --space-l
     ); /* Reducimos de 32px a 16px en móviles */
+  }
+
+  .view-container-padding {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  .view-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-xs);
   }
 
   .app-container {
