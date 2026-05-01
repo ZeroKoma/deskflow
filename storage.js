@@ -4,23 +4,26 @@
  */
 
 const DB_NAME = "DeskFlowDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORES = {
   NOTES: "notes",
   TAGS: "tags",
-  CATEGORIES: "categories"
+  CATEGORIES: "categories",
+  PREFERENCES: "preferences"
 };
 
 export const storage = {
   db: null,
+  _initPromise: null,
 
   /**
    * Inicializa IndexedDB y maneja el versionado
    */
   async init() {
     if (this.db) return this.db;
+    if (this._initPromise) return this._initPromise;
 
-    return new Promise((resolve, reject) => {
+    this._initPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onupgradeneeded = (event) => {
@@ -35,6 +38,9 @@ export const storage = {
         if (!db.objectStoreNames.contains(STORES.CATEGORIES)) {
           db.createObjectStore(STORES.CATEGORIES, { keyPath: "id" });
         }
+        if (!db.objectStoreNames.contains(STORES.PREFERENCES)) {
+          db.createObjectStore(STORES.PREFERENCES);
+        }
       };
 
       request.onsuccess = (event) => {
@@ -47,6 +53,7 @@ export const storage = {
         reject(new Error("No se pudo inicializar el almacenamiento estructurado."));
       };
     });
+    return this._initPromise;
   },
 
   /**
@@ -138,53 +145,25 @@ export const storage = {
   },
 
   /**
-   * FASE 4 — Migración segura
+   * IndexedDB Preference Helpers
    */
-  async performMigration() {
-    const MIGRATION_KEY = "deskflow_migrated_v1";
-    if (localStorage.getItem(MIGRATION_KEY)) return;
-
-    console.log("Detectados datos legacy en LocalStorage. Iniciando migración...");
-    
-    try {
-      const legacyNotes = JSON.parse(localStorage.getItem("deskflow_notes") || "[]");
-      const legacyTags = JSON.parse(localStorage.getItem("deskflow_tags") || "[]");
-      const legacyCats = JSON.parse(localStorage.getItem("deskflow_categories") || "[]");
-
-      // Importar a IDB
-      if (legacyNotes.length) await this.saveAll(STORES.NOTES, legacyNotes);
-      if (legacyTags.length) await this.saveAll(STORES.TAGS, legacyTags);
-      if (legacyCats.length) await this.saveAll(STORES.CATEGORIES, legacyCats);
-
-      // Marcar como completado
-      localStorage.setItem(MIGRATION_KEY, "true");
-      
-      // Limpieza (Opcional pero recomendado para liberar espacio en LS)
-      localStorage.removeItem("deskflow_notes");
-      localStorage.removeItem("deskflow_tags");
-      localStorage.removeItem("deskflow_categories");
-      
-      console.log("Migración finalizada con éxito.");
-    } catch (error) {
-      console.error("Error en la migración:", error);
-      // No marcamos como completado para que pueda reintentar
-    }
+  async setPreference(key, value) {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORES.PREFERENCES, "readwrite");
+      transaction.objectStore(STORES.PREFERENCES).put(value, key);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
   },
 
-  /**
-   * LocalStorage Helpers (Preferencias ligeras)
-   */
-  setPreference(key, value) {
-    localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
-  },
-
-  getPreference(key, defaultValue = null) {
-    const item = localStorage.getItem(key);
-    if (item === null) return defaultValue;
-    try {
-      return JSON.parse(item);
-    } catch {
-      return item;
-    }
+  async getPreference(key, defaultValue = null) {
+    const db = await this.init();
+    return new Promise((resolve) => {
+      const transaction = db.transaction(STORES.PREFERENCES, "readonly");
+      const request = transaction.objectStore(STORES.PREFERENCES).get(key);
+      request.onsuccess = () => resolve(request.result !== undefined ? request.result : defaultValue);
+      request.onerror = () => resolve(defaultValue);
+    });
   }
 };

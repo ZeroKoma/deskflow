@@ -10,7 +10,7 @@ async function init() {
   // FASE 6 — Esperar a que los datos se carguen desde IndexedDB
   await mutations.initStore();
 
-  applyTheme();
+  applyTheme(); // Ahora se aplica después de que initStore haya cargado el tema de IDB
   setupGlobalEvents();
   requestNotificationPermission();
   setFavicon();

@@ -44,7 +44,7 @@ export const state = {
   currentYear: new Date().getFullYear(),
   currentDay: new Date().getDate(),
   calendarSubView: "month",
-  theme: localStorage.getItem("deskflow_theme") || "dark",
+  theme: "dark", // Valor por defecto hasta que initStore cargue el real
   allNotesFilterAll: true,
   allNotesFilterWithDate: false,
   allNotesFilterNoDate: false,
@@ -54,20 +54,17 @@ export const state = {
 
 export const mutations = {
   async initStore() {
-    // 1. Asegurar migración
-    await storage.performMigration();
-
-    // 2. Cargar datos desde IndexedDB
+    // 1. Cargar datos desde IndexedDB
     const loadedNotes = await storage.getAll("notes");
     const loadedTags = await storage.getAll("tags");
     const loadedCategories = await storage.getAll("categories");
 
-    // 3. Poblar estado (si IDB está vacío tras migración, se quedan los defaults)
+    // 2. Poblar estado (si IDB está vacío, se mantienen los valores por defecto)
     if (loadedNotes.length) state.notes = loadedNotes.filter(validators.note);
     if (loadedTags.length) state.tags = loadedTags.filter(validators.tag);
     if (loadedCategories.length) state.categories = loadedCategories.filter(validators.category);
     
-    const theme = storage.getPreference("deskflow_theme", "dark");
+    const theme = await storage.getPreference("deskflow_theme", "dark");
     state.theme = validators.theme(theme) ? theme : "dark";
   },
 
@@ -181,7 +178,7 @@ export const mutations = {
   setTheme(theme) {
     if (!validators.theme(theme)) return;
     state.theme = theme;
-    storage.setPreference("deskflow_theme", theme);
+    storage.setPreference("deskflow_theme", theme).catch(console.error);
   },
 
   updateCalendarState(year, month, day) {
@@ -196,11 +193,6 @@ export const mutations = {
     state.categories = JSON.parse(JSON.stringify(defaultCategories));
     
     await storage.clearAll();
-    // No borramos localStorage.clear() para no perder el flag de migración y tema
-    // pero sí limpiamos las claves antiguas por si acaso
-    localStorage.removeItem("deskflow_notes");
-    localStorage.removeItem("deskflow_tags");
-    localStorage.removeItem("deskflow_categories");
 
     this.saveNotes();
     this.saveTags();

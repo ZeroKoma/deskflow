@@ -25,7 +25,7 @@ La aplicación sigue un patrón de diseño modular basado en **ES Modules (ESM)*
 
 DeskFlow diferencia inteligentemente entre:
 
-- **Notas**: Tareas o ideas sin fecha específica (sección "Notas Rápidas").
+- **Notas**: Tareas o ideas sin fecha específica (sección "Notas").
 - **Recordatorios**: Eventos vinculados a una fecha y hora, integrados automáticamente en el calendario.
 
 ### 2. Sistema de Alarmas Inteligente
@@ -49,8 +49,8 @@ Vistas adaptables de Mes, Semana y Día, con persistencia de estado para una nav
 
 La persistencia de datos se maneja localmente:
 
-- **LocalStorage**: Almacena notas, configuraciones, tags y categorías.
-- **Exportación/Importación CSV**: Permite la portabilidad de los datos. El sistema valida la estructura del CSV durante la importación para evitar la corrupción de datos.
+- **IndexedDB**: Almacena de forma persistente notas, preferencias (como el tema), tags y categorías.
+- **Exportación/Importación JSON**: Permite la portabilidad de los datos. El sistema valida la estructura del archivo JSON durante la importación para evitar la corrupción de datos.
 
 ## Personalización (Theming)
 
