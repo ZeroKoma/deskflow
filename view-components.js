@@ -147,3 +147,4 @@ document.addEventListener("dragstart", () => {
   if (tooltip) tooltip.style.display = "none";
 });
 document.addEventListener("dragend", () => { isDraggingActive = false; });
+document.addEventListener("drop", () => { isDraggingActive = false; });

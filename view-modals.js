@@ -46,9 +46,12 @@ export function openNoteModal(id = null, defaultDate = null) {
     deleteBtn.style.display = "none";
   }
 
-  // Add event listener for dynamic title update (only for new notes)
+  // Add event listener for dynamic title update
   const updateModalTitleBasedOnDate = () => {
-    if (!id) modalTitle.innerText = dateInput.value ? "Nuevo Recordatorio" : "Nueva Nota";
+    const hasDate = !!dateInput.value;
+    modalTitle.innerText = id 
+      ? (hasDate ? "Editar Recordatorio" : "Editar Nota")
+      : (hasDate ? "Nuevo Recordatorio" : "Nueva Nota");
   };
   dateInput.removeEventListener("input", updateModalTitleBasedOnDate); // Prevent multiple listeners
   dateInput.addEventListener("input", updateModalTitleBasedOnDate);
