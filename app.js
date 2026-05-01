@@ -2,6 +2,7 @@ import { state, mutations } from './store.js';
 import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './view.js';
 import { dateUtils, downloadFile } from './utils.js';
 import { startAlarmService } from './app-alarms.js';
+import * as settings from './app-settings.js';
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -37,7 +38,7 @@ function requestNotificationPermission() {
   }
 }
 
-function applyTheme() {
+export function applyTheme() {
   document.documentElement.setAttribute("data-theme", state.theme);
   document.getElementById("theme-toggle").checked = state.theme === "dark";
 }
@@ -218,33 +219,8 @@ function setupGlobalEvents() {
   document.getElementById("close-settings-x").onclick = closeSettings;
   document.getElementById("close-settings-btn").onclick = closeSettings;
 
-  document.getElementById("delete-past-notes-btn").addEventListener("click", () => {
-    const todayStr = dateUtils.getTodayStr();
-    const pastNotesCount = state.notes.filter(n => n.date && n.date < todayStr).length;
-
-    if (pastNotesCount === 0) {
-      showToast("No hay notas con fecha pasada para eliminar.", "info");
-      return;
-    }
-
-    showConfirmModal(`¿Deseas eliminar permanentemente ${pastNotesCount} nota(s) con fecha anterior a hoy?`, () => {
-      mutations.deletePastNotes(todayStr);
-      showToast(`${pastNotesCount} notas antiguas eliminadas`, "info");
-      renderView();
-      updateUIStats();
-      closeSettings();
-    });
-  });
-
-  document.getElementById("reset-app-btn").addEventListener("click", () => {
-    showConfirmModal("¿ESTÁS SEGURO? Esta acción borrará todas tus notas, categorías y etiquetas. No se puede deshacer.", () => {
-      mutations.resetApp();
-      showToast("Aplicación reseteada correctamente", "info");
-      closeSettings();
-      renderView();
-      updateUIStats();
-    });
-  });
+  document.getElementById("delete-past-notes-btn").addEventListener("click", settings.deletePastNotes);
+  document.getElementById("reset-app-btn").addEventListener("click", settings.resetApp);
 
   // Control del switch de alarma basado en la hora
   const timeInput = document.getElementById("time");
@@ -291,79 +267,14 @@ function setupGlobalEvents() {
   });
 
   // Exportar e Importar
-  document.getElementById("export-data").addEventListener("click", () => {
-    const backup = {
-      notes: state.notes,
-      tags: state.tags,
-      categories: state.categories,
-      theme: state.theme,
-      exportDate: new Date().toISOString()
-    };
-    downloadFile("deskflow_backup.json", JSON.stringify(backup, null, 2), "application/json");
-  });
+  document.getElementById("export-data").addEventListener("click", settings.exportData);
 
   const importInput = document.getElementById("import-data-input");
   document.getElementById("import-data-btn").addEventListener("click", () => importInput.click());
 
   importInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target.result;
-      try {
-        const data = JSON.parse(text);
-        if (!data.notes || !data.tags || !data.categories) {
-          showToast("El archivo no tiene el formato correcto de DeskFlow", "error");
-          return;
-        }
-
-        const stateBackup = {
-          notes: JSON.parse(JSON.stringify(state.notes)),
-          tags: JSON.parse(JSON.stringify(state.tags)),
-          categories: JSON.parse(JSON.stringify(state.categories)),
-          theme: state.theme
-        };
-
-        const onImportComplete = (msg) => {
-          renderView();
-          updateUIStats();
-          showToast(msg, "info", null, {
-            label: "Deshacer",
-            callback: () => {
-              mutations.restoreState(stateBackup);
-              if (stateBackup.theme) mutations.setTheme(stateBackup.theme);
-              applyTheme();
-              renderView();
-              updateUIStats();
-              showToast("Cambios revertidos correctamente");
-            }
-          });
-          closeSettings();
-        };
-
-        showConfirmModal(
-          "¿Cómo deseas importar los datos?",
-          () => { 
-            mutations.restoreState(data); 
-            if (data.theme) mutations.setTheme(data.theme);
-            applyTheme();
-            onImportComplete("Copia de seguridad restaurada (Reemplazo total)");
-          },
-          () => { 
-            mutations.mergeState(data); 
-            onImportComplete("Datos fusionados correctamente");
-          },
-          { okText: "Reemplazar Todo", cancelText: "Fusionar Datos", okClass: "btn-danger" }
-        );
-      } catch (err) {
-        showToast("Error al procesar el archivo JSON", "error");
-      } finally {
-        importInput.value = "";
-      }
-    };
-    reader.readAsText(file);
+    settings.importData(e.target.files[0], applyTheme);
+    importInput.value = "";
   });
 
   document.getElementById("global-search").addEventListener("input", (e) => {

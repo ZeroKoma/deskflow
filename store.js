@@ -11,6 +11,30 @@ const defaultTags = [
   { id: "tag-alarm-default", name: "Alarma", color: "#ef4444" }
 ];
 
+/**
+ * Esquemas de validación para garantizar la integridad de IndexedDB
+ */
+const validators = {
+  note: (n) => 
+    n && typeof n === 'object' &&
+    typeof n.id === 'string' &&
+    typeof n.title === 'string' && n.title.trim().length > 0 &&
+    ['low', 'medium', 'high'].includes(n.priority) &&
+    Array.isArray(n.tags),
+  
+  tag: (t) => 
+    t && typeof t === 'object' &&
+    typeof t.id === 'string' &&
+    typeof t.name === 'string' && t.name.trim().length > 0,
+
+  category: (c) => 
+    c && typeof c === 'object' &&
+    typeof c.id === 'string' &&
+    typeof c.name === 'string' && c.name.trim().length > 0,
+
+  theme: (t) => ["light", "dark"].includes(t)
+};
+
 export const state = {
   notes: [],
   tags: [...defaultTags],
@@ -39,32 +63,38 @@ export const mutations = {
     const loadedCategories = await storage.getAll("categories");
 
     // 3. Poblar estado (si IDB está vacío tras migración, se quedan los defaults)
-    if (loadedNotes.length) state.notes = loadedNotes;
-    if (loadedTags.length) state.tags = loadedTags;
-    if (loadedCategories.length) state.categories = loadedCategories;
+    if (loadedNotes.length) state.notes = loadedNotes.filter(validators.note);
+    if (loadedTags.length) state.tags = loadedTags.filter(validators.tag);
+    if (loadedCategories.length) state.categories = loadedCategories.filter(validators.category);
     
-    state.theme = storage.getPreference("deskflow_theme", "dark");
+    const theme = storage.getPreference("deskflow_theme", "dark");
+    state.theme = validators.theme(theme) ? theme : "dark";
   },
 
   saveNotes() {
-    storage.saveAll("notes", state.notes).catch(console.error);
+    const valid = state.notes.filter(validators.note);
+    storage.saveAll("notes", valid).catch(console.error);
   },
 
   saveTags() {
-    storage.saveAll("tags", state.tags).catch(console.error);
+    const valid = state.tags.filter(validators.tag);
+    storage.saveAll("tags", valid).catch(console.error);
   },
 
   saveCategories() {
-    storage.saveAll("categories", state.categories).catch(console.error);
+    const valid = state.categories.filter(validators.category);
+    storage.saveAll("categories", valid).catch(console.error);
   },
 
   addNote(noteData) {
+    if (!validators.note(noteData)) return;
     state.notes.push(noteData);
     this.saveNotes();
   },
 
   bulkAddNotes(notesArray) {
-    notesArray.forEach(newNote => {
+    if (!Array.isArray(notesArray)) return;
+    notesArray.filter(validators.note).forEach(newNote => {
       const index = state.notes.findIndex(n => n.id === newNote.id);
       if (index !== -1) {
         state.notes[index] = newNote;
@@ -81,6 +111,7 @@ export const mutations = {
   },
 
   updateNote(id, noteData) {
+    if (!validators.note(noteData)) return;
     state.notes = state.notes.map((n) => (n.id === id ? noteData : n));
     this.saveNotes();
   },
@@ -91,13 +122,19 @@ export const mutations = {
   },
 
   addTag(tag) {
+    if (!validators.tag(tag)) return;
     state.tags.push(tag);
     this.saveTags();
   },
 
   updateTag(id, tagData) {
+    const current = state.tags.find(t => t.id === id);
+    if (!current) return;
+    const updated = { ...current, ...tagData };
+    if (!validators.tag(updated)) return;
+
     state.tags = state.tags.map((t) =>
-      t.id === id ? { ...t, ...tagData } : t,
+      t.id === id ? updated : t,
     );
     this.saveTags();
   },
@@ -114,13 +151,19 @@ export const mutations = {
   },
 
   addCategory(category) {
+    if (!validators.category(category)) return;
     state.categories.push(category);
     this.saveCategories();
   },
 
   updateCategory(id, catData) {
+    const current = state.categories.find(c => c.id === id);
+    if (!current) return;
+    const updated = { ...current, ...catData };
+    if (!validators.category(updated)) return;
+
     state.categories = state.categories.map((c) =>
-      c.id === id ? { ...c, ...catData } : c,
+      c.id === id ? updated : c,
     );
     this.saveCategories();
   },
@@ -136,6 +179,7 @@ export const mutations = {
   },
 
   setTheme(theme) {
+    if (!validators.theme(theme)) return;
     state.theme = theme;
     storage.setPreference("deskflow_theme", theme);
   },
@@ -169,9 +213,11 @@ export const mutations = {
   },
 
   restoreState(backup) {
-    state.notes = backup.notes;
-    state.tags = backup.tags;
-    state.categories = backup.categories;
+    if (!backup) return;
+    state.notes = Array.isArray(backup.notes) ? backup.notes.filter(validators.note) : [];
+    state.tags = Array.isArray(backup.tags) ? backup.tags.filter(validators.tag) : [...defaultTags];
+    state.categories = Array.isArray(backup.categories) ? backup.categories.filter(validators.category) : [...defaultCategories];
+
     this.saveNotes();
     this.saveTags();
     this.saveCategories();
@@ -182,13 +228,13 @@ export const mutations = {
     this.bulkAddNotes(data.notes || []);
 
     // 2. Fusionar Tags
-    (data.tags || []).forEach(t => {
+    (data.tags || []).filter(validators.tag).forEach(t => {
       if (!state.tags.find(existing => existing.id === t.id)) state.tags.push(t);
     });
     this.saveTags();
 
     // 3. Fusionar Categorías
-    (data.categories || []).forEach(c => {
+    (data.categories || []).filter(validators.category).forEach(c => {
       if (!state.categories.find(existing => existing.id === c.id)) state.categories.push(c);
     });
     this.saveCategories();
