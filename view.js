@@ -80,6 +80,11 @@ const sortNotesLogic = (a, b) => {
 };
 
 export function renderView() {
+  // Asegurar que el scroll vuelva al inicio al cambiar de pantalla
+  const mainContent = document.querySelector(".main-content");
+  if (mainContent) mainContent.scrollTop = 0;
+  window.scrollTo(0, 0);
+
   if (state.currentView === "calendar") renderCalendar();
   else if (state.currentView === "dashboard") renderDashboard();
   else renderAllNotes();
@@ -172,7 +177,7 @@ function renderDashboard() {
                     ? noDateLimited
                         .map(
                           (t) => `
-                    <div class="dashboard-note-item" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra esta nota a un día del calendario">
+                    <div class="dashboard-note-item priority-${t.priority}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra esta nota a un día del calendario">
                         <div class="flex-1 notes-stack-mini">
                             <span style="font-weight: 600;">${t.title}</span>
                             <div class="badge-row">
@@ -180,7 +185,7 @@ function renderDashboard() {
                                 ${renderTagPills(t.tags)}
                             </div>
                         </div>
-                        <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
+                        <span class="note-time">${t.time || "--:--"}</span>
                     </div>`,
                         )
                         .join("")
@@ -214,7 +219,7 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
                     .map((t) => {
                       const isPast = t.date && t.date < todayStr;
                       return `
-                <div class="dashboard-note-item ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">
+                <div class="dashboard-note-item priority-${t.priority} ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">
                     <div class="flex-1 notes-stack-mini">
                         <span style="font-weight: 500;">${t.title}</span>
                         <div class="badge-row">
@@ -222,7 +227,7 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
                             ${renderTagPills(t.tags)}
                         </div>
                     </div>
-                    <span class="note-pill priority-${t.priority}">${t.time || "--:--"}</span>
+                    <span class="note-time">${t.time || "--:--"}</span>
                 </div>`;
                     })
                     .join("")
@@ -406,10 +411,9 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
 
       if (isFull) {
         return `
-        <div class="card note-card-full ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
+        <div class="card note-card-full priority-${n.priority} ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
             <div class="flex-1 note-content-stack">
                 <div class="card-header-row">
-                    <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                     <h3 class="m-0">${n.title}</h3>
                 </div>
                 <div class="badge-row">
@@ -559,10 +563,9 @@ function renderNoteList(title, data) {
                       const isPast = n.date && n.date < todayStr;
                       const expiredClass = isPast ? "expired" : "";
                       return `
-                <div class="card note-card-full bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
+                <div class="card note-card-full priority-${n.priority} bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
                     <div class="flex-1 note-content-stack">
                         <div class="card-header-row">
-                            <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                             <h3 class="m-0">${n.title}</h3>
                         </div>
                         <div class="badge-row">

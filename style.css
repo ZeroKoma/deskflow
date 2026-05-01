@@ -11,9 +11,9 @@
   --radius: 12px;
 
   /* Prioridades */
-  --low: #10b981;
-  --medium: #f59e0b;
-  --high: #ef4444;
+  --low: #15803d;    /* Verde esmeralda oscuro (AA con blanco) */
+  --medium: #a16207; /* Amarillo dorado intenso (Equilibrio contraste/color) */
+  --high: #b91c1c;   /* Rojo intenso oscuro (AA con blanco) */
 
   /* Escala de Espaciado (Coherencia Visual) */
   --space-xs: 0.25rem; /* 4px */
@@ -36,6 +36,11 @@
   --text-muted: #94a3b8;
   --border: #334155;
   --white: #1e293b;
+
+  /* Prioridades en Modo Oscuro: Un poco más vibrantes pero manteniendo contraste */
+  --low: #16a34a;
+  --medium: #ca8a04;
+  --high: #dc2626;
 }
 
 /* Asegura que los iconos nativos de fecha/hora sean visibles en modo oscuro */
@@ -338,6 +343,26 @@ body {
   display: block;
   cursor: default;
   min-height: 150px;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-note-item.priority-high,
+.dashboard-column.priority-high {
+  border-left-color: var(--high);
+}
+.dashboard-note-item.priority-medium,
+.dashboard-column.priority-medium {
+  border-left-color: var(--medium);
+}
+.dashboard-note-item.priority-low,
+.dashboard-column.priority-low {
+  border-left-color: var(--low);
+}
+
+.note-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 .dashboard-grid .dashboard-column {
   margin-bottom: 0;
@@ -378,6 +403,7 @@ body {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  border-left: 4px solid transparent;
 }
 
 .note-card-full {
@@ -391,7 +417,13 @@ body {
   align-items: flex-start;
   box-shadow: var(--shadow);
   transition: transform 0.2s ease;
+  border-left: 5px solid transparent;
 }
+
+.note-card-full.priority-high { border-left-color: var(--high); }
+.note-card-full.priority-medium { border-left-color: var(--medium); }
+.note-card-full.priority-low { border-left-color: var(--low); }
+
 .note-card-full.bg-sidebar {
   background: var(--bg-sidebar);
 }
@@ -740,23 +772,24 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: transparent;
+  color: var(--text-main);
+  border-left: 3px solid transparent;
+  padding-left: 4px;
 }
 
-.note-pill.priority-high {
-  background: rgba(239, 68, 68, 0.1);
-  color: white; /* Cambiado a blanco para mejor contraste */
-  border-left: 3px solid var(--high);
+/* Asegurar que el indicador de prioridad sea una barra vertical recta en estas vistas */
+.calendar-grid.month .note-pill,
+.calendar-grid.week .note-pill {
+  border-radius: 0;
+  margin-left: 0;
 }
-.note-pill.priority-medium {
-  background: rgba(245, 158, 11, 0.1);
-  color: white; /* Cambiado a blanco para mejor contraste */
-  border-left: 3px solid var(--medium);
-}
-.note-pill.priority-low {
-  background: rgba(16, 185, 129, 0.1);
-  color: white; /* Cambiado a blanco para mejor contraste */
-  border-left: 3px solid var(--low);
-}
+
+.note-pill.priority-high { border-left-color: var(--high); }
+.note-pill.priority-medium { border-left-color: var(--medium); }
+.note-pill.priority-low { border-left-color: var(--low); }
 
 /* Buttons & Forms */
 .btn-primary {
@@ -1252,7 +1285,10 @@ body.alarm-active .alarm-overlay {
 
 .card.expired,
 .dashboard-note-item.expired {
-  border: 1px dashed var(--text-muted) !important;
+  border-style: dashed !important;
+  border-top-color: var(--text-muted) !important;
+  border-right-color: var(--text-muted) !important;
+  border-bottom-color: var(--text-muted) !important;
   background: var(
     --bg-main
   ) !important; /* Usamos background para anular el inline style */
@@ -1570,31 +1606,27 @@ body.alarm-active .alarm-overlay {
   .calendar-grid.month .note-pill {
     width: 100%;
     height: auto;
-    padding: 2px 4px;
+    padding: 2px;
     border-radius: 4px;
     font-size: 0.6rem;
-    font-weight: 600;
-    color: white !important;
+    font-weight: 500;
+    color: var(--text-main) !important;
+    background: transparent !important;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-    border: none;
+    border-left: 3px solid transparent; /* El color real lo dan las clases de prioridad */
+    border-radius: 0;
     margin: 0;
     box-shadow: none;
   }
 
-  /* Forzar colores sólidos para que los puntos se distingan bien en móvil */
-  .calendar-grid.month .note-pill.priority-high {
-    background-color: var(--high) !important;
-  }
-  .calendar-grid.month .note-pill.priority-medium {
-    background-color: var(--medium) !important;
-  }
-  .calendar-grid.month .note-pill.priority-low {
-    background-color: var(--low) !important;
-  }
+  .calendar-grid.month .note-pill.priority-high { border-left-color: var(--high); }
+  .calendar-grid.month .note-pill.priority-medium { border-left-color: var(--medium); }
+  .calendar-grid.month .note-pill.priority-low { border-left-color: var(--low); }
+
 
   /* Forzar 1 columna para planificación semanal en móvil */
   .calendar-grid.week {
