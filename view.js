@@ -145,43 +145,43 @@ function renderDashboard() {
   const noDateLimited = noDateTasksFull.slice(0, 5);
 
   viewContainer.innerHTML = `
-    <div style="padding: 2rem;">
-        <h1 style="margin-bottom: 0.5rem;">Panel de Control</h1>
-        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Vista general</p>
+    <div class="view-container-padding">
+        <h1 class="view-title">Panel de Control</h1>
+        <p class="view-subtitle">Vista general</p>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="dashboard-grid">
             ${renderDashboardColumn("Recordatorios de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
             ${renderDashboardColumn("Recordatorios de Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", tomorrowStr)}
         </div>
 
-        <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; display: block; cursor: default;">
-            <h3 style="margin-bottom: 1.5rem; margin-top: 0;">
+        <div class="card dashboard-column">
+            <h3 class="column-title">
                 Planificación Semanal (${weeklyNotesCount})
             </h3>
-            <div class="calendar-grid week" style="margin: 0; background: var(--border);">
+            <div class="calendar-grid week reset-grid">
                 ${weekGridHtml}
             </div>
         </div>
 
-        <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0;">
+        <div class="card dashboard-column mb-0">
+            <div class="flex-between">
+                <h3 class="m-0">
                     Notas (${noDateTotal})
                 </h3>
-                <button class="btn-ghost" onclick="window.seeAllNoDateNotes()" style="font-size: 0.85rem; padding: 6px 12px; border: 1px solid var(--border);">
+                <button class="btn-ghost btn-sm-border" onclick="window.seeAllNoDateNotes()">
                     Ver todas <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
                 </button>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+            <div class="notes-grid-300">
                 ${
                   noDateLimited.length > 0
                     ? noDateLimited
                         .map(
                           (t) => `
-                    <div class="dashboard-note-item" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra esta nota a un día del calendario">
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                    <div class="dashboard-note-item" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra esta nota a un día del calendario">
+                        <div class="flex-1 notes-stack-mini">
                             <span style="font-weight: 600;">${t.title}</span>
-                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <div class="badge-row">
                                 ${renderCategoryBadge(t.category)}
                                 ${renderTagPills(t.tags)}
                             </div>
@@ -200,22 +200,21 @@ function renderDashboard() {
 function renderDashboardColumn(title, tasks, icon, color, targetDate) {
   const todayStr = dateUtils.getTodayStr();
   return `
-    <div class="card drag-zone" data-drop-date="${targetDate}" ondragover="window.handleNoteDragOver(event)" ondragleave="window.handleNoteDragLeave(event)" ondrop="window.handleNoteDrop(event)"
-         style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
-        <h3 style="margin-bottom: 1.5rem;">
+    <div class="card dashboard-column drag-zone" data-drop-date="${targetDate}" ondragover="window.handleNoteDragOver(event)" ondragleave="window.handleNoteDragLeave(event)" ondrop="window.handleNoteDrop(event)">
+        <h3 class="column-title">
             ${title} (${tasks.length})
         </h3>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="notes-stack">
             ${
               tasks.length > 0
                 ? tasks
                     .map((t) => {
                       const isPast = t.date && t.date < todayStr;
                       return `
-                <div class="dashboard-note-item ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">
-                    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                <div class="dashboard-note-item ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">
+                    <div class="flex-1 notes-stack-mini">
                         <span style="font-weight: 500;">${t.title}</span>
-                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div class="badge-row">
                             ${renderCategoryBadge(t.category)}
                             ${renderTagPills(t.tags)}
                         </div>
@@ -261,19 +260,19 @@ function renderCalendar() {
     });
 
   viewContainer.innerHTML = `
-    <div class="calendar-header" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-sidebar); border-bottom: 1px solid var(--border);">
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <h2 style="margin:0; text-transform: capitalize;">${title}</h2>
-            <div style="display: flex; gap: 8px;">
+    <div class="calendar-header">
+        <div class="flex-center-gap-20">
+            <h2 class="m-0 text-capitalize">${title}</h2>
+            <div class="flex-gap-8">
                 ${
                   state.calendarSubView === "day" && focusDateStr === todayStr
                     ? ""
-                    : `<button class="btn-primary" style="padding: 5px 15px;" onclick="window.goToday()">Hoy</button>`
+                    : `<button class="btn-primary btn-sm" onclick="window.goToday()">Hoy</button>`
                 }
                 ${
                   state.calendarSubView === "day"
                     ? `
-                    <button class="btn-primary ${isPastDay ? "disabled-btn" : ""}" style="padding: 5px 15px; font-size: 0.8rem;"
+                    <button class="btn-primary btn-sm ${isPastDay ? "disabled-btn" : ""}"
                             ${isPastDay ? "disabled" : ""}
                             onclick="${isPastDay ? "" : `window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')`}">
                             Nuevo Recordatorio
@@ -282,15 +281,15 @@ function renderCalendar() {
                 }
             </div>
         </div>
-        <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="flex-center-gap-15">
             <div class="subview-selector">
                 <button class="subview-btn ${state.calendarSubView === "day" ? "active" : ""}" onclick="window.setSubView('day')">Día</button>
                 <button class="subview-btn ${state.calendarSubView === "week" ? "active" : ""}" onclick="window.setSubView('week')">Semana</button>
                 <button class="subview-btn ${state.calendarSubView === "month" ? "active" : ""}" onclick="window.setSubView('month')">Mes</button>
             </div>
-            <div style="display:flex; gap: 5px;">
-                <button class="btn-secondary" style="padding: 5px 12px;" onclick="window.navigateCalendar(-1)"><i class="fas fa-chevron-left"></i></button>
-                <button class="btn-secondary" style="padding: 5px 12px;" onclick="window.navigateCalendar(1)"><i class="fas fa-chevron-right"></i></button>
+            <div class="flex-gap-5">
+                <button class="btn-secondary btn-sm-nav" onclick="window.navigateCalendar(-1)"><i class="fas fa-chevron-left"></i></button>
+                <button class="btn-secondary btn-sm-nav" onclick="window.navigateCalendar(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
@@ -370,23 +369,23 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
 
       if (isFull) {
         return `
-        <div class="card ${expiredClass}" data-note-id="${n.id}" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
-            <div style="flex: 1;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+        <div class="card note-card-full ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
+            <div class="flex-1">
+                <div class="card-header-row">
                     <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
-                    <h3 style="margin: 0;">${n.title}</h3>
+                    <h3 class="m-0">${n.title}</h3>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                <div class="badge-row m-b-10">
                     ${renderCategoryBadge(n.category)}
                     ${renderTagPills(n.tags)}
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
+                <div class="meta-row">
                     ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                 </div>
-                <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem; white-space: pre-wrap;">${n.description || "Sin descripción adicional."}</p>
+                <p class="note-desc">${n.description || "Sin descripción adicional."}</p>
             </div>
-            <div style="display: flex; gap: 8px; margin-left: 20px;">
-                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="background: none; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--high); padding: 8px 12px; transition: all 0.2s;"><i class="fas fa-trash"></i></button>
+            <div class="card-actions-col">
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-outline"><i class="fas fa-trash"></i></button>
             </div>
         </div>`;
       }
@@ -396,21 +395,32 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
 
   const finalNotesHtml =
     isFull && dayNotes.length === 0
-      ? `<div style="text-align: center; padding: 3rem; color: var(--text-muted); border: 2px dashed var(--border); border-radius: var(--radius);">
-        <i class="fas fa-calendar-day" style="font-size: 2rem; margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
+      ? `<div class="empty-state-placeholder">
+        <i class="fas fa-calendar-day empty-state-icon"></i>
         No hay recordatorios para este día.
        </div>`
       : notesHtml;
 
+  const cellClasses = [
+    "calendar-day",
+    "drag-zone",
+    isToday ? "current-day" : "",
+    isFull ? "day-cell-full" : ""
+  ].filter(Boolean).join(" ");
+
+  const cellAttrs = !isFull 
+    ? `onclick="window.selectDayView('${dateStr}')" style="cursor:pointer;" ${dayNotes.length > 0 ? 'data-day-hint="Haz clic para ver las notas de este día"' : ''}` 
+    : "";
+
   return `
-    <div class="calendar-day drag-zone ${isToday ? "current-day" : ""}" 
+    <div class="${cellClasses}" 
          data-drop-date="${dateStr}"
          ondragover="window.handleNoteDragOver(event)" 
          ondragleave="window.handleNoteDragLeave(event)" 
          ondrop="window.handleNoteDrop(event)"
-         ${!isFull ? `onclick="window.selectDayView('${dateStr}')" style="cursor:pointer;" ${dayNotes.length > 0 ? 'data-day-hint="Haz clic para ver las notas de este día"' : ''}` : `style="padding: 2rem; min-height: 400px;"`} >
+         ${cellAttrs} >
         <div class="day-num">${label}</div>
-        <div class="day-notes">
+        <div class="day-notes notes-stack">
             ${finalNotesHtml}
         </div>
     </div>`;
@@ -448,41 +458,41 @@ function renderNoteList(title, data) {
   const stats = getters.getStats();
   const todayStr = dateUtils.getTodayStr();
   viewContainer.innerHTML = `
-    <div style="padding: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div class="view-container-padding">
+        <div class="view-header-row">
             <h2>Notas y Recordatorios</h2>
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="flex-center-gap-15">
                 ${
                   state.currentView === "all-notes"
                     ? `
                 ${
                   state.allNotesPriorityFilter
                     ? `
-                <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--primary);">
+                <div class="priority-filter-tag">
                     <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Prioridad: ${priorityLabels[state.allNotesPriorityFilter]}</span>
                     <i class="fas fa-times" style="cursor: pointer; font-size: 0.8rem; color: var(--text-muted);" title="Quitar filtro" onclick="window.clearPriorityFilter()"></i>
                 </div>
                 `
                     : ""
                 }
-                <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-main); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); flex: 1; min-width: 600px;">
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                <div class="filters-bar">
+                    <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterAll ? "checked" : ""} onchange="window.toggleAllNotesFilter('all', this.checked)"> 
                         <span>Todo (${stats.all_total})</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                    <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
                         <span>Recordatorios (${stats.activeWithDate})</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                    <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
                         <span>Notas (${stats.activeNoDate})</span>
                     </label>
-                    <div style="flex-grow: 1;"></div>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--high); cursor: pointer;">
+                    <div class="flex-grow"></div>
+                    <label class="filter-checkbox-group color-high">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterExpired ? "checked" : ""} onchange="window.toggleAllNotesFilter('expired', this.checked)"> 
                         <span>Caducadas (${stats.expired})</span>
@@ -492,11 +502,11 @@ function renderNoteList(title, data) {
                 }
             </div>
         </div>
-        <div style="display: grid; gap: 1.5rem;">
+        <div class="notes-stack-grid">
             ${
               data.length === 0
-                ? `<div style="text-align: center; padding: 4rem; background: var(--bg-sidebar); border-radius: var(--radius); border: 2px dashed var(--border);">
-                    <i class="fas fa-clipboard-list" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                ? `<div class="empty-state-placeholder list-variant">
+                    <i class="fas fa-clipboard-list empty-state-icon-lg"></i>
                     <p style="color: var(--text-muted);">No se encontraron resultados</p>
                  </div>`
                 : data
@@ -504,24 +514,24 @@ function renderNoteList(title, data) {
                       const isPast = n.date && n.date < todayStr;
                       const expiredClass = isPast ? "expired" : "";
                       return `
-                <div class="card ${expiredClass}" data-note-id="${n.id}" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease;" onclick="window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <div class="card note-card-full bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
+                    <div class="flex-1">
+                        <div class="card-header-row">
                             <span class="note-pill priority-${n.priority}">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
-                            <h3 style="margin: 0;">${n.title}</h3>
+                            <h3 class="m-0">${n.title}</h3>
                         </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                        <div class="badge-row">
                             ${renderCategoryBadge(n.category)}
                             ${renderTagPills(n.tags)}
                         </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 15px; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
+                        <div class="meta-row">
                             <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? "Sin fecha (Recurrente)" : "Sin fecha"}</span>
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                         </div>
-                        <p style="color: var(--text-main); line-height: 1.5; margin: 0; font-size: 0.95rem; white-space: pre-wrap;">${n.description || "Sin descripción adicional."}</p>
+                        <p class="note-desc">${n.description || "Sin descripción adicional."}</p>
                     </div>
-                    <div style="display: flex; gap: 8px; margin-left: 20px;">
-                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--high); padding: 8px 12px; transition: all 0.2s;"><i class="fas fa-trash"></i></button>
+                    <div class="card-actions-col">
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-fill"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`;
                     })

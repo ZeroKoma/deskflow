@@ -23,12 +23,12 @@ export async function updateStorageInfoUI() {
   if (status && container) {
     const freePercent = (100 - parseFloat(status.percentUsed)).toFixed(2);
     container.innerHTML = `
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 12px; padding: 12px; background: var(--bg-main); border-radius: 8px; border: 1px solid var(--border);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+      <div class="storage-info-container">
+        <div class="flex-between m-b-5">
           <span>Espacio libre:</span>
           <span style="font-weight: 700; color: var(--low);">${freePercent}%</span>
         </div>
-        <div style="font-size: 0.7rem; opacity: 0.8; line-height: 1.3;">
+        <div class="storage-footer-note">
           * Esta es una estimación aproximada del navegador basada en el disco disponible (${status.usageMB} MB usados).
         </div>
       </div>`;

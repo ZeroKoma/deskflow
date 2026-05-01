@@ -42,7 +42,7 @@ export function showToast(msg, type = "info", noteId = null, action = null) {
            <i class="fas fa-calendar-day"></i> Ver día
          </button>` : "";
 
-    actionButtons = `<div style="display: flex; gap: 10px; margin-top: 15px;">
+    actionButtons = `<div style="display: flex; gap: var(--space-m); margin-top: var(--space-l);">
         ${dateBtn}
         <button class="btn-primary" onclick="window.snoozeNote('${noteId}')" style="background: var(--high); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
           <i class="fas fa-clock"></i> Posponer
