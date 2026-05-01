@@ -300,6 +300,9 @@ function renderCalendar() {
   }
 
   viewContainer.innerHTML = `
+    <div class="view-container-padding">
+        <h1 class="view-title mb-0">Calendario</h1>
+    </div>
     <div class="calendar-header">
         <div class="flex-center-gap-20">
             <h2 class="m-0 text-capitalize">${title}</h2>
@@ -508,8 +511,8 @@ function renderNoteList(title, data) {
   const todayStr = dateUtils.getTodayStr();
   viewContainer.innerHTML = `
     <div class="view-container-padding">
-        <div class="view-header-row">
-            <h2>Notas y Recordatorios</h2>
+        <h1 class="view-title">Notas y Recordatorios</h1>
+        <div class="view-header-row" style="margin-top: var(--space-l);">
             <div class="flex-center-gap-15">
                 ${
                   state.currentView === "all-notes"
