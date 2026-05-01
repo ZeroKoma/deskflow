@@ -33,6 +33,20 @@
   cursor: pointer;
 }
 
+/* Mejoras en las tarjetas de notas para evitar parpadeos y añadir interactividad */
+.dashboard-note-item,
+.card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.dashboard-note-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -238,22 +252,15 @@ body {
 }
 
 .drag-zone.zone-valid {
-  border: 2px dashed var(--low) !important;
+  /* Usamos box-shadow en lugar de border para evitar que la caja cambie de tamaño y parpadee */
+  box-shadow: inset 0 0 0 1px var(--low) !important;
+  border-color: transparent !important;
 }
 
 .drag-zone.zone-invalid {
-  border: 2px dashed var(--high) !important;
+  box-shadow: inset 0 0 0 1px var(--high) !important;
+  border-color: transparent !important;
   opacity: 0.8;
-}
-
-.drag-zone.drag-over.zone-valid {
-  background: rgba(16, 185, 129, 0.1) !important;
-  border-style: solid !important;
-}
-
-.drag-zone.drag-over.zone-invalid {
-  background: rgba(239, 68, 68, 0.1) !important;
-  border-style: solid !important;
 }
 
 .dashboard-note-item[draggable="true"],
@@ -888,4 +895,9 @@ body.alarm-active .alarm-overlay {
   ) !important; /* Usamos background para anular el inline style */
   box-shadow: none !important;
   transform: none !important;
+}
+
+/* Evitar que los hijos de la zona de arrastre capturen eventos durante el drag */
+.drag-zone.drag-over * {
+  pointer-events: none;
 }

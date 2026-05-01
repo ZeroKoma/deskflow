@@ -109,25 +109,42 @@ let isDraggingActive = false;
 
 document.addEventListener("mouseover", (e) => {
   const target = e.target.closest("[data-note-id]");
+  const dayTarget = e.target.closest("[data-day-hint]");
   const isFullView = state.currentView === "all-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
-  if (target && !e.target.closest(".modal") && !isFullView && !isDraggingActive) {
+  if (target && !e.target.closest(".modal") && !isDraggingActive) {
     const note = getters.getNoteById(target.dataset.noteId);
+    const hint = target.dataset.hint;
     if (note) {
       tooltip.style.display = "block";
       tooltip.style.borderLeftColor = `var(--${note.priority})`;
-      tooltip.innerHTML = `
-        <div style="font-weight: 700; margin-bottom: 5px;">${note.title}</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-          <i class="far fa-calendar-alt"></i> ${note.date ? dateUtils.formatDisplayDate(note.date) : "--"}
-          ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-          ${renderCategoryBadge(note.category)}
-          ${renderTagPills(note.tags)}
-        </div>
-        <div style="color: var(--text-main); font-size: 0.8rem; white-space: pre-wrap;">${note.description || "<i>Sin descripción</i>"}</div>
-      `;
+
+      if (isFullView && hint) {
+        // En vista detallada, solo mostramos el consejo de acción para no ser redundantes
+        tooltip.innerHTML = `<div style="font-size: 0.8rem; font-weight: 600; color: var(--primary);"><i class="fas fa-info-circle"></i> ${hint}</div>`;
+      } else if (!isFullView) {
+        // En vistas compactas (dashboard, mes), mostramos toda la info + el consejo
+        tooltip.innerHTML = `
+          <div style="font-weight: 700; margin-bottom: 5px;">${note.title}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+            <i class="far fa-calendar-alt"></i> ${note.date ? dateUtils.formatDisplayDate(note.date) : "--"}
+            ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+            ${renderCategoryBadge(note.category)}
+            ${renderTagPills(note.tags)}
+          </div>
+          <div style="color: var(--text-main); font-size: 0.8rem; white-space: pre-wrap; margin-bottom: 8px;">${note.description || "<i>Sin descripción</i>"}</div>
+          ${hint ? `<div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 0.75rem; color: var(--primary); font-weight: 600;"><i class="fas fa-mouse-pointer"></i> ${hint}</div>` : ""}
+        `;
+      } else {
+        tooltip.style.display = "none";
+      }
     }
+  } else if (dayTarget && !e.target.closest(".modal") && !isDraggingActive) {
+    // Tooltip para el día del calendario (solo si no estamos sobre una nota)
+    tooltip.style.display = "block";
+    tooltip.style.borderLeftColor = "var(--primary)";
+    tooltip.innerHTML = `<div style="font-size: 0.8rem; font-weight: 600; color: var(--primary);"><i class="fas fa-search-plus"></i> ${dayTarget.dataset.dayHint}</div>`;
   }
 });
 document.addEventListener("mousemove", (e) => {
@@ -139,7 +156,7 @@ document.addEventListener("mousemove", (e) => {
     tooltip.style.left = `${x}px`; tooltip.style.top = `${y}px`;
   }
 });
-document.addEventListener("mouseout", (e) => { if (e.target.closest("[data-note-id]")) tooltip.style.display = "none"; });
+document.addEventListener("mouseout", (e) => { if (e.target.closest("[data-note-id]") || e.target.closest("[data-day-hint]")) tooltip.style.display = "none"; });
 
 // Limpieza de tooltips durante operaciones de arrastre
 document.addEventListener("dragstart", () => {
