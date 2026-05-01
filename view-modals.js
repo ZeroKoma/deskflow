@@ -3,21 +3,22 @@ import { dateUtils } from "./utils.js";
 
 export function openNoteModal(id = null, defaultDate = null) {
   const noteModal = document.getElementById("note-modal");
-  const title = document.getElementById("modal-title");
+  const modalTitle = document.getElementById("modal-title");
+  const dateInput = document.getElementById("date");
   const alarmInput = document.getElementById("alarm");
   const deleteBtn = document.getElementById("delete-note-modal");
   noteModal.style.display = "flex";
-  document.getElementById("date").min = dateUtils.getTodayStr();
+  dateInput.min = dateUtils.getTodayStr();
 
   document.getElementById("category").innerHTML = state.categories
     .map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
 
   if (id) {
     const note = getters.getNoteById(id);
-    title.innerText = note.date ? "Editar Recordatorio" : "Editar Nota";
+    modalTitle.innerText = note.date ? "Editar Recordatorio" : "Editar Nota";
     document.getElementById("note-id").value = note.id;
     document.getElementById("title").value = note.title;
-    document.getElementById("date").value = note.date;
+    dateInput.value = note.date;
     document.getElementById("time").value = note.time;
     document.getElementById("priority").value = note.priority;
     document.getElementById("category").value = note.category;
@@ -28,14 +29,29 @@ export function openNoteModal(id = null, defaultDate = null) {
     deleteBtn.style.display = "inline-flex";
     deleteBtn.onclick = () => window.deleteNote(id);
   } else {
-    title.innerText = defaultDate ? "Nuevo Recordatorio" : "Nueva Nota";
+    // Reset form for new note
     document.getElementById("note-form").reset();
     document.getElementById("note-id").value = "";
-    if (defaultDate) document.getElementById("date").value = defaultDate;
+    
+    // Set default date if provided
+    if (defaultDate) {
+      dateInput.value = defaultDate;
+    }
+
+    // Set initial title based on date presence
+    modalTitle.innerText = dateInput.value ? "Nuevo Recordatorio" : "Nueva Nota";
+    
     renderTagSelection([]);
     alarmInput.disabled = true;
     deleteBtn.style.display = "none";
   }
+
+  // Add event listener for dynamic title update (only for new notes)
+  const updateModalTitleBasedOnDate = () => {
+    if (!id) modalTitle.innerText = dateInput.value ? "Nuevo Recordatorio" : "Nueva Nota";
+  };
+  dateInput.removeEventListener("input", updateModalTitleBasedOnDate); // Prevent multiple listeners
+  dateInput.addEventListener("input", updateModalTitleBasedOnDate);
 }
 
 export function renderTagSelection(selectedIds) {

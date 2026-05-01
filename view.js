@@ -1,10 +1,27 @@
 import { state, mutations, getters } from "./store.js";
 import { dateUtils } from "./utils.js";
-import { priorityLabels, getCategoryInfo, renderCategoryBadge, renderTagPills, showToast, showConfirmModal } from "./view-components.js";
-import { openNoteModal, renderTagManager, renderCategoryManager } from "./view-modals.js";
+import {
+  priorityLabels,
+  getCategoryInfo,
+  renderCategoryBadge,
+  renderTagPills,
+  showToast,
+  showConfirmModal,
+} from "./view-components.js";
+import {
+  openNoteModal,
+  renderTagManager,
+  renderCategoryManager,
+} from "./view-modals.js";
 
 // Re-exportar para app.js
-export { showToast, showConfirmModal, openNoteModal, renderTagManager, renderCategoryManager };
+export {
+  showToast,
+  showConfirmModal,
+  openNoteModal,
+  renderTagManager,
+  renderCategoryManager,
+};
 
 const viewContainer = document.getElementById("view-container");
 
@@ -241,7 +258,7 @@ function renderCalendar() {
                     <button class="btn-primary ${isPastDay ? "disabled-btn" : ""}" style="padding: 5px 15px; font-size: 0.8rem;"
                             ${isPastDay ? "disabled" : ""}
                             onclick="${isPastDay ? "" : `window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')`}">
-                        <i class="fas fa-plus"></i> Nuevo Recordatorio
+                            Nuevo Recordatorio
                     </button>`
                     : ""
                 }

@@ -259,6 +259,8 @@ function setupGlobalEvents() {
 
   document.getElementById("clear-date").addEventListener("click", () => {
     document.getElementById("date").value = "";
+    // Disparar el evento 'input' para que el título del modal se actualice
+    document.getElementById("date").dispatchEvent(new Event('input'));
   });
 
   document.getElementById("clear-time").addEventListener("click", () => {
