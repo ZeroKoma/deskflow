@@ -233,6 +233,10 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
 }
 
 function renderCalendar() {
+  const query = document.getElementById("global-search")?.value || "";
+  const incTags = document.getElementById("search-tags")?.checked;
+  const incCats = document.getElementById("search-categories")?.checked;
+
   const focusDate = new Date(
     state.currentYear,
     state.currentMonth,
@@ -247,20 +251,48 @@ function renderCalendar() {
     year: "numeric",
   }).format(focusDate);
 
+  let dayTitle = focusDate.toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
+  const startOfWeek = new Date(focusDate);
+  const day = focusDate.getDay();
+  const diffToMonday = focusDate.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diffToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+  let weekTitle = `${startOfWeek.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(startOfWeek)} - ${endOfWeek.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(endOfWeek)}`;
+
+  let monthTitle = new Intl.DateTimeFormat("es-ES", {
+    month: "long",
+    year: "numeric",
+  }).format(focusDate);
+
+  // Calcular conteos para cada subvista
+  const dayCount = state.notes.filter(n => n.date === focusDateStr && matchesSearch(n, query, incTags, incCats)).length;
+  const weekCount = state.notes.filter(n => {
+    if (!n.date) return false;
+    const noteDate = new Date(n.date + 'T00:00:00');
+    return noteDate >= startOfWeek && noteDate <= endOfWeek && matchesSearch(n, query, incTags, incCats);
+  }).length;
+  const monthCount = state.notes.filter(n => {
+    if (!n.date) return false;
+    const [y, m] = n.date.split("-").map(Number);
+    return y === state.currentYear && (m - 1) === state.currentMonth && matchesSearch(n, query, incTags, incCats);
+  }).length;
+
+  // Asignar el título principal sin el contador
   if (state.calendarSubView === "week") {
-    const start = new Date(focusDate);
-    const day = focusDate.getDay();
-    const diff = focusDate.getDate() - day + (day === 0 ? -6 : 1);
-    start.setDate(diff);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    title = `${start.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(start)} - ${end.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(end)}`;
-  } else if (state.calendarSubView === "day")
-    title = focusDate.toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
+    title = weekTitle;
+  } else if (state.calendarSubView === "day") {
+    title = dayTitle;
+  } else { // month
+    title = monthTitle;
+  }
 
   viewContainer.innerHTML = `
     <div class="calendar-header">
@@ -286,9 +318,9 @@ function renderCalendar() {
         </div>
         <div class="flex-center-gap-15">
             <div class="subview-selector">
-                <button class="subview-btn ${state.calendarSubView === "day" ? "active" : ""}" onclick="window.setSubView('day')">Día</button>
-                <button class="subview-btn ${state.calendarSubView === "week" ? "active" : ""}" onclick="window.setSubView('week')">Semana</button>
-                <button class="subview-btn ${state.calendarSubView === "month" ? "active" : ""}" onclick="window.setSubView('month')">Mes</button>
+                <button class="subview-btn ${state.calendarSubView === "day" ? "active" : ""}" onclick="window.setSubView('day')">Día ${state.calendarSubView === "day" ? `<span class="title-count">(${dayCount})</span>` : ''}</button>
+                <button class="subview-btn ${state.calendarSubView === "week" ? "active" : ""}" onclick="window.setSubView('week')">Semana ${state.calendarSubView === "week" ? `<span class="title-count">(${weekCount})</span>` : ''}</button>
+                <button class="subview-btn ${state.calendarSubView === "month" ? "active" : ""}" onclick="window.setSubView('month')">Mes ${state.calendarSubView === "month" ? `<span class="title-count">(${monthCount})</span>` : ''}</button>
             </div>
             <div class="flex-gap-5">
                 <button class="btn-secondary btn-sm-nav" onclick="window.navigateCalendar(-1)"><i class="fas fa-chevron-left"></i></button>
