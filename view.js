@@ -122,27 +122,16 @@ function renderDashboard() {
   const focusDate = new Date();
   const originalSubView = state.calendarSubView;
   state.calendarSubView = "week"; // Forzamos subvista semanal temporalmente
-  const weekGridHtml = renderCalendarGrid(focusDate);
+  const weekGridHtml = renderCalendarGrid(focusDate, 5); // Limitamos a 5 recordatorios por día en Dashboard
   state.calendarSubView = originalSubView;
-
-  // Calcular el total de recordatorios de la semana actual para el contador
-  const startOfWeek = new Date(focusDate);
-  const day = focusDate.getDay();
-  const diffToMonday = focusDate.getDate() - day + (day === 0 ? -6 : 1);
-  startOfWeek.setDate(diffToMonday);
-  let weeklyNotesCount = 0;
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i);
-    const dateStr = dateUtils.formatYYYYMMDD(d);
-    weeklyNotesCount += state.notes.filter(n => n.date === dateStr && matchesSearch(n, query, incTags, incCats)).length;
-  }
 
   // Filtrar notas sin fecha para el listado inferior
   const noDateTasksFull = state.notes
     .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
   const noDateTotal = noDateTasksFull.length;
-  const noDateLimited = noDateTasksFull.slice(0, 5);
+  const noDateLimited = noDateTasksFull.slice(0, 6);
+  const noDateCountDisplay = noDateTotal > 6 ? `Mostrando 6 de ${noDateTotal}` : `Mostrando ${noDateTotal}`;
 
   viewContainer.innerHTML = `
     <div class="view-container-padding">
@@ -155,21 +144,26 @@ function renderDashboard() {
         </div>
 
         <div class="card dashboard-column">
-            <h3 class="column-title">
-                Planificación Semanal (${weeklyNotesCount})
-            </h3>
+            <div class="flex-between column-title">
+                <h3 class="m-0">
+                    Planificación Semanal <span class="title-count">(Mostrando primeras 5 por día)</span>
+                </h3>
+                <button class="btn-ghost btn-sm-border" onclick="window.seeFullWeek()" title="Ver semana completa">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
             <div class="calendar-grid week reset-grid">
                 ${weekGridHtml}
             </div>
         </div>
 
         <div class="card dashboard-column mb-0">
-            <div class="flex-between">
+            <div class="flex-between column-title">
                 <h3 class="m-0">
-                    Notas (${noDateTotal})
+                    Notas <span class="title-count">(${noDateCountDisplay})</span>
                 </h3>
-                <button class="btn-ghost btn-sm-border" onclick="window.seeAllNoDateNotes()">
-                    Ver todas <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                <button class="btn-ghost btn-sm-border" onclick="window.seeAllNoDateNotes()" title="Ver todas las notas">
+                    <i class="fas fa-eye"></i>
                 </button>
             </div>
             <div class="notes-grid-300">
@@ -199,15 +193,24 @@ function renderDashboard() {
 
 function renderDashboardColumn(title, tasks, icon, color, targetDate) {
   const todayStr = dateUtils.getTodayStr();
+  const totalCount = tasks.length;
+  const displayedTasks = tasks.slice(0, 3);
+  const countDisplay = totalCount > 3 ? `Mostrando 3 de ${totalCount}` : `Mostrando ${totalCount}`;
+
   return `
     <div class="card dashboard-column drag-zone" data-drop-date="${targetDate}" ondragover="window.handleNoteDragOver(event)" ondragleave="window.handleNoteDragLeave(event)" ondrop="window.handleNoteDrop(event)">
-        <h3 class="column-title">
-            ${title} (${tasks.length})
-        </h3>
+        <div class="flex-between column-title">
+            <h3 class="m-0">
+                ${title} <span class="title-count">(${countDisplay})</span>
+            </h3>
+            <button class="btn-ghost btn-sm-border" onclick="window.selectDayView('${targetDate}')" title="Ver día en calendario">
+                <i class="fas fa-eye"></i>
+            </button>
+        </div>
         <div class="notes-stack">
             ${
-              tasks.length > 0
-                ? tasks
+              displayedTasks.length > 0
+                ? displayedTasks
                     .map((t) => {
                       const isPast = t.date && t.date < todayStr;
                       return `
@@ -296,7 +299,7 @@ function renderCalendar() {
     <div class="calendar-grid ${state.calendarSubView}">${renderCalendarGrid(focusDate)}</div>`;
 }
 
-function renderCalendarGrid(focusDate) {
+function renderCalendarGrid(focusDate, limit = null) {
   let html = "";
   const todayStr = dateUtils.getTodayStr();
 
@@ -341,7 +344,7 @@ function renderCalendarGrid(focusDate) {
       d.setDate(startOfWeek.getDate() + i);
       const dateStr = dateUtils.formatYYYYMMDD(d);
       const label = `${new Intl.DateTimeFormat("es-ES", { weekday: "short" }).format(d)} ${d.getDate()}`;
-      html += renderDayCell(label, dateStr, dateStr === todayStr);
+      html += renderDayCell(label, dateStr, dateStr === todayStr, false, limit);
     }
   } else {
     const dateStr = dateUtils.formatYYYYMMDD(focusDate);
@@ -351,7 +354,7 @@ function renderCalendarGrid(focusDate) {
   return html;
 }
 
-function renderDayCell(label, dateStr, isToday = false, isFull = false) {
+function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = null) {
   const query = document.getElementById("global-search")?.value || "";
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
@@ -361,8 +364,10 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
       (n) => n.date === dateStr && matchesSearch(n, query, incTags, incCats),
     )
     .sort(sortNotesLogic);
+    
+  const displayedNotes = limit ? dayNotes.slice(0, limit) : dayNotes;
 
-  const notesHtml = dayNotes
+  const notesHtml = displayedNotes
     .map((n) => {
       const isPast = n.date && n.date < todayStr;
       const expiredClass = isPast ? "expired" : "";
@@ -579,6 +584,17 @@ window.seeAllNoDateNotes = () => {
     .forEach((b) => b.classList.remove("active"));
   const allNotesBtn = document.querySelector('[data-view="all-notes"]');
   if (allNotesBtn) allNotesBtn.classList.add("active");
+  renderView();
+};
+window.seeFullWeek = () => {
+  state.currentView = "calendar";
+  state.calendarSubView = "week";
+  // Actualizar visualmente la navegación del sidebar
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((b) => b.classList.remove("active"));
+  const calendarBtn = document.querySelector('[data-view="calendar"]');
+  if (calendarBtn) calendarBtn.classList.add("active");
   renderView();
 };
 window.goToday = () => {
