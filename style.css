@@ -1369,9 +1369,19 @@ body.alarm-active .alarm-overlay {
     padding-bottom: var(--space-xl);
   }
 
+  /* --- Tipografía Responsiva (UX Expert Mix) --- */
   .view-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem; /* Un poco más de presencia que el 1.5 anterior */
+    font-weight: 800;
+    letter-spacing: -0.02em;
     margin-bottom: var(--space-xs);
+  }
+
+  .view-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-bottom: var(--space-xl);
+    opacity: 0.9;
   }
 
   .app-container {
@@ -1410,6 +1420,12 @@ body.alarm-active .alarm-overlay {
     margin-bottom: var(--space-l);
     font-size: 1.5rem;
   }
+
+  /* Ajuste de encabezados globales en móvil */
+  h2 { font-size: 1.3rem !important; }
+  h3 { font-size: 1.15rem !important; }
+
+  .nav-item { font-size: 1rem; padding: 1rem var(--space-l); } /* Mejor touch target */
 
   .top-bar,
   .calendar-header {
@@ -1482,7 +1498,7 @@ body.alarm-active .alarm-overlay {
     top: 8px; 
     transform: translateX(-50%);
     margin-bottom: 0;
-    font-size: 1.25rem;
+    font-size: 1.35rem;
   }
 
   .mobile-logo.logo div {
