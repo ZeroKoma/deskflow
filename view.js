@@ -253,7 +253,11 @@ function renderCalendar() {
         <div style="display: flex; align-items: center; gap: 20px;">
             <h2 style="margin:0; text-transform: capitalize;">${title}</h2>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-primary" style="padding: 5px 15px;" onclick="window.goToday()">Hoy</button>                
+                ${
+                  state.calendarSubView === "day" && focusDateStr === todayStr
+                    ? ""
+                    : `<button class="btn-primary" style="padding: 5px 15px;" onclick="window.goToday()">Hoy</button>`
+                }
                 ${
                   state.calendarSubView === "day"
                     ? `
