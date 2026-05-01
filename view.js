@@ -807,6 +807,16 @@ window.handleNoteDrop = (e) => {
     return;
   }
 
+  // Validación de hora al soltar en el día de hoy (solo si tiene hora definida)
+  if (targetDate && targetDate === todayStr && note.time) {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      if (note.time.slice(0, 5) < currentTime) {
+          showToast("No puedes mover un recordatorio con hora pasada al día de hoy", "error");
+          return;
+      }
+  }
+
   const wasNote = !note.date;
   const isNowNote = !targetDate;
 

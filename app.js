@@ -387,28 +387,30 @@ function handleFormSubmit(e) {
   const timeValue = document.getElementById("time").value;
   const dateValue = document.getElementById("date").value;
   const existingNote = id ? state.notes.find(n => n.id === id) : null;
+  const todayStr = dateUtils.getTodayStr();
 
-  // Evitar crear o mover notas a fechas pasadas
-  if (dateValue && dateValue < dateUtils.getTodayStr()) {
-    showToast("No se pueden programar notas en fechas pasadas", "error");
-    return;
+  // Si no hay fecha seleccionada, no aplicamos validaciones de tiempo.
+  // Esto permite que las "notas" (sin fecha) se guarden con cualquier hora.
+  if (dateValue === "") {
+    // No hay fecha, se omite la validación de tiempo.
   }
+  // Si hay fecha, aplicamos las validaciones de recordatorio.
+  else {
+    // 1. No permitir fechas pasadas
+    if (dateValue < todayStr) {
+      showToast("No se pueden programar recordatorios en fechas pasadas", "error");
+      return;
+    }
 
-  const selectedTags = Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value);
-  
-  const isAlarmActive = document.getElementById("alarm").checked;
-
-  // Validar que no se active la alarma para un momento que ya ha pasado
-  if (isAlarmActive) {
-    const todayStr = dateUtils.getTodayStr();
-    const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
-    if ((!dateValue || dateValue === todayStr) && timeValue && timeValue <= currentTime) {
-      showToast("No se puede activar la alarma para una hora o momento que ya ha pasado", "error");
+    // 2. Si la fecha es hoy, la hora no puede ser anterior a la actual
+    if (dateValue === todayStr && timeValue && timeValue.slice(0, 5) < `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`) {
+      showToast("No puedes programar un recordatorio para una hora que ya pasó hoy", "error");
       return;
     }
   }
+
+  const selectedTags = Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value);
+  const isAlarmActive = document.getElementById("alarm").checked;
 
   const alarmTag = state.tags.find(t => t.name === "Alarma");
 
