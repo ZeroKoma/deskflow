@@ -17,9 +17,12 @@
     />
   </head>
   <body>
+    <!-- Overlay para el sidebar en móvil -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
     <div class="app-container">
       <!-- Sidebar -->
       <aside class="sidebar">
+        <button type="button" class="sidebar-close-btn" id="sidebar-close-btn"><i class="fas fa-times"></i></button>
         <div class="logo">
           <div>
             <i class="fas fa-layer-group"></i>
@@ -83,7 +86,10 @@
       <!-- Main Content -->
       <main class="main-content">
         <header class="top-bar">
-          <div class="flex-center-gap-20">
+          <button id="search-toggle-btn" class="search-toggle-btn" title="Alternar búsqueda">
+            <i class="fas fa-search"></i>
+          </button>
+          <div class="flex-center-gap-20 search-content-wrapper">
             <div class="search-box">
               <i class="fas fa-search"></i>
               <input

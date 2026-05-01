@@ -44,6 +44,55 @@ export function applyTheme() {
 }
 
 function setupGlobalEvents() {
+  // Lógica de Menú Hamburguesa para Móvil
+  const topBar = document.querySelector('.top-bar');
+  const sidebar = document.querySelector('.sidebar');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+  if (topBar && !document.getElementById('mobile-header-row')) {
+    const mobileHeader = document.createElement('div');
+    mobileHeader.id = 'mobile-header-row';
+    mobileHeader.className = 'mobile-header-row';
+
+    const menuBtn = document.createElement('button');
+    menuBtn.id = 'mobile-menu-btn';
+    menuBtn.className = 'hamburger-btn';
+    menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+
+    const mobileLogo = document.createElement('div');
+    mobileLogo.className = 'logo mobile-logo';
+    mobileLogo.innerHTML = '<div><i class="fas fa-layer-group"></i> <span>DeskFlow</span></div>';
+
+    mobileHeader.appendChild(menuBtn);
+    mobileHeader.appendChild(mobileLogo);
+    topBar.prepend(mobileHeader);
+
+    const searchToggle = document.getElementById('search-toggle-btn');
+    searchToggle.addEventListener('click', () => {
+      const isActive = topBar.classList.toggle('search-active');
+      const icon = searchToggle.querySelector('i');
+      if (icon) {
+        icon.className = isActive ? 'fas fa-times' : 'fas fa-search';
+      }
+    });
+
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('active');
+    });
+
+    // Cerrar sidebar al hacer click en el overlay
+    sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('active');
+    });
+
+    // Cerrar sidebar al hacer click en el botón 'X'
+    document.getElementById('sidebar-close-btn').addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('active');
+    });
+  }
+
   // Navegación Sidebar
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", (e) => {
@@ -54,6 +103,10 @@ function setupGlobalEvents() {
       state.allNotesPriorityFilter = null;
       state.currentView = view;
       renderView();
+      
+      // Cerrar sidebar y overlay al hacer click en móvil
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('active');
     });
   });
 
@@ -71,6 +124,10 @@ function setupGlobalEvents() {
       const allNotesBtn = document.querySelector('[data-view="all-notes"]');
       if (allNotesBtn) allNotesBtn.classList.add("active");
       renderView();
+
+      // Cerrar sidebar y overlay en móvil
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('active');
     });
   });
 
@@ -97,6 +154,10 @@ function setupGlobalEvents() {
     document.getElementById("tag-submit-btn").innerText = "Añadir";
     renderTagManager();
     tagModal.style.display = "flex";
+
+    // Cerrar sidebar y overlay en móvil
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
   });
   document.getElementById("close-tag-manager").onclick = () => tagModal.style.display = "none";
   document.getElementById("close-tag-manager-btn").onclick = () => tagModal.style.display = "none";
@@ -167,6 +228,10 @@ function setupGlobalEvents() {
     document.getElementById("category-submit-btn").innerText = "Añadir";
     renderCategoryManager();
     catModal.style.display = "flex";
+
+    // Cerrar sidebar y overlay en móvil
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
   });
   document.getElementById("close-category-manager").onclick = () => catModal.style.display = "none";
   document.getElementById("close-category-manager-btn").onclick = () => catModal.style.display = "none";
@@ -214,6 +279,10 @@ function setupGlobalEvents() {
   document.getElementById("manage-settings-btn").addEventListener("click", () => {
     settings.updateStorageInfoUI();
     settingsModal.style.display = "flex";
+
+    // Cerrar sidebar y overlay en móvil
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
   });
   
   const closeSettings = () => settingsModal.style.display = "none";

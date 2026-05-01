@@ -143,7 +143,7 @@ function renderDashboard() {
             ${renderDashboardColumn("Recordatorios de Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", tomorrowStr)}
         </div>
 
-        <div class="card dashboard-column">
+        <div class="card dashboard-column planning-card">
             <div class="flex-between column-title">
                 <h3 class="m-0">
                     Planificación Semanal <span class="title-count">(Mostrando primeras 5 por día)</span>
@@ -386,7 +386,7 @@ function renderCalendarGrid(focusDate, limit = null) {
   return html;
 }
 
-function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = null) {
+function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = null, isWeekend = false) {
   const query = document.getElementById("global-search")?.value || "";
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
@@ -426,7 +426,14 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
             </div>
         </div>`;
       }
-      return `<div class="note-pill priority-${n.priority} ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">${n.title}</div>`;
+
+      // En móvil (responsive) y vista mes, permitimos que el click llegue al padre (calendar-day)
+      // para navegar a la vista día, en lugar de abrir el modal, ya que las notas son "puntos".
+      const clickHandler = state.calendarSubView === 'month' 
+        ? `if(window.innerWidth > 768) { event.stopPropagation(); window.openNoteModal('${n.id}'); }`
+        : `event.stopPropagation(); window.openNoteModal('${n.id}');`;
+
+      return `<div class="note-pill priority-${n.priority} ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="${clickHandler}" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">${n.title}</div>`;
     })
     .join("");
 
@@ -442,6 +449,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
     "calendar-day",
     "drag-zone",
     isToday ? "current-day" : "",
+    isWeekend ? "weekend" : "",
     isFull ? "day-cell-full" : ""
   ].filter(Boolean).join(" ");
 

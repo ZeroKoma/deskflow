@@ -23,6 +23,9 @@
   --space-xl: 1.5rem; /* 24px */
   --space-2xl: 2rem; /* 32px */
   --space-3xl: 3rem; /* 48px */
+
+  /* Variables de Espaciado Responsivo */
+  --container-h-padding: var(--space-2xl);
 }
 
 [data-theme="dark"] {
@@ -65,6 +68,12 @@
     system-ui,
     -apple-system,
     sans-serif;
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
 body {
@@ -334,6 +343,21 @@ body {
   margin-bottom: 0;
 }
 
+/* Planificación Semanal Full Bleed */
+.planning-card {
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.planning-card .column-title {
+  padding: 0 var(--space-l);
+  margin-bottom: var(--space-m);
+}
+
 .column-title {
   margin-bottom: var(--space-l);
   margin-top: 0;
@@ -563,6 +587,11 @@ body {
   margin: var(--space-l) var(--space-2xl);
   border-radius: var(--radius);
   overflow: hidden;
+  border: none; /* Quitamos borde doble cuando está dentro de una card */
+}
+
+.calendar-grid.reset-grid {
+  border-radius: 0;
 }
 
 .drag-zone.drag-over {
@@ -609,6 +638,14 @@ body {
   border: 2px solid var(--primary); /* Borde para resaltar */
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); /* Sombra suave */
   position: relative; /* Para asegurar que el borde se vea bien */
+}
+
+.calendar-day.weekend {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .calendar-day.weekend {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .calendar-grid.week .calendar-day {
@@ -1226,4 +1263,362 @@ body.alarm-active .alarm-overlay {
 /* Evitar que los hijos de la zona de arrastre capturen eventos durante el drag */
 .drag-zone.drag-over * {
   pointer-events: none;
+}
+
+/* Botón hamburguesa oculto en desktop */
+.hamburger-btn {
+  display: none;
+}
+
+.search-toggle-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+/* Fila superior móvil oculta en desktop */
+.mobile-header-row {
+  display: none;
+}
+
+/* Overlay para el sidebar en móvil */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px); /* Efecto de desenfoque sutil */
+  z-index: 1099; /* Detrás del sidebar (1100) pero sobre el contenido principal */
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Botón de cierre del sidebar (solo visible en móvil) */
+.sidebar-close-btn {
+  display: none; /* Oculto por defecto en desktop */
+  position: absolute;
+  top: var(--space-l);
+  right: var(--space-l);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 1101; /* Por encima del contenido del sidebar */
+}
+
+/* --- Media Queries de Ajuste Global --- */
+@media (max-width: 768px) {
+  :root {
+    --container-h-padding: var(
+      --space-l
+    ); /* Reducimos de 32px a 16px en móviles */
+  }
+
+  .app-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .calendar-grid {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 1100; /* Asegura que esté por encima del overlay */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 10px 0 15px rgba(0, 0, 0, 0.1);
+    padding: var(--space-xl) var(--container-h-padding); /* Ajuste de padding para el botón de cierre */
+    position: fixed; /* Ya es fixed, pero lo reafirmo para el contexto */
+    /* No es necesario position: relative aquí si el botón de cierre es hijo directo y se posiciona con top/right */
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .logo {
+    /* Ajustar el margen del logo para que no choque con el botón de cierre */
+    font-size: 1.5rem;
+    margin-bottom: var(--space-l);
+    font-size: 1.5rem;
+  }
+
+  .top-bar,
+  .calendar-header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Lupa a la izquierda, Crear a la derecha */
+    align-items: center;
+    gap: var(--space-l);
+    padding: var(--space-m) var(--container-h-padding);
+    height: auto;
+  }
+
+  .mobile-header-row {
+    width: 100%;
+    order: 1;
+  }
+
+  .search-toggle-btn {
+    display: block;
+    order: 2;
+    padding: 8px;
+    margin-left: -8px; /* Compensa el padding para alinear al borde izquierdo */
+  }
+
+  .top-bar .actions {
+    order: 3;
+    width: auto;
+  }
+
+  .search-content-wrapper {
+    display: none !important; /* Oculto por defecto */
+    order: 4;
+  }
+
+  /* Estado expandido */
+  .top-bar.search-active .search-content-wrapper {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+    width: auto;
+    margin-bottom: 5px; /* Permitir que se sitúe al lado de la lupa */
+  }
+
+  .top-bar.search-active .search-toggle-btn {
+    color: var(--high);
+    align-self: flex-start; /* Alinea la X con la parte superior del buscador */
+    margin-top: 4px;
+  }
+
+  .top-bar.search-active .actions {
+    display: none;
+  }
+
+  .top-bar.search-active .actions .btn-primary {
+    width: 100%;
+  }
+
+  .mobile-header-row {
+    display: flex;
+    align-items: center;
+    position: relative;
+    min-height: 40px;
+    margin-bottom: var(--space-xs);
+  }
+
+  .mobile-logo.logo {
+    position: absolute;
+    left: 50%;
+    top: 8px; 
+    transform: translateX(-50%);
+    margin-bottom: 0;
+    font-size: 1.25rem;
+  }
+
+  .mobile-logo.logo div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .hamburger-btn {
+    display: block;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  .sidebar-close-btn {
+    display: block; /* Mostrar el botón de cierre en móvil */
+  }
+
+  .top-bar .flex-center-gap-20,
+  .calendar-header .flex-center-gap-20 {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-l);
+  }
+
+  .calendar-header .flex-center-gap-15 {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: var(--space-s);
+  }
+
+  /* Centrar switches de búsqueda en móvil */
+  .top-bar .flex-center-gap-20 > div:last-child {
+    justify-content: center;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .top-bar .actions .btn-primary {
+    padding: 0.5rem 1rem; /* Botón pequeño */
+    width: auto;
+  }
+
+  /* Eliminar el bloqueo de ancho en los filtros de la lista de notas */
+  .filters-bar {
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    padding: var(--space-m);
+    border-radius: var(--radius);
+  }
+
+  .filters-bar .flex-grow {
+    display: none;
+  }
+
+  .view-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-l);
+  }
+
+  .main-content {
+    height: auto;
+    overflow-y: visible; /* El scroll lo manejará el body en móvil */
+  }
+
+  /* Paso 5: Componentes Pequeños y Ajustes de UI */
+  .dashboard-grid,
+  .notes-grid-300 {
+    grid-template-columns: 1fr;
+  }
+
+  .note-card-full {
+    flex-direction: column;
+    padding: var(--space-l);
+  }
+
+  .card-actions-col {
+    margin-left: 0;
+    margin-top: var(--space-m);
+    width: 100%;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-m);
+  }
+
+  .modal-content {
+    padding: var(--space-l);
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0; /* Los form-groups ya tienen su propio margen inferior */
+  }
+
+  .calendar-day {
+    min-height: 90px;
+    padding: 2px;
+  }
+
+  .day-num {
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    padding-right: 4px;
+  }
+
+  .day-cell-full {
+    padding: var(--space-l);
+  }
+
+  /* Estilo tipo Google Calendar para la vista de MES en móvil */
+  .calendar-grid.month .day-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    justify-content: flex-start;
+  }
+
+  .calendar-grid.month .note-pill {
+    width: 100%;
+    height: auto;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: white !important;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    border: none;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  /* Forzar colores sólidos para que los puntos se distingan bien en móvil */
+  .calendar-grid.month .note-pill.priority-high {
+    background-color: var(--high) !important;
+  }
+  .calendar-grid.month .note-pill.priority-medium {
+    background-color: var(--medium) !important;
+  }
+  .calendar-grid.month .note-pill.priority-low {
+    background-color: var(--low) !important;
+  }
+
+  /* Forzar 1 columna para planificación semanal en móvil */
+  .calendar-grid.week {
+    grid-template-columns: 1fr;
+    margin: var(--space-l) var(--container-h-padding); /* Reintroduce márgenes laterales */
+    border-radius: var(--radius); /* Reintroduce esquinas redondeadas */
+  }
+
+  /* Ajustes de Feedback Visual */
+  .toast {
+    width: calc(100% - 40px);
+    right: 20px;
+    left: 20px;
+    bottom: 20px;
+    text-align: center;
+  }
+
+  .toast.high {
+    font-size: 1rem;
+    padding: var(--space-l);
+    width: 90%;
+  }
+
+  .note-tooltip {
+    display: none !important; /* El hover no existe en touch y ensucia la UI */
+  }
 }
