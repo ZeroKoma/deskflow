@@ -48,6 +48,23 @@ function setupGlobalEvents() {
   const topBar = document.querySelector('.top-bar');
   const sidebar = document.querySelector('.sidebar');
   const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+  // Función auxiliar para sincronizar los iconos de los botones de menú
+  const updateToggleIcons = (isOpen) => {
+    // Solo el botón de escritorio cambia de icono
+    const desktopBtn = document.getElementById('sidebar-open-btn');
+    if (desktopBtn) desktopBtn.innerHTML = isOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+  };
+
+  // Función para cerrar el sidebar solo en dispositivos móviles tras una acción
+  const closeSidebarOnMobile = () => {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('active');
+      updateToggleIcons(false);
+    }
+  };
+
   if (topBar && !document.getElementById('mobile-header-row')) {
     const mobileHeader = document.createElement('div');
     mobileHeader.id = 'mobile-header-row';
@@ -76,22 +93,36 @@ function setupGlobalEvents() {
     });
 
     menuBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
+      const isOpen = sidebar.classList.toggle('open');
       sidebarOverlay.classList.toggle('active');
     });
 
-    // Cerrar sidebar al hacer click en el overlay
-    sidebarOverlay.addEventListener('click', () => {
-      sidebar.classList.remove('open');
-      sidebarOverlay.classList.remove('active');
-    });
+    // Sincronización inicial: Si el sidebar empieza abierto, activar overlay y icono 'X' en móvil
+    const startOpen = sidebar.classList.contains('open');
+    if (startOpen) {
+      sidebarOverlay.classList.add('active');
+      updateToggleIcons(true);
+    }
+  }
 
-    // Cerrar sidebar al hacer click en el botón 'X'
-    document.getElementById('sidebar-close-btn').addEventListener('click', () => {
-      sidebar.classList.remove('open');
-      sidebarOverlay.classList.remove('active');
+  // Lógica de Menú para Escritorio
+  const desktopMenuBtn = document.getElementById('sidebar-open-btn');
+  if (desktopMenuBtn) {
+    desktopMenuBtn.addEventListener('click', () => {
+      const isOpen = sidebar.classList.toggle('open');
+      // Solo activamos el overlay si estamos en móvil (ancho < 768px)
+      if (window.innerWidth <= 768) {
+        sidebarOverlay.classList.toggle('active');
+      }
+      updateToggleIcons(isOpen);
     });
   }
+
+  // Cerrar sidebar al hacer click en el botón 'X' (solo se ve en responsive)
+  document.getElementById('sidebar-close-btn').addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
+  });
 
   // Navegación Sidebar
   document.querySelectorAll(".nav-item").forEach(btn => {
@@ -103,10 +134,7 @@ function setupGlobalEvents() {
       state.allNotesPriorityFilter = null;
       state.currentView = view;
       renderView();
-      
-      // Cerrar sidebar y overlay al hacer click en móvil
-      sidebar.classList.remove('open');
-      sidebarOverlay.classList.remove('active');
+      closeSidebarOnMobile();
     });
   });
 
@@ -124,10 +152,7 @@ function setupGlobalEvents() {
       const allNotesBtn = document.querySelector('[data-view="all-notes"]');
       if (allNotesBtn) allNotesBtn.classList.add("active");
       renderView();
-
-      // Cerrar sidebar y overlay en móvil
-      sidebar.classList.remove('open');
-      sidebarOverlay.classList.remove('active');
+      closeSidebarOnMobile();
     });
   });
 
@@ -154,10 +179,7 @@ function setupGlobalEvents() {
     document.getElementById("tag-submit-btn").innerText = "Añadir";
     renderTagManager();
     tagModal.style.display = "flex";
-
-    // Cerrar sidebar y overlay en móvil
-    sidebar.classList.remove('open');
-    sidebarOverlay.classList.remove('active');
+    closeSidebarOnMobile();
   });
   document.getElementById("close-tag-manager").onclick = () => tagModal.style.display = "none";
   document.getElementById("close-tag-manager-btn").onclick = () => tagModal.style.display = "none";
@@ -228,10 +250,7 @@ function setupGlobalEvents() {
     document.getElementById("category-submit-btn").innerText = "Añadir";
     renderCategoryManager();
     catModal.style.display = "flex";
-
-    // Cerrar sidebar y overlay en móvil
-    sidebar.classList.remove('open');
-    sidebarOverlay.classList.remove('active');
+    closeSidebarOnMobile();
   });
   document.getElementById("close-category-manager").onclick = () => catModal.style.display = "none";
   document.getElementById("close-category-manager-btn").onclick = () => catModal.style.display = "none";
@@ -279,10 +298,7 @@ function setupGlobalEvents() {
   document.getElementById("manage-settings-btn").addEventListener("click", () => {
     settings.updateStorageInfoUI();
     settingsModal.style.display = "flex";
-
-    // Cerrar sidebar y overlay en móvil
-    sidebar.classList.remove('open');
-    sidebarOverlay.classList.remove('active');
+    closeSidebarOnMobile();
   });
   
   const closeSettings = () => settingsModal.style.display = "none";
