@@ -139,7 +139,7 @@ function renderDashboard() {
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
             ${renderDashboardColumn("Recordatorios de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
-            ${renderDashboardColumn("Recordatorios de Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", todayStr)}
+            ${renderDashboardColumn("Recordatorios de Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", tomorrowStr)}
         </div>
 
         <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 3rem; display: block; cursor: default;">
@@ -166,7 +166,7 @@ function renderDashboard() {
                     ? noDateLimited
                         .map(
                           (t) => `
-                    <div class="dashboard-note-item" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
+                    <div class="dashboard-note-item" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                             <span style="font-weight: 600;">${t.title}</span>
                             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -185,9 +185,11 @@ function renderDashboard() {
     </div>`;
 }
 
-function renderDashboardColumn(title, tasks, icon, color, todayStr) {
+function renderDashboardColumn(title, tasks, icon, color, targetDate) {
+  const todayStr = dateUtils.getTodayStr();
   return `
-    <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
+    <div class="card drag-zone" data-drop-date="${targetDate}" ondragover="window.handleNoteDragOver(event)" ondragleave="window.handleNoteDragLeave(event)" ondrop="window.handleNoteDrop(event)"
+         style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
         <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
             <i class="fas ${icon}" style="color: ${color}"></i> ${title}
         </h3>
@@ -198,7 +200,7 @@ function renderDashboardColumn(title, tasks, icon, color, todayStr) {
                     .map((t) => {
                       const isPast = t.date && t.date < todayStr;
                       return `
-                <div class="dashboard-note-item ${isPast ? "expired" : ""}" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
+                <div class="dashboard-note-item ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" style="padding: 12px; background: var(--bg-main); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.openNoteModal('${t.id}')">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                         <span style="font-weight: 500;">${t.title}</span>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -352,7 +354,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
 
       if (isFull) {
         return `
-        <div class="card ${expiredClass}" data-note-id="${n.id}" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">
+        <div class="card ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); transition: transform 0.2s ease;" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">
             <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                     <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
@@ -372,7 +374,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
             </div>
         </div>`;
       }
-      return `<div class="note-pill priority-${n.priority} ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">${n.title}</div>`;
+      return `<div class="note-pill priority-${n.priority} ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')">${n.title}</div>`;
     })
     .join("");
 
@@ -385,7 +387,11 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
       : notesHtml;
 
   return `
-    <div class="calendar-day ${isToday ? "current-day" : ""}" 
+    <div class="calendar-day drag-zone ${isToday ? "current-day" : ""}" 
+         data-drop-date="${dateStr}"
+         ondragover="window.handleNoteDragOver(event)" 
+         ondragleave="window.handleNoteDragLeave(event)" 
+         ondrop="window.handleNoteDrop(event)"
          ${!isFull ? `onclick="window.selectDayView('${dateStr}')" style="cursor:pointer;"` : `style="padding: 2rem; min-height: 400px;"`} >
         <div class="day-num">${label}</div>
         <div class="day-notes">
@@ -482,7 +488,7 @@ function renderNoteList(title, data) {
                       const isPast = n.date && n.date < todayStr;
                       const expiredClass = isPast ? "expired" : "";
                       return `
-                <div class="card ${expiredClass}" data-note-id="${n.id}" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease;" onclick="window.openNoteModal('${n.id}')">
+                <div class="card ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease;" onclick="window.openNoteModal('${n.id}')">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                             <span class="note-pill priority-${n.priority}">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
@@ -658,3 +664,83 @@ window.snoozeNote = (id) => {
 window.addEventListener("search-notes", () => {
   renderView();
 });
+
+window.handleNoteDragStart = (e, id) => {
+  const note = getters.getNoteById(id);
+  e.dataTransfer.setData("text/plain", id);
+  e.dataTransfer.effectAllowed = "move";
+
+  // Crear un icono fantasma dinámico para el puntero
+  const dragIcon = document.createElement('div');
+  const isReminder = !!(note && note.date);
+  const iconClass = isReminder ? 'fa-calendar-check' : 'fa-sticky-note';
+  
+  dragIcon.innerHTML = `<i class="fas ${iconClass}" style="color: white; background: #2563eb; padding: 8px; border-radius: 6px; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></i>`;
+  dragIcon.style.position = 'absolute';
+  dragIcon.style.top = '-1000px';
+  document.body.appendChild(dragIcon);
+  
+  e.dataTransfer.setDragImage(dragIcon, 20, 20);
+  setTimeout(() => document.body.removeChild(dragIcon), 0);
+};
+
+window.handleNoteDragEnd = (e) => {
+  document.querySelectorAll(".drag-zone").forEach((zone) => {
+    zone.classList.remove("zone-valid", "zone-invalid", "drag-over");
+  });
+};
+
+window.handleNoteDragOver = (e) => {
+  e.preventDefault();
+  const zone = e.currentTarget;
+  const todayStr = dateUtils.getTodayStr();
+  const targetDate = zone.dataset.dropDate;
+  const isValid = !targetDate || targetDate >= todayStr;
+
+  zone.classList.add("drag-over");
+  zone.classList.add(isValid ? "zone-valid" : "zone-invalid");
+  e.dataTransfer.dropEffect = isValid ? "move" : "none";
+};
+
+window.handleNoteDragLeave = (e) => {
+  e.currentTarget.classList.remove("drag-over", "zone-valid", "zone-invalid");
+};
+
+window.handleNoteDrop = (e) => {
+  e.preventDefault();
+  e.currentTarget.classList.remove("drag-over", "zone-valid", "zone-invalid");
+  const id = e.dataTransfer.getData("text/plain");
+  const targetDate = e.currentTarget.dataset.dropDate; // "" para notas, "YYYY-MM-DD" para calendario
+  const todayStr = dateUtils.getTodayStr();
+  
+  const note = getters.getNoteById(id);
+  if (!note || note.date === targetDate) return;
+
+  // Validación: No permitir mover recordatorios a fechas pasadas
+  if (targetDate && targetDate < todayStr) {
+    showToast("No puedes programar recordatorios en fechas pasadas", "error");
+    return;
+  }
+
+  const wasNote = !note.date;
+  const isNowNote = !targetDate;
+
+  const updatedNote = { ...note, date: targetDate };
+  
+  // Si vuelve a ser una nota simple, limpiamos metadatos de recordatorio
+  if (isNowNote) {
+    updatedNote.time = "";
+    updatedNote.alarm = false;
+  }
+
+  mutations.updateNote(id, updatedNote);
+  renderView();
+  updateUIStats();
+
+  // Feedback dinámico según la conversión
+  let msg = `Movido al ${dateUtils.formatDisplayDate(targetDate)}`;
+  if (wasNote && !isNowNote) msg = `Convertido en Recordatorio para el ${dateUtils.formatDisplayDate(targetDate)}`;
+  else if (!wasNote && isNowNote) msg = "Convertido en Nota (Sin fecha)";
+  
+  showToast(msg, "info");
+};

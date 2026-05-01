@@ -105,10 +105,12 @@ export function showConfirmModal(message, onConfirm, onCancel = null, options = 
 
 // --- Sistema de Tooltips ---
 const tooltip = document.getElementById("note-tooltip");
+let isDraggingActive = false;
+
 document.addEventListener("mouseover", (e) => {
   const target = e.target.closest("[data-note-id]");
   const isFullView = state.currentView === "all-notes" || (state.currentView === "calendar" && state.calendarSubView === "day");
-  if (target && !e.target.closest(".modal") && !isFullView) {
+  if (target && !e.target.closest(".modal") && !isFullView && !isDraggingActive) {
     const note = getters.getNoteById(target.dataset.noteId);
     if (note) {
       tooltip.style.display = "block";
@@ -138,3 +140,10 @@ document.addEventListener("mousemove", (e) => {
   }
 });
 document.addEventListener("mouseout", (e) => { if (e.target.closest("[data-note-id]")) tooltip.style.display = "none"; });
+
+// Limpieza de tooltips durante operaciones de arrastre
+document.addEventListener("dragstart", () => {
+  isDraggingActive = true;
+  if (tooltip) tooltip.style.display = "none";
+});
+document.addEventListener("dragend", () => { isDraggingActive = false; });

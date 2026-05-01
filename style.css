@@ -233,6 +233,41 @@ body {
   overflow: hidden;
 }
 
+.drag-zone.drag-over {
+  position: relative;
+}
+
+.drag-zone.zone-valid {
+  border: 2px dashed var(--low) !important;
+}
+
+.drag-zone.zone-invalid {
+  border: 2px dashed var(--high) !important;
+  opacity: 0.8;
+}
+
+.drag-zone.drag-over.zone-valid {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-style: solid !important;
+}
+
+.drag-zone.drag-over.zone-invalid {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-style: solid !important;
+}
+
+.dashboard-note-item[draggable="true"],
+.note-pill[draggable="true"],
+.card[draggable="true"] {
+  cursor: grab;
+}
+
+.dashboard-note-item:active,
+.note-pill:active,
+.card:active {
+  cursor: grabbing;
+}
+
 .calendar-day {
   background: var(--bg-sidebar);
   min-height: 120px;
