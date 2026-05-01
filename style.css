@@ -11,9 +11,9 @@
   --radius: 12px;
 
   /* Prioridades */
-  --low: #15803d;    /* Verde esmeralda oscuro (AA con blanco) */
-  --medium: #a16207; /* Amarillo dorado intenso (Equilibrio contraste/color) */
-  --high: #b91c1c;   /* Rojo intenso oscuro (AA con blanco) */
+  --low: #22c55e;    /* Verde estándar */
+  --medium: #eab308; /* Amarillo estándar */
+  --high: #ef4444;   /* Rojo estándar */
 
   /* Escala de Espaciado (Coherencia Visual) */
   --space-xs: 0.25rem; /* 4px */
@@ -37,10 +37,10 @@
   --border: #334155;
   --white: #1e293b;
 
-  /* Prioridades en Modo Oscuro: Un poco más vibrantes pero manteniendo contraste */
-  --low: #16a34a;
-  --medium: #ca8a04;
-  --high: #dc2626;
+  /* Prioridades en Modo Oscuro: Colores vibrantes estándar */
+  --low: #22c55e;
+  --medium: #eab308;
+  --high: #ef4444;
 }
 
 /* Asegura que los iconos nativos de fecha/hora sean visibles en modo oscuro */
@@ -186,6 +186,16 @@ body {
   border-radius: 6px;
   transition: all 0.2s ease;
 }
+
+.stat-item i {
+  margin-right: var(--space-s);
+  font-size: 0.75rem;
+  vertical-align: middle;
+}
+
+.stat-item[data-priority="high"] i { color: var(--high); }
+.stat-item[data-priority="medium"] i { color: var(--medium); }
+.stat-item[data-priority="low"] i { color: var(--low); }
 
 .stat-item:hover {
   background: rgba(37, 99, 235, 0.1);
