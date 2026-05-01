@@ -125,6 +125,18 @@ function renderDashboard() {
   const weekGridHtml = renderCalendarGrid(focusDate);
   state.calendarSubView = originalSubView;
 
+  // Calcular el total de recordatorios de la semana actual para el contador
+  const startOfWeek = new Date(focusDate);
+  const day = focusDate.getDay();
+  const diffToMonday = focusDate.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diffToMonday);
+  let weeklyNotesCount = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i);
+    const dateStr = dateUtils.formatYYYYMMDD(d);
+    weeklyNotesCount += state.notes.filter(n => n.date === dateStr && matchesSearch(n, query, incTags, incCats)).length;
+  }
+
   // Filtrar notas sin fecha para el listado inferior
   const noDateTasksFull = state.notes
     .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
@@ -135,16 +147,16 @@ function renderDashboard() {
   viewContainer.innerHTML = `
     <div style="padding: 2rem;">
         <h1 style="margin-bottom: 0.5rem;">Panel de Control</h1>
-        <p style="color: var(--text-muted); margin-bottom: 2rem;">Vista general</p>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Vista general</p>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
             ${renderDashboardColumn("Recordatorios de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
             ${renderDashboardColumn("Recordatorios de Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", tomorrowStr)}
         </div>
 
-        <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 3rem; display: block; cursor: default;">
-            <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; margin-top: 0;">
-                <i class="fas fa-calendar-week" style="color: var(--primary)"></i> Planificación Semanal
+        <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; display: block; cursor: default;">
+            <h3 style="margin-bottom: 1.5rem; margin-top: 0;">
+                Planificación Semanal (${weeklyNotesCount})
             </h3>
             <div class="calendar-grid week" style="margin: 0; background: var(--border);">
                 ${weekGridHtml}
@@ -153,8 +165,8 @@ function renderDashboard() {
 
         <div class="card" style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="display: flex; align-items: center; gap: 10px; margin: 0;">
-                    <i class="fas fa-sticky-note" style="color: var(--primary)"></i> Notas (${noDateTotal})
+                <h3 style="margin: 0;">
+                    Notas (${noDateTotal})
                 </h3>
                 <button class="btn-ghost" onclick="window.seeAllNoDateNotes()" style="font-size: 0.85rem; padding: 6px 12px; border: 1px solid var(--border);">
                     Ver todas <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
@@ -190,8 +202,8 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
   return `
     <div class="card drag-zone" data-drop-date="${targetDate}" ondragover="window.handleNoteDragOver(event)" ondragleave="window.handleNoteDragLeave(event)" ondrop="window.handleNoteDrop(event)"
          style="background: var(--bg-sidebar); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: block; cursor: default;">
-        <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
-            <i class="fas ${icon}" style="color: ${color}"></i> ${title}
+        <h3 style="margin-bottom: 1.5rem;">
+            ${title} (${tasks.length})
         </h3>
         <div style="display: flex; flex-direction: column; gap: 10px;">
             ${
