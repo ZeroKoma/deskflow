@@ -370,12 +370,12 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
       if (isFull) {
         return `
         <div class="card note-card-full ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
-            <div class="flex-1">
+            <div class="flex-1 note-content-stack">
                 <div class="card-header-row">
                     <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                     <h3 class="m-0">${n.title}</h3>
                 </div>
-                <div class="badge-row m-b-10">
+                <div class="badge-row">
                     ${renderCategoryBadge(n.category)}
                     ${renderTagPills(n.tags)}
                 </div>
@@ -385,7 +385,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false) {
                 <p class="note-desc">${n.description || "Sin descripción adicional."}</p>
             </div>
             <div class="card-actions-col">
-                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-outline"><i class="fas fa-trash"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-outline" data-note-id="${n.id}" data-hint="Eliminar nota"><i class="fas fa-trash"></i></button>
             </div>
         </div>`;
       }
@@ -515,9 +515,9 @@ function renderNoteList(title, data) {
                       const expiredClass = isPast ? "expired" : "";
                       return `
                 <div class="card note-card-full bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
-                    <div class="flex-1">
+                    <div class="flex-1 note-content-stack">
                         <div class="card-header-row">
-                            <span class="note-pill priority-${n.priority}">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
+                            <span class="note-pill priority-${n.priority}" style="margin:0">${(priorityLabels[n.priority] || n.priority).toUpperCase()}</span>
                             <h3 class="m-0">${n.title}</h3>
                         </div>
                         <div class="badge-row">
@@ -531,7 +531,7 @@ function renderNoteList(title, data) {
                         <p class="note-desc">${n.description || "Sin descripción adicional."}</p>
                     </div>
                     <div class="card-actions-col">
-                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-fill"><i class="fas fa-trash"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-fill" data-note-id="${n.id}" data-hint="Eliminar nota"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`;
                     })
