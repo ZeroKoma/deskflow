@@ -212,6 +212,7 @@ function setupGlobalEvents() {
   // Configuración y Reset
   const settingsModal = document.getElementById("settings-modal");
   document.getElementById("manage-settings-btn").addEventListener("click", () => {
+    settings.updateStorageInfoUI();
     settingsModal.style.display = "flex";
   });
   
