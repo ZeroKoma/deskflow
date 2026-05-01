@@ -1,3 +1,5 @@
+import { storage } from "./storage.js";
+
 const defaultCategories = [
   { id: "Categoría 1", name: "Categoría 1", color: "#2563eb" },
   { id: "Categoría 2", name: "Categoría 2", color: "#10b981" },
@@ -10,11 +12,9 @@ const defaultTags = [
 ];
 
 export const state = {
-  notes: JSON.parse(localStorage.getItem("deskflow_notes")) || [],
-  tags: JSON.parse(localStorage.getItem("deskflow_tags")) || defaultTags,
-  categories:
-    JSON.parse(localStorage.getItem("deskflow_categories")) ||
-    defaultCategories,
+  notes: [],
+  tags: [...defaultTags],
+  categories: [...defaultCategories],
   currentView: "dashboard",
   currentMonth: new Date().getMonth(),
   currentYear: new Date().getFullYear(),
@@ -29,23 +29,49 @@ export const state = {
 };
 
 export const mutations = {
+  async initStore() {
+    // 1. Asegurar migración
+    await storage.performMigration();
+
+    // 2. Cargar datos desde IndexedDB
+    const loadedNotes = await storage.getAll("notes");
+    const loadedTags = await storage.getAll("tags");
+    const loadedCategories = await storage.getAll("categories");
+
+    // 3. Poblar estado (si IDB está vacío tras migración, se quedan los defaults)
+    if (loadedNotes.length) state.notes = loadedNotes;
+    if (loadedTags.length) state.tags = loadedTags;
+    if (loadedCategories.length) state.categories = loadedCategories;
+    
+    state.theme = storage.getPreference("deskflow_theme", "dark");
+  },
+
   saveNotes() {
-    localStorage.setItem("deskflow_notes", JSON.stringify(state.notes));
+    storage.saveAll("notes", state.notes).catch(console.error);
   },
 
   saveTags() {
-    localStorage.setItem("deskflow_tags", JSON.stringify(state.tags));
+    storage.saveAll("tags", state.tags).catch(console.error);
   },
 
   saveCategories() {
-    localStorage.setItem(
-      "deskflow_categories",
-      JSON.stringify(state.categories),
-    );
+    storage.saveAll("categories", state.categories).catch(console.error);
   },
 
   addNote(noteData) {
     state.notes.push(noteData);
+    this.saveNotes();
+  },
+
+  bulkAddNotes(notesArray) {
+    notesArray.forEach(newNote => {
+      const index = state.notes.findIndex(n => n.id === newNote.id);
+      if (index !== -1) {
+        state.notes[index] = newNote;
+      } else {
+        state.notes.push(newNote);
+      }
+    });
     this.saveNotes();
   },
 
@@ -111,7 +137,7 @@ export const mutations = {
 
   setTheme(theme) {
     state.theme = theme;
-    localStorage.setItem("deskflow_theme", theme);
+    storage.setPreference("deskflow_theme", theme);
   },
 
   updateCalendarState(year, month, day) {
@@ -120,10 +146,18 @@ export const mutations = {
     state.currentDay = day;
   },
 
-  resetApp() {
+  async resetApp() {
     state.notes = [];
     state.tags = JSON.parse(JSON.stringify(defaultTags));
     state.categories = JSON.parse(JSON.stringify(defaultCategories));
+    
+    await storage.clearAll();
+    // No borramos localStorage.clear() para no perder el flag de migración y tema
+    // pero sí limpiamos las claves antiguas por si acaso
+    localStorage.removeItem("deskflow_notes");
+    localStorage.removeItem("deskflow_tags");
+    localStorage.removeItem("deskflow_categories");
+
     this.saveNotes();
     this.saveTags();
     this.saveCategories();
@@ -133,6 +167,33 @@ export const mutations = {
     state.notes = state.notes.filter((n) => !n.date || n.date >= todayStr);
     this.saveNotes();
   },
+
+  restoreState(backup) {
+    state.notes = backup.notes;
+    state.tags = backup.tags;
+    state.categories = backup.categories;
+    this.saveNotes();
+    this.saveTags();
+    this.saveCategories();
+  },
+
+  mergeState(data) {
+    // 1. Fusionar Notas (bulkAddNotes ya gestiona el "upsert" por ID)
+    this.bulkAddNotes(data.notes || []);
+
+    // 2. Fusionar Tags
+    (data.tags || []).forEach(t => {
+      if (!state.tags.find(existing => existing.id === t.id)) state.tags.push(t);
+    });
+    this.saveTags();
+
+    // 3. Fusionar Categorías
+    (data.categories || []).forEach(c => {
+      if (!state.categories.find(existing => existing.id === c.id)) state.categories.push(c);
+    });
+    this.saveCategories();
+    this.saveNotes();
+  }
 };
 
 export const getters = {

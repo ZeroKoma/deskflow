@@ -1,12 +1,14 @@
 import { state, mutations } from './store.js';
 import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './view.js';
-import { dateUtils } from './utils.js';
+import { dateUtils, downloadFile } from './utils.js';
 import { startAlarmService } from './app-alarms.js';
-import { exportData, importData, deletePastNotes, resetApp } from './app-settings.js';
 
 document.addEventListener("DOMContentLoaded", init);
 
-function init() {
+async function init() {
+  // FASE 6 — Esperar a que los datos se carguen desde IndexedDB
+  await mutations.initStore();
+
   applyTheme();
   setupGlobalEvents();
   requestNotificationPermission();
@@ -290,16 +292,14 @@ function setupGlobalEvents() {
 
   // Exportar e Importar
   document.getElementById("export-data").addEventListener("click", () => {
-    const headers = "Titulo,Fecha,Hora,Prioridad,Categoria,Descripcion,Alarma,Tags";
-    const content = headers + "\n" + 
-      state.notes.map(n => {
-        const tags = (n.tags || []).join(';');
-        // Reemplazamos comas por punto y coma en textos para evitar romper el CSV simple
-        const safeTitle = (n.title || "").replace(/,/g, ";").replace(/\n/g, " ");
-        const safeDesc = (n.description || "").replace(/,/g, ";").replace(/\n/g, " ");
-        return `${safeTitle},${n.date || ""},${n.time || ""},${n.priority},${n.category},${safeDesc},${n.alarm},${tags}`;
-      }).join("\n");
-    downloadCSV("deskflow_export.csv", content);
+    const backup = {
+      notes: state.notes,
+      tags: state.tags,
+      categories: state.categories,
+      theme: state.theme,
+      exportDate: new Date().toISOString()
+    };
+    downloadFile("deskflow_backup.json", JSON.stringify(backup, null, 2), "application/json");
   });
 
   const importInput = document.getElementById("import-data-input");
@@ -312,67 +312,55 @@ function setupGlobalEvents() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target.result;
-
-      const performImport = (shouldClear) => {
-        try {
-          if (shouldClear) mutations.clearNotes();
-
-          const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-          if (lines.length < 2) {
-            showToast("El archivo está vacío o no contiene datos válidos", "error");
-            return;
-          }
-
-          const header = lines[0].toLowerCase();
-          if (!header.includes("titulo") || !header.includes("prioridad") || !header.includes("categoria")) {
-            showToast("Formato CSV no válido. Use un archivo exportado por DeskFlow.", "error");
-            return;
-          }
-
-          let importedCount = 0;
-          for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            const v = line.split(",");
-            if (v.length < 5) continue;
-
-            mutations.addNote({
-              id: Date.now().toString() + "_" + Math.random().toString(36).substr(2, 5),
-              title: v[0] || "Nota Importada",
-              date: v[1] || "",
-              time: v[2] || "",
-              priority: v[3] || "medium",
-              category: v[4] || "Otros",
-              description: v[5] || "",
-              alarm: v[6] === "true",
-              tags: v[7] ? v[7].split(";") : [],
-              lastAlarmKey: null,
-              lastPreAlarmKey: null
-            });
-            importedCount++;
-          }
-
-          if (importedCount > 0) {
-            showToast(`Se han importado ${importedCount} notas correctamente`, "info");
-            renderView();
-            updateUIStats();
-            closeSettings();
-          }
-        } catch (err) {
-          showToast("Error al procesar el archivo CSV", "error");
-        } finally {
-          importInput.value = "";
+      try {
+        const data = JSON.parse(text);
+        if (!data.notes || !data.tags || !data.categories) {
+          showToast("El archivo no tiene el formato correcto de DeskFlow", "error");
+          return;
         }
-      };
 
-      if (state.notes.length > 0) {
+        const stateBackup = {
+          notes: JSON.parse(JSON.stringify(state.notes)),
+          tags: JSON.parse(JSON.stringify(state.tags)),
+          categories: JSON.parse(JSON.stringify(state.categories)),
+          theme: state.theme
+        };
+
+        const onImportComplete = (msg) => {
+          renderView();
+          updateUIStats();
+          showToast(msg, "info", null, {
+            label: "Deshacer",
+            callback: () => {
+              mutations.restoreState(stateBackup);
+              if (stateBackup.theme) mutations.setTheme(stateBackup.theme);
+              applyTheme();
+              renderView();
+              updateUIStats();
+              showToast("Cambios revertidos correctamente");
+            }
+          });
+          closeSettings();
+        };
+
         showConfirmModal(
-          "¿Deseas borrar todas las notas actuales antes de importar? (Pulsa 'Eliminar' para limpiar la lista o 'Cancelar' para añadir las nuevas a las existentes)",
-          () => performImport(true),
-          () => performImport(false)
+          "¿Cómo deseas importar los datos?",
+          () => { 
+            mutations.restoreState(data); 
+            if (data.theme) mutations.setTheme(data.theme);
+            applyTheme();
+            onImportComplete("Copia de seguridad restaurada (Reemplazo total)");
+          },
+          () => { 
+            mutations.mergeState(data); 
+            onImportComplete("Datos fusionados correctamente");
+          },
+          { okText: "Reemplazar Todo", cancelText: "Fusionar Datos", okClass: "btn-danger" }
         );
-      } else {
-        performImport(false);
+      } catch (err) {
+        showToast("Error al procesar el archivo JSON", "error");
+      } finally {
+        importInput.value = "";
       }
     };
     reader.readAsText(file);

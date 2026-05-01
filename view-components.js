@@ -27,7 +27,7 @@ export function renderTagPills(tagIds = []) {
     .join("");
 }
 
-export function showToast(msg, type = "info", noteId = null) {
+export function showToast(msg, type = "info", noteId = null, action = null) {
   const container = document.getElementById("toast-container");
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
@@ -50,6 +50,12 @@ export function showToast(msg, type = "info", noteId = null) {
       </div>`;
   }
 
+  if (!actionButtons && action && action.label) {
+    actionButtons = `<div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="toast-action-btn" class="btn-secondary" style="font-size: 0.8rem; padding: 4px 10px; width: 100%; border: 1px solid var(--border);"><i class="fas fa-undo"></i> ${action.label}</button>
+    </div>`;
+  }
+
   toast.innerHTML = `
     <div style="display: flex; flex-direction: column;">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
@@ -61,16 +67,33 @@ export function showToast(msg, type = "info", noteId = null) {
   
   if (type === "high") document.body.classList.add("alarm-active");
   container.appendChild(toast);
-  if (!(type === "high" || msg.includes("Aviso previo"))) setTimeout(() => toast.remove(), 4000);
+
+  if (action && action.callback) {
+    const btn = toast.querySelector("#toast-action-btn");
+    if (btn) btn.onclick = () => { action.callback(); toast.remove(); };
+  }
+
+  // Si la notificación es una alarma crítica, un aviso previo o contiene una acción (como Deshacer),
+  // NO se eliminará automáticamente. Solo el usuario puede cerrarla o ejecutar la acción.
+  if (!(type === "high" || msg.includes("Aviso previo") || action)) {
+    setTimeout(() => { if (toast.parentElement) toast.remove(); }, 4000);
+  }
 }
 
-export function showConfirmModal(message, onConfirm, onCancel = null) {
+export function showConfirmModal(message, onConfirm, onCancel = null, options = {}) {
+  const { okText = "Eliminar", okClass = "btn-danger", cancelText = "Cancelar" } = options;
   const confirmModal = document.getElementById("confirm-modal");
   const msgEl = document.getElementById("confirm-message");
   const okBtn = document.getElementById("confirm-ok");
   const cancelBtn = document.getElementById("confirm-cancel");
+
   msgEl.innerText = message;
+  okBtn.innerText = okText;
+  okBtn.className = okClass;
+  cancelBtn.innerText = cancelText;
+
   confirmModal.style.display = "flex";
+
   const cleanup = () => {
     confirmModal.style.display = "none";
     okBtn.onclick = null;

@@ -23,11 +23,14 @@ export const dateUtils = {
   }
 };
 
-export function downloadCSV(filename, content) {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+export function downloadFile(filename, content, contentType) {
+  const blob = new Blob([content], { type: contentType });
   const url = URL.createObjectURL(blob);
-  const link = Object.assign(document.createElement("a"), { href: url, download: filename });
-  document.body.appendChild(link); link.click(); link.remove();
-  // Liberar memoria
-  setTimeout(() => URL.revokeObjectURL(url), 100);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
