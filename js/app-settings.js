@@ -1,5 +1,5 @@
 import { state, mutations } from './store.js';
-import { storage } from './storage.js';
+import { dataService } from './data-service.js';
 import { dateUtils, downloadFile } from './utils.js';
 import { showToast, showConfirmModal } from './view.js';
 
@@ -18,7 +18,7 @@ export function exportData() {
 }
 
 export async function updateStorageInfoUI() {
-  const status = await storage.getStorageStatus();
+  const status = await dataService.getStorageStatus();
   const container = document.getElementById("storage-info");
   if (status && container) {
     const freePercent = (100 - parseFloat(status.percentUsed)).toFixed(2);

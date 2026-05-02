@@ -1,4 +1,4 @@
-import { storage } from "./storage.js";
+import { dataService } from "./data-service.js";
 import { dateUtils } from "./utils.js";
 
 const listeners = new Set();
@@ -136,17 +136,17 @@ export const state = new Proxy(_state, proxyHandler);
 
 export const mutations = {
   async initStore() {
-    // 1. Cargar datos desde IndexedDB
-    const loadedNotes = await storage.getAll("notes");
-    const loadedTags = await storage.getAll("tags");
-    const loadedCategories = await storage.getAll("categories");
+    // 1. Cargar datos desde el servicio (Local o API)
+    const loadedNotes = await dataService.getAllNotes();
+    const loadedTags = await dataService.getAllTags();
+    const loadedCategories = await dataService.getAllCategories();
 
     // 2. Poblar estado (si IDB está vacío, se mantienen los valores por defecto)
     if (loadedNotes.length) state.notes = loadedNotes.filter(validators.note);
     if (loadedTags.length) state.tags = loadedTags.filter(validators.tag);
     if (loadedCategories.length) state.categories = loadedCategories.filter(validators.category);
     
-    const theme = await storage.getPreference("deskflow_theme", "dark");
+    const theme = await dataService.getPreference("deskflow_theme", "dark");
     state.theme = validators.theme(theme) ? theme : "dark";
   },
 
@@ -154,21 +154,21 @@ export const mutations = {
     // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
     const rawNotes = JSON.parse(JSON.stringify(state.notes));
     const valid = rawNotes.filter(validators.note);
-    storage.saveAll("notes", valid).catch(console.error);
+    dataService.saveAllNotes(valid).catch(console.error);
   },
 
   saveTags() {
     // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
     const rawTags = JSON.parse(JSON.stringify(state.tags));
     const valid = rawTags.filter(validators.tag);
-    storage.saveAll("tags", valid).catch(console.error);
+    dataService.saveAllTags(valid).catch(console.error);
   },
 
   saveCategories() {
     // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
     const rawCategories = JSON.parse(JSON.stringify(state.categories));
     const valid = rawCategories.filter(validators.category);
-    storage.saveAll("categories", valid).catch(console.error);
+    dataService.saveAllCategories(valid).catch(console.error);
   },
 
   addNote(noteData) {
@@ -288,7 +288,7 @@ export const mutations = {
   setTheme(theme) {
     if (!validators.theme(theme)) return;
     state.theme = theme;
-    storage.setPreference("deskflow_theme", theme).catch(console.error);
+    dataService.setPreference("deskflow_theme", theme).catch(console.error);
   },
 
   updateCalendarState(year, month, day) {
@@ -302,7 +302,7 @@ export const mutations = {
     state.tags = JSON.parse(JSON.stringify(defaultTags));
     state.categories = JSON.parse(JSON.stringify(defaultCategories));
     
-    await storage.clearAll();
+    await dataService.clearAll();
 
     this.saveNotes();
     this.saveTags();
