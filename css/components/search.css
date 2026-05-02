@@ -1,0 +1,118 @@
+/* --- Search & Filters UI --- */
+
+.search-box {
+  background: var(--bg-main);
+  padding: var(--space-xs) var(--space-l);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  width: 320px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.search-box input {
+  background: transparent;
+  border: none !important;
+  outline: none;
+  padding: 0 !important;
+  height: 32px !important;
+  color: var(--text-main);
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.search-box i {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  background: var(--bg-main);
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  flex: 1;
+  min-width: 700px;
+}
+
+.priority-filter-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  background: var(--bg-main);
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: 1px solid var(--primary);
+}
+
+.filter-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  font-size: 0.85rem;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.filter-checkbox-group.color-high { color: var(--high); }
+
+/* --- Custom Round Checkboxes --- */
+.round-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+  display: inline-grid;
+  place-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  background-color: var(--bg-sidebar);
+  margin: 0;
+}
+
+.round-checkbox:checked { background-color: var(--primary); border-color: var(--primary); }
+.round-checkbox::before { content: ""; width: 8px; height: 8px; border-radius: 50%; transform: scale(0); transition: 120ms transform ease; background-color: white; }
+.round-checkbox:checked::before { transform: scale(1); }
+
+/* --- Responsive Search --- */
+@media (max-width: 768px) {
+  .filters-bar {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: var(--space-m) var(--space-xs);
+    width: 100%;
+    gap: var(--space-m) var(--space-xs);
+  }
+  .filters-bar .flex-grow {
+    display: none;
+  }
+  .filter-checkbox-group {
+    flex: 0 1 30%; /* Permite que los 3 primeros ocupen la primera línea */
+    justify-content: center;
+    font-size: 0.72rem; /* Tamaño optimizado para que quepan 3 en pantallas pequeñas */
+    white-space: nowrap;
+  }
+  /* Fuerza a 'Alarmas' y 'Caducadas' a la línea inferior con más espacio */
+  .filter-checkbox-group:nth-of-type(n+4) {
+    flex: 0 1 45%;
+    margin-top: var(--space-xs);
+  }
+  .search-box {
+    width: 100%;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border);
+  }
+}

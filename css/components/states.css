@@ -1,0 +1,39 @@
+/* --- UI States (Empty, Loading, Info) --- */
+
+.empty-state-placeholder {
+  text-align: center;
+  padding: var(--space-3xl);
+  color: var(--text-muted);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.empty-state-placeholder.list-variant {
+  padding: 4rem;
+  background: var(--bg-sidebar);
+}
+
+.empty-state-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-l);
+  display: block;
+  opacity: 0.5;
+}
+
+.empty-state-icon-lg {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-l);
+  display: block;
+}
+
+/* --- Storage Info Component --- */
+.storage-info-container {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: var(--space-m);
+  padding: var(--space-m);
+  background: var(--bg-main);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}

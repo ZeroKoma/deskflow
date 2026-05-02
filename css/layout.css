@@ -18,7 +18,10 @@
   overflow-x: hidden;
   flex-shrink: 0; /* Importante para que no se colapse */
   z-index: 100;
-  transition: width 0.3s ease, padding 0.3s ease, border-width 0.3s ease;
+  transition:
+    width 0.3s ease,
+    padding 0.3s ease,
+    border-width 0.3s ease;
   white-space: nowrap;
 }
 
@@ -114,9 +117,15 @@
   text-align: center;
 }
 
-.stat-item[data-priority="high"] i { color: var(--high); }
-.stat-item[data-priority="medium"] i { color: var(--medium); }
-.stat-item[data-priority="low"] i { color: var(--low); }
+.stat-item[data-priority="high"] i {
+  color: var(--high);
+}
+.stat-item[data-priority="medium"] i {
+  color: var(--medium);
+}
+.stat-item[data-priority="low"] i {
+  color: var(--low);
+}
 
 .stat-item:hover {
   background: rgba(37, 99, 235, 0.1);
@@ -186,25 +195,99 @@
   order: 3;
 }
 
+/* --- Sidebar Overlay --- */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 1099; /* Justo debajo del sidebar en móvil */
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Ocultar elementos móviles en escritorio */
+@media (min-width: 769px) {
+  #mobile-menu-btn,
+  .mobile-logo {
+    display: none !important;
+  }
+}
+
 /* --- Generic Layout Helpers --- */
-.flex-between { display: flex; justify-content: space-between; align-items: center; }
-.flex-center-gap-20 { display: flex; align-items: center; gap: var(--space-xl); }
-.flex-center-gap-15 { display: flex; align-items: center; gap: var(--space-l); }
-.flex-gap-5 { display: flex; gap: var(--space-xs); }
-.flex-gap-8 { display: flex; gap: var(--space-s); }
-.flex-1 { flex: 1; }
-.flex-grow { flex-grow: 1; }
-.m-0 { margin: 0 !important; }
-.m-b-5 { margin-bottom: var(--space-xs) !important; }
-.m-b-10 { margin-bottom: var(--space-m) !important; }
-.mb-0 { margin-bottom: 0 !important; }
-.text-capitalize { text-transform: capitalize; }
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-center-gap-20 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+}
+.flex-center-gap-15 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-l);
+}
+.flex-gap-5 {
+  display: flex;
+  gap: var(--space-xs);
+}
+.flex-gap-8 {
+  display: flex;
+  gap: var(--space-s);
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-grow {
+  flex-grow: 1;
+}
+.m-0 {
+  margin: 0 !important;
+}
+.m-b-5 {
+  margin-bottom: var(--space-xs) !important;
+}
+.m-b-10 {
+  margin-bottom: var(--space-m) !important;
+}
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+.text-capitalize {
+  text-transform: capitalize;
+}
 
 /* --- App Specific Layout --- */
-.view-container-padding { padding: var(--space-2xl) var(--container-h-padding); }
-.view-title { margin-bottom: var(--space-s); }
-.view-subtitle { color: var(--text-muted); margin-bottom: var(--space-l); }
-.view-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2xl); }
+.view-container-padding {
+  padding: var(--space-2xl) var(--container-h-padding);
+}
+.view-title {
+  margin-bottom: var(--space-s);
+}
+.view-subtitle {
+  color: var(--text-muted);
+  margin-bottom: var(--space-l);
+}
+.view-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2xl);
+}
 
 /* --- Responsive Layout --- */
 @media (max-width: 768px) {
@@ -256,7 +339,8 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--space-l);
-    padding: var(--space-m) var(--container-h-padding);
+    padding: var(--space-m) var(--container-h-padding) 0
+      var(--container-h-padding);
     height: auto;
   }
 
@@ -277,7 +361,9 @@
     max-height: 0;
     opacity: 0;
     visibility: hidden;
-    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    transition:
+      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s ease;
     overflow: hidden;
   }
 
@@ -334,10 +420,22 @@
     height: auto;
     overflow-y: visible;
   }
-  
+
   /* Tipografía */
-  .view-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
-  .view-subtitle { font-size: 0.95rem; line-height: 1.4; opacity: 0.9; }
-  h2 { font-size: 1.3rem !important; }
-  h3 { font-size: 1.15rem !important; }
+  .view-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .view-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    opacity: 0.9;
+  }
+  h2 {
+    font-size: 1.3rem !important;
+  }
+  h3 {
+    font-size: 1.15rem !important;
+  }
 }
