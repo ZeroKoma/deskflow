@@ -88,14 +88,21 @@ export function renderView() {
 
   if (state.currentView === "calendar") renderCalendar();
   else if (state.currentView === "dashboard") renderDashboard();
+  else if (state.currentView === "settings") renderSettings();
   else renderAllNotes();
 }
 
 export function updateUIStats() {
   const stats = getters.getStats();
-  document.getElementById("stat-high").innerText = stats.high;
-  document.getElementById("stat-medium").innerText = stats.medium;
-  document.getElementById("stat-low").innerText = stats.low;
+  
+  const setIfOk = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = val;
+  };
+
+  setIfOk("stat-high", stats.high);
+  setIfOk("stat-medium", stats.medium);
+  setIfOk("stat-low", stats.low);
 
   const statWithAlarm = document.getElementById("stat-with-alarm");
   if (statWithAlarm) statWithAlarm.innerText = stats.withAlarm;
@@ -112,12 +119,12 @@ export function updateUIStats() {
   const statExpiredSidebar = document.getElementById("stat-expired-sidebar");
   if (statExpiredSidebar) statExpiredSidebar.innerText = stats.expired;
 
-  document.getElementById("count-all").innerText = stats.all;
+  setIfOk("count-all", stats.all);
   const expiredBadge = document.getElementById("count-expired");
   if (expiredBadge) expiredBadge.innerText = stats.expired;
-  document.getElementById("count-calendar").innerText = stats.withDate;
-  document.getElementById("count-tags").innerText = stats.tags;
-  document.getElementById("count-categories").innerText = stats.categories;
+  setIfOk("count-calendar", stats.withDate);
+  setIfOk("count-tags", stats.tags);
+  setIfOk("count-categories", stats.categories);
 }
 
 // --- Specific Renderers ---
@@ -621,6 +628,93 @@ function renderNoteList(title, data) {
             }
         </div>
     </div>`;
+}
+
+function renderSettings() {
+  viewContainer.innerHTML = `
+    <div class="view-container-padding">
+        <h1 class="view-title">${t('nav_settings')}</h1>
+        <p class="view-subtitle">${t('dash_subtitle')}</p>
+
+        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: var(--space-xl); margin-top: var(--space-xl);">
+            
+            <!-- Tag Management Section -->
+            <section class="card settings-section">
+                <div class="column-title">
+                    <h3 class="m-0"><i class="fas fa-tags"></i> ${t('tag_mgr_title')}</h3>
+                </div>
+                <div class="settings-content">
+                    <form id="tag-form" style="display: flex; gap: var(--space-m); margin-bottom: var(--space-xl); align-items: center;">
+                        <input type="hidden" id="tag-id" />
+                        <input
+                          type="text"
+                          id="tag-name"
+                          data-t-placeholder="tag_mgr_placeholder"
+                          placeholder="${t('tag_mgr_placeholder')}"
+                          required
+                          style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-main); color: var(--text-main);"
+                        />
+                        <input type="color" id="tag-color" value="#2563eb" style="width: 50px; height: 38px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;" />
+                        <button type="submit" class="btn-primary" id="tag-submit-btn" style="padding: 8px 16px;">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                    </form>
+                    <div id="tags-list-container" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-main);">
+                        <!-- Dynamic tags list -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category Management (Placeholder for Step 2) -->
+            <section class="card settings-section" style="opacity: 0.7;">
+                <div class="column-title">
+                    <h3 class="m-0"><i class="fas fa-folder"></i> ${t('cat_mgr_title')}</h3>
+                </div>
+                <div class="settings-content" style="text-align: center; padding: var(--space-xl); color: var(--text-muted); font-style: italic;">
+                    Integración en ajustes próximamente.<br>Usa el botón del sidebar por ahora.
+                </div>
+            </section>
+
+            <!-- Configuration Section -->
+            <section class="card settings-section">
+                <div class="column-title">
+                    <h3 class="m-0"><i class="fas fa-tools"></i> ${t('settings_data')}</h3>
+                </div>
+                <div class="settings-content" style="display: flex; flex-direction: column; gap: var(--space-l);">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-m);">
+                        <button data-action="export-data" class="btn-secondary" style="width: 100%">
+                            <i class="fas fa-file-export"></i> <span>${t('nav_export')}</span>
+                        </button>
+                        <button data-action="import-data" class="btn-secondary" style="width: 100%">
+                            <i class="fas fa-file-import"></i> <span>${t('nav_import')}</span>
+                        </button>
+                    </div>
+                    
+                    <div style="padding-top: var(--space-l); border-top: 1px solid var(--border);">
+                        <h4 style="margin-bottom: var(--space-m); color: var(--text-muted)">${t('settings_maint')}</h4>
+                        <button data-action="delete-past" class="btn-secondary" style="width: 100%; border-color: var(--medium); color: var(--medium);">
+                            <i class="fas fa-broom"></i> <span>${t('nav_delete_past')}</span>
+                        </button>
+                    </div>
+
+                    <div style="padding-top: var(--space-l); border-top: 1px solid var(--border);">
+                        <h4 style="margin-bottom: var(--space-m); color: var(--high)">${t('settings_danger')}</h4>
+                        <button data-action="reset-app" class="btn-danger" style="width: 100%">
+                            <i class="fas fa-trash-alt"></i> <span>${t('nav_reset')}</span>
+                        </button>
+                    </div>
+                    
+                    <div id="storage-info" style="margin-top: auto;"></div>
+                </div>
+            </section>
+        </div>
+    </div>`;
+
+  renderTagManager();
+  // Load storage info
+  import('./app-settings.js').then(module => {
+    module.updateStorageInfoUI();
+  });
 }
 
 // --- Expose functions to Window for HTML string compatibility ---

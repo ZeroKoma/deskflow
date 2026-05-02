@@ -42,16 +42,12 @@
             <i class="fas fa-sticky-note"></i> <span data-t="nav_all_notes">Notas y Recordatorios</span>
             <span class="nav-badge" id="count-all">0</span>
           </button>
-          <button class="nav-item" id="manage-tags-btn">
-            <i class="fas fa-tags"></i> <span data-t="nav_manage_tags">Gestionar Tags</span>
-            <span class="nav-badge" id="count-tags">0</span>
-          </button>
           <button class="nav-item" id="manage-categories-btn">
             <i class="fas fa-folder"></i> <span data-t="nav_manage_categories">Gestionar Categorías</span>
             <span class="nav-badge" id="count-categories">0</span>
           </button>
-          <button class="nav-item" id="manage-settings-btn">
-            <i class="fas fa-cog"></i> <span data-t="nav_settings">Configuración</span>
+          <button class="nav-item" data-view="settings">
+            <i class="fas fa-cog"></i> <span data-t="nav_settings">Ajustes</span>
           </button>
         </nav>
 
@@ -266,97 +262,6 @@
       </div>
     </div>
 
-    <!-- Modal Configuración -->
-    <div id="settings-modal" class="modal">
-      <div class="modal-content" style="max-width: 450px">
-        <div class="modal-header">
-          <h2 data-t="settings_title">Configuración</h2>
-          <button type="button" class="close-icon-btn" id="close-settings-x">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div
-          class="settings-body"
-          style="display: flex; flex-direction: column; gap: 1rem"
-        >
-          <section>
-            <h4 style="margin-bottom: 0.5rem; color: var(--text-muted)" data-t="settings_data">
-              Gestión de Datos
-            </h4>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem">
-              <button
-                id="export-data"
-                class="btn-secondary"
-                style="width: 100%"
-              >
-                <i class="fas fa-file-export"></i> <span data-t="nav_export">Exportar (JSON)</span>
-              </button>
-              <button
-                id="import-data-btn"
-                class="btn-secondary"
-                style="width: 100%"
-              >
-                <i class="fas fa-file-import"></i> <span data-t="nav_import">Importar (JSON)</span>
-              </button>
-              <input
-                type="file"
-                id="import-data-input"
-                accept=".json"
-                style="display: none"
-              />
-            </div>
-            <div id="storage-info"></div>
-          </section>
-          <section
-            style="
-              margin-top: 1rem;
-              padding-top: 1rem;
-              border-top: 1px solid var(--border);
-            "
-          >
-            <h4 style="margin-bottom: 0.5rem; color: var(--text-muted)" data-t="settings_maint">
-              Mantenimiento
-            </h4>
-            <button
-              id="delete-past-notes-btn"
-              class="btn-secondary"
-              style="
-                width: 100%;
-                border-color: var(--medium);
-                color: var(--medium);
-              "
-            >
-              <i class="fas fa-broom"></i> <span data-t="nav_delete_past">Limpiar Notas Pasadas</span>
-            </button>
-          </section>
-          <section
-            style="
-              margin-top: 1rem;
-              padding-top: 1rem;
-              border-top: 1px solid var(--border);
-            "
-          >
-            <h4 style="margin-bottom: 0.5rem; color: var(--high)" data-t="settings_danger">
-              Zona de Peligro
-            </h4>
-            <button id="reset-app-btn" class="btn-danger" style="width: 100%">
-              <i class="fas fa-trash-alt"></i> <span data-t="nav_reset">Resetear Aplicación Completamente</span>
-            </button>
-          </section>
-        </div>
-        <div class="modal-actions">
-          <button
-            type="button"
-            class="btn-primary"
-            id="close-settings-btn"
-            style="width: 100%"
-          >
-            <span data-t="btn_close">Cerrar</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Modal de Confirmación Personalizado -->
     <div id="confirm-modal" class="modal">
       <div
@@ -379,46 +284,6 @@
           </button>
           <button type="button" class="btn-danger" id="confirm-ok" data-t="conf_ok">
             Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Gestión de Tags -->
-    <div id="tag-manager-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 data-t="tag_mgr_title">Gestionar Tags</h2>
-          <button type="button" class="close-icon-btn" id="close-tag-manager">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="tag-manager-body">
-          <form id="tag-form">
-            <input type="hidden" id="tag-id" />
-            <input
-              type="text"
-              id="tag-name"
-              data-t-placeholder="tag_mgr_placeholder"
-              placeholder="Nuevo tag..."
-              required
-              style="flex: 1"
-            />
-            <input type="color" id="tag-color" value="#2563eb" />
-            <button type="submit" class="btn-primary" id="tag-submit-btn" data-t="btn_add">
-              Añadir
-            </button>
-          </form>
-          <div
-            id="tags-list-container"
-            style="max-height: 300px; overflow-y: auto"
-          >
-            <!-- Lista de tags dinámicos -->
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn-primary" id="close-tag-manager-btn">
-            <span data-t="btn_close">Cerrar</span>
           </button>
         </div>
       </div>
@@ -537,6 +402,14 @@
 
     <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
+
+    <!-- Hidden Global Inputs -->
+    <input
+      type="file"
+      id="import-data-input"
+      accept=".json"
+      style="display: none"
+    />
 
     <script type="module" src="app.js"></script>
   </body>

@@ -271,3 +271,17 @@ input:checked + .slider:before {
     gap: 0;
   }
 }
+
+/* --- Settings View Styles --- */
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl) !important;
+    height: 100%;
+}
+
+.settings-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}

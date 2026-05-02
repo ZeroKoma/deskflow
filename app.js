@@ -79,7 +79,7 @@ async function init() {
 }
 
 /**
- * Traduce elementos que están fijos en el HTML (Sidebar, botones fijos, etc)
+ * Translates elements that are fixed in the HTML (Sidebar, fixed buttons, etc.)
  */
 function translateStaticUI() {
   // Actualizar el atributo lang del documento para accesibilidad y SEO
@@ -284,42 +284,37 @@ function setupGlobalEvents() {
   document.getElementById("modal-x").addEventListener("click", () => document.getElementById("note-modal").style.display = "none");
   document.getElementById("close-modal").addEventListener("click", () => document.getElementById("note-modal").style.display = "none");
 
-  // Tag Manager
-  const tagModal = document.getElementById("tag-manager-modal");
-  document.getElementById("manage-tags-btn").addEventListener("click", () => {
-    document.getElementById("tag-form").reset();
-    document.getElementById("tag-id").value = "";
-    document.getElementById("tag-submit-btn").innerText = t('btn_add');
-    renderTagManager();
-    tagModal.style.display = "flex";
-    closeSidebarOnMobile();
-  });
-  document.getElementById("close-tag-manager").onclick = () => tagModal.style.display = "none";
-  document.getElementById("close-tag-manager-btn").onclick = () => tagModal.style.display = "none";
-  
-  document.getElementById("tag-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const id = document.getElementById("tag-id").value;
-    const name = document.getElementById("tag-name").value;
-    const color = document.getElementById("tag-color").value;
+  // Handle dynamic form submissions (like the Tag form in Settings view)
+  document.addEventListener("submit", (e) => {
+    if (e.target.id === "tag-form") {
+      e.preventDefault();
+      const idInput = document.getElementById("tag-id");
+      const nameInput = document.getElementById("tag-name");
+      const colorInput = document.getElementById("tag-color");
+      const submitBtn = document.getElementById("tag-submit-btn");
 
-    if (name.trim().toLowerCase() === "alarma") {
-      showToast(t('err_alarm_name'), "error");
-      return;
+      const name = nameInput.value;
+      const color = colorInput.value;
+      const id = idInput.value;
+
+      if (name.trim().toLowerCase() === "alarma") {
+        showToast(t('err_alarm_name'), "error");
+        return;
+      }
+
+      if (id) {
+        mutations.updateTag(id, { name, color });
+        showToast(t('toast_tag_updated'));
+      } else {
+        mutations.addTag({ id: Date.now().toString(), name, color });
+        showToast(t('toast_tag_created'));
+      }
+
+      e.target.reset();
+      if (idInput) idInput.value = "";
+      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus"></i>';
+      renderTagManager();
     }
-
-    if (id) {
-      mutations.updateTag(id, { name, color });
-      showToast(t('toast_tag_updated'));
-    } else {
-      mutations.addTag({ id: Date.now().toString(), name, color });
-      showToast(t('toast_tag_created'));
-    }
-
-    e.target.reset();
-    document.getElementById("tag-id").value = "";
-    document.getElementById("tag-submit-btn").innerText = t('btn_add');
-    renderTagManager();
   });
 
   // UI actions centralization to avoid 'window' pollution
@@ -334,7 +329,7 @@ function setupGlobalEvents() {
         document.getElementById("tag-id").value = tag.id;
         document.getElementById("tag-name").value = tag.name;
         document.getElementById("tag-color").value = tag.color;
-        document.getElementById("tag-submit-btn").innerText = t('btn_save');
+        document.getElementById("tag-submit-btn").innerHTML = '<i class="fas fa-save"></i>';
       }
     },
     'delete-tag': (id) => {
@@ -373,6 +368,10 @@ function setupGlobalEvents() {
       window.snoozeNote(id);
       uiActions['close-toast'](null, target);
     },
+    'export-data': () => settings.exportData(),
+    'import-data': () => document.getElementById("import-data-input").click(),
+    'delete-past': () => settings.deletePastNotes(),
+    'reset-app': () => settings.resetApp(),
     'close-toast': (id, target) => {
       const toast = target.closest('.toast');
       if (toast) {
@@ -426,21 +425,6 @@ function setupGlobalEvents() {
     renderCategoryManager();
   });
 
-  // Settings and Reset
-  const settingsModal = document.getElementById("settings-modal");
-  document.getElementById("manage-settings-btn").addEventListener("click", () => {
-    settings.updateStorageInfoUI();
-    settingsModal.style.display = "flex";
-    closeSidebarOnMobile();
-  });
-  
-  const closeSettings = () => settingsModal.style.display = "none";
-  document.getElementById("close-settings-x").onclick = closeSettings;
-  document.getElementById("close-settings-btn").onclick = closeSettings;
-
-  document.getElementById("delete-past-notes-btn").addEventListener("click", settings.deletePastNotes);
-  document.getElementById("reset-app-btn").addEventListener("click", settings.resetApp);
-
   // Alarm switch control based on time
   const timeInput = document.getElementById("time");
   const alarmInput = document.getElementById("alarm");
@@ -478,7 +462,7 @@ function setupGlobalEvents() {
 
   document.getElementById("clear-date").addEventListener("click", () => {
     document.getElementById("date").value = "";
-    // Disparar el evento 'input' para que el título del modal se actualice
+    // Trigger 'input' event to update the modal title
     document.getElementById("date").dispatchEvent(new Event('input'));
   });
 
@@ -487,12 +471,7 @@ function setupGlobalEvents() {
     timeInput.dispatchEvent(new Event('input'));
   });
 
-  // Export and Import
-  document.getElementById("export-data").addEventListener("click", settings.exportData);
-
   const importInput = document.getElementById("import-data-input");
-  document.getElementById("import-data-btn").addEventListener("click", () => importInput.click());
-
   importInput.addEventListener("change", (e) => {
     settings.importData(e.target.files[0], applyTheme);
     importInput.value = "";

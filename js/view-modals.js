@@ -96,6 +96,7 @@ export function renderTagSelection(selectedIds) {
 
 export function renderTagManager() {
   const container = document.getElementById("tags-list-container");
+  if (!container) return;
   container.innerHTML = state.tags
     .map((tag) => {
       const isProtected =

@@ -20,8 +20,8 @@ export const storage = {
   _encryptionKey: null,
 
   /**
-   * Tries to recover the key from the current session (sessionStorage).
-   * This allows page refreshing without asking for the password.
+   * Intenta recuperar la clave de la sesión actual (sessionStorage).
+   * Esto permite refrescar la página sin pedir la contraseña.
    */
   async unlockWithSession() {
     const sessionKey = sessionStorage.getItem('deskflow_session_key');
@@ -49,9 +49,9 @@ export const storage = {
     const inputHash = await cryptoUtils.hash(cleanPwd);
     const isMaster = inputHash === MASTER_HASH;
 
-    // Si no hay salt O no hay llaves de bóveda, es que estamos en una instalación nueva o migrando
+    // If there is no salt OR no vault keys, we are in a new installation or migrating
     if (!salt || !vaultCheck) {
-      // CONFIGURACIÓN INICIAL: Creamos la Vault Key y la protegemos con ambas contraseñas
+      // INITIAL CONFIGURATION: We create the Vault Key and protect it with both passwords
       salt = Array.from(crypto.getRandomValues(new Uint8Array(16)));
       await this.setPreference("crypto_salt", salt);
 
@@ -70,14 +70,14 @@ export const storage = {
       await this.setPreference("vault_key_master", encMaster);
 
       this._encryptionKey = await cryptoUtils.importVaultKey(vaultKeyRaw);
-      // Save in session to allow refreshes
+      // Guardar en sesión para permitir refrescos
       sessionStorage.setItem('deskflow_session_key', JSON.stringify(Array.from(vaultKeyRaw)));
     } else {
-      // UNLOCK: Attempt to recover the Vault Key using the current input
+      // DESBLOQUEO: Intentamos recuperar la Vault Key usando la entrada actual
       const saltArr = new Uint8Array(salt);
       const inputKey = await cryptoUtils.deriveKey(cleanPwd, saltArr);
       
-      // Try primary key then fallback
+      // Intentar primero con la llave que corresponda, pero tener un fallback
       const keysToTry = isMaster 
         ? ["vault_key_master", "vault_key_user"] 
         : ["vault_key_user", "vault_key_master"];
@@ -90,9 +90,9 @@ export const storage = {
           const decryptedVaultRaw = await cryptoUtils.decrypt(encryptedVault, inputKey);
           const vaultKeyBytes = new Uint8Array(decryptedVaultRaw);
           this._encryptionKey = await cryptoUtils.importVaultKey(vaultKeyBytes);
-          // Save in session to allow refreshes
+          // Guardar en sesión para permitir refrescos
           sessionStorage.setItem('deskflow_session_key', JSON.stringify(Array.from(vaultKeyBytes)));
-          return; // Éxito
+          return; // Success
         } catch (e) {
           // If it fails, try the next key in the list
           continue;
@@ -106,7 +106,7 @@ export const storage = {
   },
 
   /**
-   * Initializes IndexedDB and handles versioning
+   * Inicializa IndexedDB y maneja el versionado
    */
   async init() {
     if (this.db) return this.db;
