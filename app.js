@@ -29,6 +29,9 @@ async function init() {
  * Traduce elementos que están fijos en el HTML (Sidebar, botones fijos, etc)
  */
 function translateStaticUI() {
+  // Actualizar el atributo lang del documento para accesibilidad y SEO
+  document.documentElement.lang = state.language;
+
   // Traducir textos
   document.querySelectorAll('[data-t]').forEach(el => {
     el.innerText = t(el.dataset.t);
