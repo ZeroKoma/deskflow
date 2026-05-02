@@ -1,0 +1,189 @@
+/* Layout Containers */
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  position: relative; /* Cambiado de fixed para permitir el efecto "push" */
+  height: 100vh;
+  width: 0;
+  padding: 0;
+  border-right: 0 solid var(--border);
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0; /* Importante para que no se colapse */
+  z-index: 100;
+  transition: width 0.3s ease, padding 0.3s ease, border-width 0.3s ease;
+  white-space: nowrap;
+}
+
+.sidebar.open {
+  width: 300px;
+  padding: var(--space-xl);
+  border-right-width: 1px;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: var(--space-2xl);
+  flex-shrink: 0;
+}
+
+.nav-menu {
+  flex-grow: 1;
+}
+
+.nav-item {
+  width: 100%;
+  padding: 0.8rem var(--space-l);
+  margin-bottom: var(--space-s);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  text-align: left;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  border-left: 4px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+}
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: transparent;
+  padding: 2px 8px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.nav-item.active .nav-badge,
+.nav-item:hover .nav-badge {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.sidebar-stats {
+  margin: var(--space-xl) 0;
+  padding: var(--space-l);
+  background: var(--bg-main);
+  border-radius: var(--radius);
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-top: var(--space-s);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.stat-item i {
+  margin-right: var(--space-s);
+  font-size: 0.75rem;
+  vertical-align: middle;
+  width: 1rem;
+  text-align: center;
+}
+
+.stat-item[data-priority="high"] i { color: var(--high); }
+.stat-item[data-priority="medium"] i { color: var(--medium); }
+.stat-item[data-priority="low"] i { color: var(--low); }
+
+.stat-item:hover {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  transform: translateX(4px);
+}
+
+.theme-switch {
+  margin-top: auto;
+  padding: var(--space-l);
+  background: var(--bg-main);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-top: var(--space-l);
+}
+
+.theme-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Main Content & Top Bar */
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.top-bar {
+  padding: var(--space-l) var(--space-2xl);
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+}
+
+/* --- Generic Layout Helpers --- */
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-center-gap-20 { display: flex; align-items: center; gap: var(--space-xl); }
+.flex-center-gap-15 { display: flex; align-items: center; gap: var(--space-l); }
+.flex-gap-5 { display: flex; gap: var(--space-xs); }
+.flex-gap-8 { display: flex; gap: var(--space-s); }
+.flex-1 { flex: 1; }
+.flex-grow { flex-grow: 1; }
+.m-0 { margin: 0 !important; }
+.m-b-5 { margin-bottom: var(--space-xs) !important; }
+.m-b-10 { margin-bottom: var(--space-m) !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.text-capitalize { text-transform: capitalize; }
+
+/* --- App Specific Layout --- */
+.view-container-padding { padding: var(--space-2xl) var(--container-h-padding); }
+.view-title { margin-bottom: var(--space-s); }
+.view-subtitle { color: var(--text-muted); margin-bottom: var(--space-l); }
+.view-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2xl); }

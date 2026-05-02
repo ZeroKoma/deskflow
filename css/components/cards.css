@@ -1,0 +1,222 @@
+/* Mejoras en las tarjetas de notas para evitar parpadeos y añadir interactividad */
+.dashboard-note-item,
+.card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.dashboard-note-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Grid Systems --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-l);
+  margin-bottom: var(--space-l);
+}
+.notes-grid-300 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-l);
+}
+.notes-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+.notes-stack-mini {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+.notes-stack-grid {
+  display: grid;
+  gap: var(--space-l);
+}
+.note-content-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+/* --- Components --- */
+.dashboard-column {
+  background: var(--bg-sidebar);
+  padding: var(--space-l);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-l);
+  display: block;
+  cursor: default;
+  min-height: 150px;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-note-item {
+  padding: var(--space-m);
+  background: var(--bg-main);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-note-item.priority-high,
+.dashboard-column.priority-high,
+.note-card-full.priority-high,
+.note-pill.priority-high {
+  border-left-color: var(--high);
+}
+.dashboard-note-item.priority-medium,
+.dashboard-column.priority-medium,
+.note-card-full.priority-medium,
+.note-pill.priority-medium {
+  border-left-color: var(--medium);
+}
+.dashboard-note-item.priority-low,
+.dashboard-column.priority-low,
+.note-card-full.priority-low,
+.note-pill.priority-low {
+  border-left-color: var(--low);
+}
+
+.note-card-full {
+  background: var(--bg-main);
+  padding: var(--space-xl);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease;
+  border-left: 5px solid transparent;
+}
+
+.note-card-full.bg-sidebar {
+  background: var(--bg-sidebar);
+}
+
+.note-card-full h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.note-card-full .meta-row {
+  font-size: 0.8rem;
+  display: flex;
+  gap: var(--space-xl);
+  color: var(--text-muted);
+}
+
+.note-card-full .note-desc {
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+
+.card-actions-col {
+  display: flex;
+  gap: var(--space-s);
+  margin-left: var(--space-xl);
+}
+
+.card-header-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-l);
+  flex-wrap: nowrap;
+  margin-bottom: var(--space-xs);
+}
+
+.card-header-row .note-pill {
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+.note-pill {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  margin-bottom: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: transparent;
+  color: var(--text-main);
+  border-left: 3px solid transparent;
+  padding-left: 4px;
+}
+
+/* Asegurar que el indicador de prioridad sea una barra vertical recta en estas vistas */
+.calendar-grid.month .note-pill,
+.calendar-grid.week .note-pill {
+  border-radius: 0;
+  margin-left: 0;
+}
+
+/* Planificación Semanal Full Bleed */
+.planning-card {
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.planning-card .column-title {
+  padding: 0 var(--space-l);
+  margin-bottom: var(--space-m);
+}
+
+.column-title {
+  margin-bottom: var(--space-l);
+  margin-top: 0;
+}
+
+.title-count {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-left: var(--space-xs);
+}
+
+.note-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.dashboard-grid .dashboard-column {
+  margin-bottom: 0;
+}
+
+/* Notas Caducadas / Archivo */
+.card.expired,
+.dashboard-note-item.expired,
+.note-pill.expired {
+  opacity: 0.5 !important;
+  filter: grayscale(1) !important;
+  cursor: default;
+}
+
+.card.expired,
+.dashboard-note-item.expired {
+  border-style: dashed !important;
+  border-top-color: var(--text-muted) !important;
+  border-right-color: var(--text-muted) !important;
+  border-bottom-color: var(--text-muted) !important;
+  background: var(--bg-main) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
