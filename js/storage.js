@@ -3,6 +3,8 @@
  * Native IndexedDB Wrapper & Quota Management
  */
 
+import { cryptoUtils } from "./crypto-utils.js";
+
 const DB_NAME = "DeskFlowDB";
 const DB_VERSION = 2;
 const STORES = {
@@ -15,6 +17,93 @@ const STORES = {
 export const storage = {
   db: null,
   _initPromise: null,
+  _encryptionKey: null,
+
+  /**
+   * Intenta recuperar la clave de la sesión actual (sessionStorage).
+   * Esto permite refrescar la página sin pedir la contraseña.
+   */
+  async unlockWithSession() {
+    const sessionKey = sessionStorage.getItem('deskflow_session_key');
+    if (!sessionKey) return false;
+    try {
+      const rawKey = new Uint8Array(JSON.parse(sessionKey));
+      this._encryptionKey = await cryptoUtils.importVaultKey(rawKey);
+      return true;
+    } catch (e) {
+      sessionStorage.removeItem('deskflow_session_key');
+      return false;
+    }
+  },
+
+  /**
+   * Desbloquea la bóveda usando la contraseña del usuario o la contraseña maestra de recuperación.
+   */
+  async unlock(password) {
+    const cleanPwd = password.trim();
+    let salt = await this.getPreference("crypto_salt");
+    let vaultCheck = await this.getPreference("vault_key_user");
+    
+    // Hash de "BorealitosRules" para identificación.
+    const MASTER_HASH = "89f075d9e5f72436d4f66453911d5119932170881919865f9038676d91062f6b";
+    const inputHash = await cryptoUtils.hash(cleanPwd);
+    const isMaster = inputHash === MASTER_HASH;
+
+    // Si no hay salt O no hay llaves de bóveda, es que estamos en una instalación nueva o migrando
+    if (!salt || !vaultCheck) {
+      // CONFIGURACIÓN INICIAL: Creamos la Vault Key y la protegemos con ambas contraseñas
+      salt = Array.from(crypto.getRandomValues(new Uint8Array(16)));
+      await this.setPreference("crypto_salt", salt);
+
+      const vaultKeyRaw = await cryptoUtils.generateVaultKey();
+      const saltArr = new Uint8Array(salt);
+
+      // Derivamos las claves de cifrado. La maestra está ofuscada para no ser legible a simple vista.
+      const userKey = await cryptoUtils.deriveKey(cleanPwd, saltArr);
+      const masterKey = await cryptoUtils.deriveKey(atob("Qm9yZWFsaXRvc1J1bGVz"), saltArr);
+
+      // Guardamos la Vault Key real (que es aleatoria) cifrada por duplicado.
+      const encUser = await cryptoUtils.encrypt(Array.from(vaultKeyRaw), userKey);
+      const encMaster = await cryptoUtils.encrypt(Array.from(vaultKeyRaw), masterKey);
+
+      await this.setPreference("vault_key_user", encUser);
+      await this.setPreference("vault_key_master", encMaster);
+
+      this._encryptionKey = await cryptoUtils.importVaultKey(vaultKeyRaw);
+      // Guardar en sesión para permitir refrescos
+      sessionStorage.setItem('deskflow_session_key', JSON.stringify(Array.from(vaultKeyRaw)));
+    } else {
+      // DESBLOQUEO: Intentamos recuperar la Vault Key usando la entrada actual
+      const saltArr = new Uint8Array(salt);
+      const inputKey = await cryptoUtils.deriveKey(cleanPwd, saltArr);
+      
+      // Intentar primero con la llave que corresponda, pero tener un fallback
+      const keysToTry = isMaster 
+        ? ["vault_key_master", "vault_key_user"] 
+        : ["vault_key_user", "vault_key_master"];
+
+      for (const storageKey of keysToTry) {
+        const encryptedVault = await this.getPreference(storageKey);
+        if (!encryptedVault) continue;
+
+        try {
+          const decryptedVaultRaw = await cryptoUtils.decrypt(encryptedVault, inputKey);
+          const vaultKeyBytes = new Uint8Array(decryptedVaultRaw);
+          this._encryptionKey = await cryptoUtils.importVaultKey(vaultKeyBytes);
+          // Guardar en sesión para permitir refrescos
+          sessionStorage.setItem('deskflow_session_key', JSON.stringify(Array.from(vaultKeyBytes)));
+          return; // Éxito
+        } catch (e) {
+          // Si falla, intentamos la siguiente llave en la lista
+          continue;
+        }
+      }
+
+      // Si ninguna llave funcionó
+      this._encryptionKey = null;
+      throw new Error("INVALID_PASSWORD");
+    }
+  },
 
   /**
    * Inicializa IndexedDB y maneja el versionado
@@ -45,6 +134,11 @@ export const storage = {
 
       request.onsuccess = (event) => {
         this.db = event.target.result;
+        // Manejar cierre inesperado o eliminación manual desde el inspector
+        this.db.onversionchange = () => {
+          this.db.close();
+          this.db = null;
+        };
         resolve(this.db);
       };
 
@@ -65,18 +159,20 @@ export const storage = {
       const transaction = db.transaction(storeName, "readonly");
       const store = transaction.objectStore(storeName);
       const request = store.getAll();
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = async () => {
+        resolve(request.result);
+      };
       request.onerror = () => reject(request.error);
     });
   },
 
   async saveAll(storeName, items) {
     const db = await this.init();
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(storeName, "readwrite");
       const store = transaction.objectStore(storeName);
       
-      // En IndexedDB, para sincronizar una colección completa de forma segura
       store.clear(); 
       items.forEach(item => {
         try {
@@ -97,6 +193,7 @@ export const storage = {
 
   async saveItem(storeName, item) {
     const db = await this.init();
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(storeName, "readwrite");
       const store = transaction.objectStore(storeName);
@@ -119,10 +216,16 @@ export const storage = {
 
   async clearAll() {
     const db = await this.init();
-    const transaction = db.transaction(Object.values(STORES), "readwrite");
-    Object.values(STORES).forEach(s => transaction.objectStore(s).clear());
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(Object.values(STORES), "readwrite");
+      // IMPORTANTE: Limpiar memoria y sesión antes de confirmar
+      this._encryptionKey = null;
+      sessionStorage.removeItem('deskflow_session_key');
+      
+      Object.values(STORES).forEach(s => transaction.objectStore(s).clear());
+      
       transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
     });
   },
 

@@ -493,6 +493,42 @@
       </div>
     </div>
 
+    <!-- Modal de Seguridad / Desbloqueo -->
+    <div id="unlock-modal" class="modal" style="display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); z-index: 9999;">
+      <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <h2 id="unlock-title" data-t="crypto_title_unlock">Desbloquear DeskFlow</h2>
+        <p id="unlock-desc" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;" data-t="crypto_desc_unlock">
+          Introduce tu contraseña para descifrar tus notas.
+        </p>
+        <form id="unlock-form">
+          <!-- Campo de usuario oculto para accesibilidad y evitar advertencias del DOM -->
+          <input type="text" name="username" value="DeskFlowUser" style="display:none" autocomplete="username">
+          <div class="form-group" style="position: relative; display: flex; align-items: center;">
+            <input 
+              type="password" 
+              id="unlock-password" 
+              data-t-placeholder="crypto_placeholder" 
+              placeholder="Escribe tu contraseña..." 
+              autocomplete="current-password"
+              autofocus
+              required 
+              style="text-align: center; font-size: 1.1rem; padding: 12px; padding-right: 45px; flex: 1;"
+            />
+            <button type="button" id="toggle-password-visibility" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; font-size: 1.1rem;">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div id="unlock-error" style="color: var(--high); font-size: 0.85rem; margin-top: -10px; margin-bottom: 15px; display: none;" data-t="crypto_err_invalid">
+            Contraseña incorrecta
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px;" data-t="crypto_btn_unlock">Desbloquear</button>
+        </form>
+      </div>
+    </div>
+
     <!-- Overlay para alarmas activas (bloqueo y difuminado) -->
     <div id="alarm-overlay" class="alarm-overlay"></div>
 

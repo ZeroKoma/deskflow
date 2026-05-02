@@ -1,4 +1,5 @@
 import { state, mutations, subscribe } from './js/store.js';
+import { storage } from './js/storage.js';
 import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './js/view.js';
 import { dateUtils, downloadFile } from './js/utils.js';
 import { startAlarmService } from './js/app-alarms.js';
@@ -15,14 +16,66 @@ async function init() {
     updateUIStats();
   });
 
-  // FASE 6 — Esperar a que los datos se carguen desde IndexedDB
+  // 1. Cargar preferencias básicas (idioma/tema) antes de mostrar nada
   await mutations.initStore();
+  applyTheme();
+  translateStaticUI();
 
-  applyTheme(); // Ahora se aplica después de que initStore haya cargado el tema de IDB
-  setupGlobalEvents();
-  requestNotificationPermission();
-  setFavicon();
-  startAlarmService();
+  // 2. Gestionar el desbloqueo de seguridad
+  const salt = await storage.getPreference("crypto_salt");
+  const unlockModal = document.getElementById("unlock-modal");
+  
+  // Si no hay 'salt', es la primera vez (configuración)
+  if (!salt) {
+    document.getElementById("unlock-title").innerText = t('crypto_title_first');
+    document.getElementById("unlock-desc").innerText = t('crypto_desc_first');
+  }
+
+  // Intentar desbloqueo automático si ya hay una sesión activa
+  if (salt && await mutations.tryResumeSession()) {
+    unlockModal.style.display = "none";
+    setupGlobalEvents();
+    requestNotificationPermission();
+    setFavicon();
+    startAlarmService();
+    return; // Saltamos el resto de la lógica del modal
+  }
+
+  // Lógica para ver/ocultar contraseña
+  const togglePassBtn = document.getElementById("toggle-password-visibility");
+  const passwordInput = document.getElementById("unlock-password");
+  
+  togglePassBtn.addEventListener("click", () => {
+    const isPassword = passwordInput.type === "password";
+    passwordInput.type = isPassword ? "text" : "password";
+    togglePassBtn.innerHTML = isPassword ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+  });
+
+  // Poner el foco automáticamente en el campo de contraseña
+  passwordInput.focus();
+
+  document.getElementById("unlock-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const password = document.getElementById("unlock-password").value;
+    const errorEl = document.getElementById("unlock-error");
+    errorEl.style.display = "none";
+
+    try {
+      // Esto deriva la clave, verifica si es correcta y recarga los datos reales
+      await mutations.unlockStorage(password);
+      
+      unlockModal.style.display = "none";
+      
+      // 3. Inicialización completa tras desbloquear
+      setupGlobalEvents();
+      requestNotificationPermission();
+      setFavicon();
+      startAlarmService();
+    } catch (err) {
+      console.error("Error de desbloqueo:", err);
+      errorEl.style.display = "block";
+    }
+  });
 }
 
 /**

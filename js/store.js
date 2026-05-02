@@ -1,5 +1,6 @@
 import { dataService } from "./data-service.js";
 import { dateUtils } from "./utils.js";
+import { storage } from "./storage.js";
 
 const listeners = new Set();
 
@@ -157,6 +158,35 @@ export const mutations = {
     state.language = validators.language(lang) ? lang : defaultFallback;
   },
 
+  /**
+   * Desbloquea el almacenamiento cifrado y recarga los datos.
+   */
+  async unlockStorage(password) {
+    await storage.unlock(password);
+    // Recargar todo el estado ahora que tenemos la clave para descifrar
+    await this.initStore();
+
+    // Migración: Guardar de nuevo para asegurar que los datos que estaban en plano
+    // ahora se persistan cifrados en IndexedDB.
+    this.saveNotes();
+    this.saveTags();
+    this.saveCategories();
+    
+    return true;
+  },
+
+  /**
+   * Intenta restaurar la sesión de cifrado desde sessionStorage
+   */
+  async tryResumeSession() {
+    const resumed = await storage.unlockWithSession();
+    if (resumed) {
+      await this.initStore();
+      return true;
+    }
+    return false;
+  },
+
   saveNotes() {
     // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
     const rawNotes = JSON.parse(JSON.stringify(state.notes));
@@ -310,15 +340,16 @@ export const mutations = {
   },
 
   async resetApp() {
+    // 1. Limpiar el estado en memoria inmediatamente
     state.notes = [];
     state.tags = JSON.parse(JSON.stringify(defaultTags));
     state.categories = JSON.parse(JSON.stringify(defaultCategories));
     
+    // 2. Limpiar el almacenamiento (esto ahora también limpia la clave en storage.js)
     await dataService.clearAll();
-
-    this.saveNotes();
-    this.saveTags();
-    this.saveCategories();
+    
+    // 3. Forzar recarga para asegurar un entorno criptográfico limpio
+    window.location.reload();
   },
 
   deletePastNotes(todayStr) {

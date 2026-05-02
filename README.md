@@ -15,6 +15,7 @@ La aplicación sigue un patrón de diseño modular basado en **ES Modules (ESM)*
 - **`view.js`**: Motor de renderizado de las vistas principales (Dashboard, Calendario, Lista de Notas).
 - **`view-components.js`**: Componentes de UI reutilizables como badges, pills, notificaciones (toasts) y el sistema de tooltips.
 - **`view-modals.js`**: Lógica específica para la gestión de formularios dentro de modales (Notas, Tags, Categorías).
+- **`crypto-utils.js`**: Utilidades criptográficas basadas en la Web Crypto API (AES-GCM, PBKDF2).
 - **`app-alarms.js`**: Servicio en segundo plano que monitoriza recordatorios y lanza notificaciones sonoras y de sistema.
 - **`app-settings.js`**: Lógica administrativa para la exportación/importación de datos CSV y mantenimiento de la base de datos local.
 - **`utils.js`**: Funciones auxiliares para el manejo de fechas y manipulación de archivos.
@@ -47,9 +48,20 @@ El servicio de alarmas (`app-alarms.js`) se ejecuta cada 10 segundos, permitiend
 
 Vistas adaptables de Mes, Semana y Día, con persistencia de estado para una navegación fluida entre fechas.
 
+### 5. Seguridad y Privacidad Blindada
+
+DeskFlow implementa un sistema de seguridad de nivel bancario:
+
+- **Cifrado AES-GCM 256-bit**: Los datos se cifran localmente antes de tocar el disco (IndexedDB).
+- **Arquitectura de Bóveda (Vault)**: Una clave aleatoria maestra protege los datos. Esta clave está a su vez cifrada por la contraseña del usuario y una clave de recuperación maestra.
+- **Derivación PBKDF2**: Las contraseñas se procesan con 100,000 iteraciones de hashing para prevenir ataques de fuerza bruta.
+- **Conocimiento Cero (Zero-Knowledge)**: Ni el navegador ni un futuro servidor pueden leer el contenido de las notas sin la clave del usuario.
+- **Persistencia de Sesión**: Uso de `sessionStorage` para permitir refrescar la página sin solicitar la contraseña constantemente, manteniendo la seguridad al cerrar la pestaña.
+
 ### 5. Soporte Multi-idioma (i18n)
 
 DeskFlow detecta automáticamente el idioma del navegador y permite el cambio manual:
+
 - **Traducción Estática**: Mediante atributos `data-t` en el HTML, el sistema traduce etiquetas al vuelo.
 - **Traducción Dinámica**: Uso de la función `t()` para mensajes del sistema y notificaciones.
 - **Localización de Fechas**: El calendario ajusta automáticamente el primer día de la semana (Lunes o Domingo) y el formato de fecha según el idioma.
@@ -58,18 +70,19 @@ DeskFlow detecta automáticamente el idioma del navegador y permite el cambio ma
 
 DeskFlow está diseñado siguiendo el patrón de **Service Layer**, lo que permite alternar entre almacenamiento local y remoto sin modificar la lógica de la interfaz de usuario.
 
-### Guía para implementar un Backend remoto
+### Arquitectura de Backend (Privacidad Total)
 
-Si deseas migrar los datos a una base de datos en la nube, debes realizar lo siguiente:
+Para migrar los datos a una base de datos en la nube, se debe realizar lo siguiente:
 
 1.  **Activar el modo Backend**: En `js/data-service.js`, cambia la constante `USE_BACKEND` a `true`.
 2.  **Configurar la API**: Define la URL de tu servidor en la constante `API_BASE_URL`.
-3.  **Implementar Endpoints**: Tu servidor deberá exponer rutas REST (o GraphQL) para:
+3.  **Seguridad en Tránsito**: El sistema ya está preparado para enviar los **blobs cifrados** al servidor. El backend solo almacenará datos ilegibles para terceros.
+4.  **Implementar Endpoints**: El servidor deberá exponer rutas REST (o GraphQL) para:
     - `GET /notes`: Recuperar la lista de notas.
     - `POST /notes`: Guardar o sincronizar notas.
     - `GET/POST /tags` y `/categories`: Gestión de diccionarios de etiquetas.
     - `GET/POST /preferences`: Para persistir el tema e idioma elegidos por el usuario.
-4.  **Transparencia**: El archivo `store.js` ya utiliza `async/await`, por lo que simplemente esperará la respuesta de la red en lugar de la respuesta de IndexedDB, sin necesidad de cambios adicionales.
+5.  **Transparencia**: El archivo `store.js` ya utiliza `async/await`, por lo que simplemente esperará la respuesta de la red en lugar de la respuesta de IndexedDB, sin necesidad de cambios adicionales.
 
 ### Persistencia Local (Modo actual)
 

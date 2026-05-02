@@ -171,4 +171,19 @@ export const en = {
   cat_mgr_title: "Manage Categories",
   tag_mgr_placeholder: "Tag name...",
   cat_mgr_placeholder: "Category name...",
+
+  // Settings (Buttons)
+  nav_export: "Export (JSON)",
+  nav_import: "Import (JSON)",
+  nav_delete_past: "Clear Past Notes",
+  nav_reset: "Reset Application Completely",
+
+  // Security
+  crypto_title_first: "Set Up Security Password",
+  crypto_title_unlock: "Unlock DeskFlow",
+  crypto_desc_first: "Your data will be encrypted locally. If you forget this password, you won't be able to recover your notes.",
+  crypto_desc_unlock: "Enter your password to decrypt your notes and reminders.",
+  crypto_placeholder: "Type your password...",
+  crypto_btn_unlock: "Unlock",
+  crypto_err_invalid: "Incorrect password. Please try again.",
 };

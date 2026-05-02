@@ -171,4 +171,18 @@ export const es = {
   cat_mgr_title: "Gestionar Categorías",
   tag_mgr_placeholder: "Nombre del tag...",
   cat_mgr_placeholder: "Nombre de la categoría...",
+
+  // Ajustes (Botones)
+  nav_export: "Exportar (JSON)",
+  nav_import: "Importar (JSON)",
+  nav_delete_past: "Limpiar Notas Pasadas",
+  nav_reset: "Resetear Aplicación Completamente",
+  // Seguridad
+  crypto_title_first: "Configurar Contraseña de Seguridad",
+  crypto_title_unlock: "Desbloquear DeskFlow",
+  crypto_desc_first: "Tus datos se cifrarán localmente. Si olvidas esta contraseña, no podrás recuperar tus notas.",
+  crypto_desc_unlock: "Introduce tu contraseña para descifrar tus notas y recordatorios.",
+  crypto_placeholder: "Escribe tu contraseña...",
+  crypto_btn_unlock: "Desbloquear",
+  crypto_err_invalid: "Contraseña incorrecta. Inténtalo de nuevo."
 };
