@@ -65,6 +65,9 @@ function setupGlobalEvents() {
     }
   };
 
+  // Cerrar sidebar al hacer click en el overlay (zona oscura fuera del drawer)
+  sidebarOverlay?.addEventListener('click', closeSidebarOnMobile);
+
   if (topBar && !document.getElementById('mobile-header-row')) {
     const mobileHeader = document.createElement('div');
     mobileHeader.id = 'mobile-header-row';
