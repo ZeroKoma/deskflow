@@ -146,3 +146,19 @@
 .hamburger-btn.desktop-menu-btn { margin-right: var(--space-l); }
 .search-toggle-btn { font-size: 1.25rem; display: none; }
 .sidebar-close-btn { font-size: 1.5rem; position: absolute; top: var(--space-l); right: var(--space-l); z-index: 2100; display: none; }
+
+/* --- Responsive Buttons --- */
+@media (max-width: 768px) {
+  .hamburger-btn.desktop-menu-btn {
+    display: none;
+  }
+  
+  .search-toggle-btn {
+    display: block;
+    padding: 8px;
+  }
+
+  .sidebar-close-btn {
+    display: block;
+  }
+}

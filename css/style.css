@@ -165,122 +165,6 @@
   filter: grayscale(0.8);
 }
 
-/* Buttons & Forms */
-.btn-primary {
-  background: transparent;
-  color: var(--primary);
-  padding: 0.7rem 1.5rem;
-  border: 2px solid var(--primary);
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-primary:hover {
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 8px 15px -3px rgba(37, 99, 235, 0.3);
-  transform: translateY(-2px);
-}
-
-.btn-primary:disabled,
-.btn-primary.disabled-btn {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: var(
-    --bg-main
-  ); /* Cambiar fondo para que parezca menos clicable */
-  color: var(--text-muted);
-  border-color: var(--border);
-  box-shadow: none;
-  transform: none;
-}
-
-.btn-primary:disabled:hover,
-.btn-primary.disabled-btn:hover {
-  background: var(--bg-main);
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-.btn-primary:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--text-main);
-  padding: 0.7rem 1.5rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-secondary:hover {
-  background: rgba(37, 99, 235, 0.05);
-  border-color: var(--primary);
-  color: var(--primary);
-  transform: translateY(-1px);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-muted);
-  padding: 0.6rem 1.25rem;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-ghost:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-main);
-}
-
-.btn-sm-border {
-  padding: 6px 12px !important;
-  border: 1px solid var(--border) !important;
-  font-size: 0.85rem;
-}
-
-.btn-danger {
-  background: var(--high);
-  color: white !important;
-  padding: 0.7rem 1.5rem;
-  border: 2px solid var(--high);
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-danger:hover {
-  filter: brightness(0.9);
-  box-shadow: 0 8px 15px -3px rgba(239, 68, 68, 0.3);
-  transform: translateY(-2px);
-}
-
 .modal {
   display: none;
   position: fixed;
@@ -592,30 +476,6 @@ input:checked + .slider:before {
   pointer-events: none;
 }
 
-/* Botón hamburguesa */
-.hamburger-btn {
-  display: block;
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.hamburger-btn.desktop-menu-btn {
-  display: block;
-  margin-right: var(--space-l);
-}
-
-.search-toggle-btn {
-  display: none;
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  font-size: 1.25rem;
-  cursor: pointer;
-}
-
 /* Fila superior móvil oculta en desktop */
 .mobile-header-row {
   display: none;
@@ -641,20 +501,6 @@ input:checked + .slider:before {
 .sidebar-overlay.active {
   opacity: 1;
   visibility: visible;
-}
-
-/* Botón de cierre del sidebar (solo visible en móvil) */
-.sidebar-close-btn {
-  display: none; /* Oculto en escritorio */
-  position: absolute;
-  top: var(--space-l);
-  right: var(--space-l);
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 1.5rem;
-  cursor: pointer;
-  z-index: 2100;
 }
 
 /* --- Media Queries de Ajuste Global --- */
@@ -710,10 +556,6 @@ input:checked + .slider:before {
     transform: translateX(0);
   }
 
-  .sidebar-close-btn {
-    display: block; /* Solo visible en responsive */
-  }
-
   .logo {
     /* Ajustar el margen del logo para que no choque con el botón de cierre */
     font-size: 1.5rem;
@@ -750,12 +592,6 @@ input:checked + .slider:before {
   .mobile-header-row {
     width: 100%;
     order: 1;
-  }
-
-  .search-toggle-btn {
-    display: block;
-    padding: 8px;
-    margin-left: 0;
   }
 
   .top-bar .actions {
@@ -825,19 +661,6 @@ input:checked + .slider:before {
     flex-direction: row;
     align-items: center;
     gap: var(--space-s);
-  }
-
-  .hamburger-btn {
-    display: block;
-    background: transparent;
-    border: none;
-    color: var(--text-main);
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-
-  .hamburger-btn.desktop-menu-btn {
-    display: none;
   }
 
   .top-bar .flex-center-gap-20,
