@@ -1,8 +1,8 @@
-import { state, mutations } from './store.js';
-import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './view.js';
-import { dateUtils, downloadFile } from './utils.js';
-import { startAlarmService } from './app-alarms.js';
-import * as settings from './app-settings.js';
+import { state, mutations } from './js/store.js';
+import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './js/view.js';
+import { dateUtils, downloadFile } from './js/utils.js';
+import { startAlarmService } from './js/app-alarms.js';
+import * as settings from './js/app-settings.js';
 
 document.addEventListener("DOMContentLoaded", init);
 
