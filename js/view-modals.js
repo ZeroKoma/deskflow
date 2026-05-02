@@ -1,5 +1,6 @@
 import { state, mutations, getters } from "./store.js";
 import { dateUtils } from "./utils.js";
+import { t } from "../translations.js";
 
 export function openNoteModal(id = null, defaultDate = null) {
   const noteModal = document.getElementById("note-modal");
@@ -16,7 +17,7 @@ export function openNoteModal(id = null, defaultDate = null) {
 
   if (id) {
     const note = getters.getNoteById(id);
-    modalTitle.innerText = note.date ? "Editar Recordatorio" : "Editar Nota";
+    modalTitle.innerText = note.date ? t('note_edit_rem') : t('note_edit_note');
     document.getElementById("note-id").value = note.id;
     document.getElementById("title").value = note.title;
     dateInput.value = note.date;
@@ -41,8 +42,8 @@ export function openNoteModal(id = null, defaultDate = null) {
 
     // Set initial title based on date presence
     modalTitle.innerText = dateInput.value
-      ? "Nuevo Recordatorio"
-      : "Nueva Nota";
+      ? t('note_new_rem')
+      : t('note_new_note');
 
     renderTagSelection([]);
     alarmInput.disabled = true;
@@ -54,11 +55,11 @@ export function openNoteModal(id = null, defaultDate = null) {
     const hasDate = !!dateInput.value;
     modalTitle.innerText = id
       ? hasDate
-        ? "Editar Recordatorio"
-        : "Editar Nota"
+        ? t('note_edit_rem')
+        : t('note_edit_note')
       : hasDate
-        ? "Nuevo Recordatorio"
-        : "Nueva Nota";
+        ? t('note_new_rem')
+        : t('note_new_note');
   };
   dateInput.removeEventListener("input", updateModalTitleBasedOnDate); // Prevent multiple listeners
   dateInput.addEventListener("input", updateModalTitleBasedOnDate);
@@ -73,7 +74,7 @@ export function renderTagSelection(selectedIds) {
       const isSelected = selectedIds.includes(tag.id);
       return `
         <div class="tag-chip ${isSelected ? "selected" : "inactive"} ${isAlarmTag ? "protected-tag" : ""}"
-             ${isAlarmTag ? 'title="Este tag se activa con la alarma"' : ""}
+             ${isAlarmTag ? `title="${t('tag_sys_hint')}"` : ""}
              style="background: ${tag.color}22; color: ${tag.color}; border-color: ${tag.color}; display: ${isAlarmTag && !isSelected ? "none" : "inline-flex"}">
           <input type="checkbox" name="note-tags" value="${tag.id}" ${isSelected ? "checked" : ""} ${isAlarmTag ? "disabled" : ""} style="display:none">
           ${tag.name}
@@ -107,7 +108,7 @@ export function renderTagManager() {
         </div>
         ${
           isProtected
-            ? `<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;"><i class="fas fa-lock"></i>&nbsp;&nbsp;Sistema</span>`
+            ? `<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;"><i class="fas fa-lock"></i>&nbsp;&nbsp;${t('tag_sys_lock')}</span>`
             : `<div style="display: flex; gap: 10px;">
             <button data-action="edit-tag" data-id="${tag.id}" class="btn-ghost" style="padding:4px"><i class="fas fa-pencil-alt"></i></button>
             <button data-action="delete-tag" data-id="${tag.id}" class="btn-ghost" style="color:var(--high); padding:4px"><i class="fas fa-times"></i></button>

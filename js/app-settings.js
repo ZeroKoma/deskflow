@@ -2,6 +2,7 @@ import { state, mutations } from './store.js';
 import { dataService } from './data-service.js';
 import { dateUtils, downloadFile } from './utils.js';
 import { showToast, showConfirmModal } from './view.js';
+import { t } from '../translations.js';
 
 const APP_VERSION = "1.0";
 
@@ -25,11 +26,11 @@ export async function updateStorageInfoUI() {
     container.innerHTML = `
       <div class="storage-info-container">
         <div class="flex-between m-b-5">
-          <span>Espacio libre:</span>
+          <span>${t('storage_free')}:</span>
           <span style="font-weight: 700; color: var(--low);">${freePercent}%</span>
         </div>
         <div class="storage-footer-note">
-          * Esta es una estimación aproximada del navegador basada en el disco disponible (${status.usageMB} MB usados).
+          ${t('storage_estimate')} (${status.usageMB} MB ${t('storage_used')}).
         </div>
       </div>`;
   }
@@ -44,7 +45,7 @@ export function importData(file, onThemeUpdate) {
     try {
       const data = JSON.parse(text);
       if (!data.notes || !data.tags || !data.categories) {
-        showToast("El archivo no tiene el formato correcto de DeskFlow", "error");
+        showToast(t('toast_import_err_format'), "error");
         return;
       }
 
@@ -64,12 +65,12 @@ export function importData(file, onThemeUpdate) {
 
         const finalizeImport = (msg) => {
           showToast(msg, "info", null, {
-            label: "Deshacer",
+            label: t('undo'),
             callback: () => {
               mutations.restoreState(stateBackup);
               if (stateBackup.theme) mutations.setTheme(stateBackup.theme);
               if (onThemeUpdate) onThemeUpdate();
-              showToast("Cambios revertidos correctamente");
+              showToast(t('toast_undo_success'));
             }
           });
           closeSettings();
@@ -84,42 +85,42 @@ export function importData(file, onThemeUpdate) {
           mutations.restoreState(data);
           if (data.theme) mutations.setTheme(data.theme);
           if (onThemeUpdate) onThemeUpdate();
-          finalizeImport("Datos importados correctamente");
+          finalizeImport(t('toast_import_success'));
         } else {
           showConfirmModal(
-            "¿Cómo deseas importar los datos?",
+            t('conf_import_mode'),
             () => { 
               mutations.restoreState(data); 
               if (data.theme) mutations.setTheme(data.theme);
               if (onThemeUpdate) onThemeUpdate();
-              finalizeImport("Copia de seguridad restaurada (Reemplazo total)");
+              finalizeImport(t('toast_import_replaced'));
             },
             () => { 
               mutations.mergeState(data); 
-              finalizeImport("Datos fusionados correctamente");
+              finalizeImport(t('toast_import_merged'));
             },
-            { okText: "Reemplazar Todo", cancelText: "Fusionar Datos", okClass: "btn-danger" }
+            { okText: t('btn_replace_all'), cancelText: t('btn_merge_data'), okClass: "btn-danger" }
           );
         }
       };
 
       // Validación de versión
       if (!data.version || data.version !== APP_VERSION) {
-        const warning = !data.version 
-          ? "El archivo no tiene información de versión (es antiguo o externo)." 
-          : `La versión del archivo (${data.version}) no coincide con la actual (${APP_VERSION}).`;
+        let warning = !data.version 
+          ? t('import_warn_no_version') 
+          : t('import_warn_mismatch').replace('{version}', data.version).replace('{current}', APP_VERSION);
         
         showConfirmModal(
-          `${warning} La importación podría causar problemas de compatibilidad. ¿Deseas continuar?`,
+          `${warning} ${t('import_warn_continue')}`,
           processImport,
           null,
-          { okText: "Continuar de todos modos", cancelText: "Cancelar", okClass: "btn-primary" }
+          { okText: t('btn_continue'), cancelText: t('btn_cancel'), okClass: "btn-primary" }
         );
       } else {
         processImport();
       }
     } catch (err) {
-      showToast("Error al procesar el archivo JSON", "error");
+      showToast(t('toast_import_json_err'), "error");
     }
   };
   reader.readAsText(file);
@@ -138,20 +139,20 @@ export function deletePastNotes() {
   const todayStr = dateUtils.getTodayStr();
   const pastNotesCount = state.notes.filter(n => n.date && n.date < todayStr).length;
   if (pastNotesCount === 0) {
-    showToast("No hay notas pasadas", "info");
+    showToast(t('toast_no_past'), "info");
     return;
   }
-  showConfirmModal(`¿Eliminar ${pastNotesCount} notas pasadas?`, () => {
+  showConfirmModal(t('conf_delete_past'), () => {
     mutations.deletePastNotes(todayStr);
-    showToast("Notas eliminadas", "info");
+    showToast(t('toast_past_deleted'), "info");
     closeSettingsModal();
   });
 }
 
 export function resetApp() {
-  showConfirmModal("¿BORRAR TODO? Esta acción es irreversible.", () => {
+  showConfirmModal(t('conf_reset_app'), () => {
     mutations.resetApp();
-    showToast("Aplicación reseteada correctamente", "info");
+    showToast(t('toast_reset_success'), "info");
     closeSettingsModal();
   });
 }

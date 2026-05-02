@@ -1,5 +1,6 @@
 import { state, mutations, subscribe, getters } from './store.js';
 import { showToast, renderView } from './view.js';
+import { t } from '../translations.js';
 
 // Icono oficial de DeskFlow para las notificaciones (Data URL para máxima compatibilidad)
 const APP_ICON = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%232563eb" d="M128 64c0-35.3 28.7-64 64-64h128c35.3 0 64 28.7 64 64v64h64c35.3 0 64 28.7 64 64v288c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V192c0-35.3 28.7-64 64-64h64V64zm64 64h128V64H192v64z"/></svg>';
@@ -38,14 +39,14 @@ export function startAlarmService() {
       mutations.updateNote(note.id, { ...note, lastAlarmKey: key, alarm: false });
       
       playAlarmSound();
-      triggerBrowserNotification("DeskFlow: Recordatorio", note.title);
-      showToast(`¡ALERTA!: ${note.title}`, "high", note.id);
+      triggerBrowserNotification(t('notif_rem_title'), note.title);
+      showToast(`${t('toast_alarm_prefix')}: ${note.title}`, "high", note.id);
       renderView();
 
     } else if (type === 'ALARM_PRE' && note.lastPreAlarmKey !== key) {
       mutations.updateNote(note.id, { ...note, lastPreAlarmKey: key });
-      triggerBrowserNotification("DeskFlow: Aviso (5 min)", `Próximamente: ${note.title}`);
-      showToast(`Aviso previo (5 min): ${note.title}`, "info");
+      triggerBrowserNotification(t('notif_pre_title'), t('notif_pre_body').replace('{title}', note.title));
+      showToast(`${t('toast_pre_alarm')}: ${note.title}`, "info");
     }
   };
 

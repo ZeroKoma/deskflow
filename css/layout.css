@@ -171,6 +171,31 @@
   font-weight: 500;
 }
 
+.language-select-container {
+  margin-top: var(--space-s);
+  padding: 0 var(--space-l) var(--space-l);
+  flex-shrink: 0;
+}
+
+.language-select {
+  width: 100%;
+  padding: 10px 35px 10px 12px;
+  border-radius: var(--radius);
+  background-color: var(--bg-main);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%2364748b' d='M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
 /* Main Content & Top Bar */
 .main-content {
   flex-grow: 1;

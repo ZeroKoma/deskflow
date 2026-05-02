@@ -77,7 +77,8 @@ const validators = {
     typeof c.id === 'string' &&
     typeof c.name === 'string' && c.name.trim().length > 0,
 
-  theme: (t) => ["light", "dark"].includes(t)
+  theme: (t) => ["light", "dark"].includes(t),
+  language: (l) => ["es", "en"].includes(l)
 };
 
 /**
@@ -124,6 +125,7 @@ const _state = {
   currentDay: new Date().getDate(),
   calendarSubView: "month",
   theme: "dark", // Valor por defecto hasta que initStore cargue el real
+  language: "es",
   allNotesFilterAll: true,
   allNotesFilterWithDate: false,
   allNotesFilterNoDate: false,
@@ -148,6 +150,9 @@ export const mutations = {
     
     const theme = await dataService.getPreference("deskflow_theme", "dark");
     state.theme = validators.theme(theme) ? theme : "dark";
+
+    const lang = await dataService.getPreference("deskflow_language", "es");
+    state.language = validators.language(lang) ? lang : "es";
   },
 
   saveNotes() {
@@ -289,6 +294,11 @@ export const mutations = {
     if (!validators.theme(theme)) return;
     state.theme = theme;
     dataService.setPreference("deskflow_theme", theme).catch(console.error);
+  },
+
+  setLanguage(lang) {
+    state.language = lang;
+    dataService.setPreference("deskflow_language", lang).catch(console.error);
   },
 
   updateCalendarState(year, month, day) {

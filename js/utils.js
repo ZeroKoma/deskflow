@@ -1,3 +1,5 @@
+import { state } from './store.js';
+
 export const dateUtils = {
   formatYYYYMMDD(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -17,7 +19,8 @@ export const dateUtils = {
     if (!dateStr) return "";
     const [year, month, day] = dateStr.split("-").map(Number);
     const date = new Date(year, month - 1, day);
-    const dayName = new Intl.DateTimeFormat("es-ES", { weekday: "long" }).format(date);
+    const locale = state.language === 'en' ? 'en-US' : 'es-ES';
+    const dayName = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
     const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
     return `${capitalizedDay} ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${String(year).slice(-2)}`;
   }

@@ -3,12 +3,14 @@ import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, 
 import { dateUtils, downloadFile } from './js/utils.js';
 import { startAlarmService } from './js/app-alarms.js';
 import * as settings from './js/app-settings.js';
+import { t } from './translations.js';
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   // Suscribir la actualización de la UI al estado antes de cargar datos
   subscribe(() => {
+    translateStaticUI();
     renderView();
     updateUIStats();
   });
@@ -21,6 +23,21 @@ async function init() {
   requestNotificationPermission();
   setFavicon();
   startAlarmService();
+}
+
+/**
+ * Traduce elementos que están fijos en el HTML (Sidebar, botones fijos, etc)
+ */
+function translateStaticUI() {
+  // Traducir textos
+  document.querySelectorAll('[data-t]').forEach(el => {
+    el.innerText = t(el.dataset.t);
+  });
+
+  // Traducir placeholders
+  document.querySelectorAll('[data-t-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.tPlaceholder);
+  });
 }
 
 function setFavicon() {
@@ -43,7 +60,7 @@ function requestNotificationPermission() {
   if (Notification.permission === "default") {
     Notification.requestPermission().then(permission => {
       console.log("Nuevo estado de permiso:", permission);
-      if (permission === "granted") showToast("Notificaciones activadas", "info");
+      if (permission === "granted") showToast(t('toast_notif_on'), "info");
     });
   }
 }
@@ -184,6 +201,25 @@ function setupGlobalEvents() {
     document.documentElement.setAttribute("data-theme", theme);
   });
 
+  // Inyectar Selector de Idioma en el Sidebar (si no existe)
+  if (sidebar && !document.getElementById('language-select-container')) {
+    const langContainer = document.createElement('div');
+    langContainer.id = 'language-select-container';
+    langContainer.className = 'language-select-container';
+    langContainer.innerHTML = `
+      <select id="language-select" class="language-select">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+      </select>
+    `;
+    sidebar.appendChild(langContainer);
+    
+    document.getElementById("language-select").value = state.language;
+    document.getElementById("language-select").addEventListener("change", (e) => {
+      mutations.setLanguage(e.target.value);
+    });
+  }
+
   // Modal y Formulario
   document.getElementById("add-note-btn").addEventListener("click", () => openNoteModal());
   document.getElementById("note-form").addEventListener("submit", handleFormSubmit);
@@ -197,7 +233,7 @@ function setupGlobalEvents() {
   document.getElementById("manage-tags-btn").addEventListener("click", () => {
     document.getElementById("tag-form").reset();
     document.getElementById("tag-id").value = "";
-    document.getElementById("tag-submit-btn").innerText = "Añadir";
+    document.getElementById("tag-submit-btn").innerText = t('btn_add');
     renderTagManager();
     tagModal.style.display = "flex";
     closeSidebarOnMobile();
@@ -212,21 +248,21 @@ function setupGlobalEvents() {
     const color = document.getElementById("tag-color").value;
 
     if (name.trim().toLowerCase() === "alarma") {
-      showToast("El nombre 'Alarma' está reservado para el sistema", "error");
+      showToast(t('err_alarm_name'), "error");
       return;
     }
 
     if (id) {
       mutations.updateTag(id, { name, color });
-      showToast("Tag actualizado");
+      showToast(t('toast_tag_updated'));
     } else {
       mutations.addTag({ id: Date.now().toString(), name, color });
-      showToast("Tag creado");
+      showToast(t('toast_tag_created'));
     }
 
     e.target.reset();
     document.getElementById("tag-id").value = "";
-    document.getElementById("tag-submit-btn").innerText = "Añadir";
+    document.getElementById("tag-submit-btn").innerText = t('btn_add');
     renderTagManager();
   });
 
@@ -235,26 +271,26 @@ function setupGlobalEvents() {
     'edit-tag': (id) => {
       const tag = state.tags.find(t => t.id === id);
       if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
-        showToast("Esta etiqueta de sistema no se puede modificar", "error");
+        showToast(t('toast_err_system_tag'), "error");
         return;
       }
       if (tag) {
         document.getElementById("tag-id").value = tag.id;
         document.getElementById("tag-name").value = tag.name;
         document.getElementById("tag-color").value = tag.color;
-        document.getElementById("tag-submit-btn").innerText = "Guardar";
+        document.getElementById("tag-submit-btn").innerText = t('btn_save');
       }
     },
     'delete-tag': (id) => {
       const tag = state.tags.find(t => t.id === id);
       if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
-        showToast("Esta etiqueta de sistema no se puede eliminar", "error");
+        showToast(t('toast_err_system_tag_del'), "error");
         return;
       }
-      showConfirmModal("¿Eliminar este tag de todas las notas? Esta acción no se puede deshacer.", () => {
+      showConfirmModal(t('conf_del_tag'), () => {
         mutations.deleteTag(id);
         renderTagManager();
-        showToast("Tag eliminado de todas las notas", "info");
+        showToast(t('toast_tag_updated'), "info");
       });
     },
     'edit-category': (id) => {
@@ -263,14 +299,14 @@ function setupGlobalEvents() {
         document.getElementById("category-id").value = cat.id;
         document.getElementById("category-name").value = cat.name;
         document.getElementById("category-color").value = cat.color;
-        document.getElementById("category-submit-btn").innerText = "Guardar";
+        document.getElementById("category-submit-btn").innerText = t('btn_save');
       }
     },
     'delete-category': (id) => {
-      showConfirmModal("¿Eliminar esta categoría? Las notas asociadas pasarán a 'Otros'.", () => {
+      showConfirmModal(t('conf_del_cat'), () => {
         mutations.deleteCategory(id);
         renderCategoryManager();
-        showToast("Categoría eliminada", "info");
+        showToast(t('toast_cat_updated'), "info");
       });
     },
     'view-day': (id, target) => {
@@ -310,7 +346,7 @@ function setupGlobalEvents() {
   document.getElementById("manage-categories-btn").addEventListener("click", () => {
     document.getElementById("category-form").reset();
     document.getElementById("category-id").value = "";
-    document.getElementById("category-submit-btn").innerText = "Añadir";
+    document.getElementById("category-submit-btn").innerText = t('btn_add');
     renderCategoryManager();
     catModal.style.display = "flex";
     closeSidebarOnMobile();
@@ -325,10 +361,10 @@ function setupGlobalEvents() {
     const color = document.getElementById("category-color").value;
     if (id) {
       mutations.updateCategory(id, { name, color });
-      showToast("Categoría actualizada");
+      showToast(t('toast_cat_updated'));
     } else {
       mutations.addCategory({ id: Date.now().toString(), name, color });
-      showToast("Categoría creada");
+      showToast(t('toast_cat_created'));
     }
     e.target.reset();
     renderCategoryManager();
@@ -417,13 +453,13 @@ function setupGlobalEvents() {
     const catsActive = document.getElementById("search-categories").checked;
 
     if (tagsActive && catsActive) {
-      searchInput.placeholder = "Buscar notas por tag o categoría";
+      searchInput.placeholder = t('search_all');
     } else if (tagsActive) {
-      searchInput.placeholder = "Buscar notas por tag";
+      searchInput.placeholder = t('search_tags');
     } else if (catsActive) {
-      searchInput.placeholder = "Buscar notas por categoría";
+      searchInput.placeholder = t('search_cats');
     } else {
-      searchInput.placeholder = "Buscar notas por nombre...";
+      searchInput.placeholder = t('search_default');
     }
   };
 
@@ -459,7 +495,7 @@ function handleFormSubmit(e) {
 
   try {
     id ? mutations.updateNote(id, formData) : mutations.addNote(formData);
-    showToast(id ? "Cambios guardados" : (formData.date ? "Recordatorio creado" : "Nota creada"));
+    showToast(id ? t('toast_saved') : (formData.date ? t('toast_rem_created') : t('toast_note_created')));
     document.getElementById("note-modal").style.display = "none";
   } catch (error) {
     showToast(error.message, "error");

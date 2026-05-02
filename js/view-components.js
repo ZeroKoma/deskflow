@@ -1,12 +1,17 @@
 import { state, getters } from "./store.js";
 import { dateUtils } from "./utils.js";
+import { t } from "../translations.js";
 
-export const priorityLabels = { high: "Alta", medium: "Media", low: "Baja" };
+export const priorityLabels = {
+  get high() { return t('priority_high') },
+  get medium() { return t('priority_medium') },
+  get low() { return t('priority_low') }
+};
 
 export const getCategoryInfo = (id) => {
   const cat = state.categories.find((c) => c.id === id);
   if (cat) return cat;
-  return { name: id || "Otros", color: "var(--text-muted)" };
+  return { name: id || t('cat_others'), color: "var(--text-muted)" };
 };
 
 export function renderCategoryBadge(categoryId) {
@@ -39,13 +44,13 @@ export function showToast(msg, type = "info", noteId = null, action = null) {
     const note = getters.getNoteById(noteId);
     const dateBtn = note && note.date
         ? `<button class="btn-primary" data-action="view-day" data-id="${note.date}" style="background: var(--primary); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
-           <i class="fas fa-calendar-day"></i> Ver día
+           <i class="fas fa-calendar-day"></i> ${t('alarm_view_day')}
          </button>` : "";
 
     actionButtons = `<div style="display: flex; gap: var(--space-m); margin-top: var(--space-l);">
         ${dateBtn}
         <button class="btn-primary" data-action="snooze" data-id="${noteId}" style="background: var(--high); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
-          <i class="fas fa-clock"></i> Posponer
+          <i class="fas fa-clock"></i> ${t('alarm_snooze')}
         </button>
       </div>`;
   }
@@ -75,7 +80,7 @@ export function showToast(msg, type = "info", noteId = null, action = null) {
 
   // Si la notificación es una alarma crítica, un aviso previo o contiene una acción (como Deshacer),
   // NO se eliminará automáticamente. Solo el usuario puede cerrarla o ejecutar la acción.
-  if (!(type === "high" || msg.includes("Aviso previo") || action)) {
+  if (!(type === "high" || msg.includes(t('toast_pre_alarm')) || action)) {
     setTimeout(() => { if (toast.parentElement) toast.remove(); }, 4000);
   }
 }
@@ -133,7 +138,7 @@ document.addEventListener("mouseover", (e) => {
             ${renderCategoryBadge(note.category)}
             ${renderTagPills(note.tags)}
           </div>
-          <div style="color: var(--text-main); font-size: 0.8rem; white-space: pre-wrap; margin-bottom: 8px;">${note.description || "<i>Sin descripción</i>"}</div>
+          <div style="color: var(--text-main); font-size: 0.8rem; white-space: pre-wrap; margin-bottom: 8px;">${note.description || `<i>${t('no_desc_short')}</i>`}</div>
           ${hint ? `<div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 0.75rem; color: var(--primary); font-weight: 600;"><i class="fas fa-mouse-pointer"></i> ${hint}</div>` : ""}
         `;
       } else {

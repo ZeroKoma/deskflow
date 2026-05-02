@@ -26,55 +26,55 @@
         <div class="logo">
           <div>
             <i class="fas fa-layer-group"></i>
-            <span>DeskFlow</span>
+            <span data-t="nav_logo">DeskFlow</span>
           </div>
           <div class="author">By ZeroKoma</div>
         </div>
         <nav class="nav-menu">
           <button class="nav-item active" data-view="dashboard">
-            <i class="fas fa-chart-line"></i> Dashboard
+            <i class="fas fa-chart-line"></i> <span data-t="nav_dashboard">Dashboard</span>
           </button>
           <button class="nav-item" data-view="calendar">
-            <i class="fas fa-calendar-alt"></i> Calendario
+            <i class="fas fa-calendar-alt"></i> <span data-t="nav_calendar">Calendario</span>
             <span class="nav-badge" id="count-calendar">0</span>
           </button>
           <button class="nav-item" data-view="all-notes">
-            <i class="fas fa-sticky-note"></i> Notas y Recordatorios
+            <i class="fas fa-sticky-note"></i> <span data-t="nav_all_notes">Notas y Recordatorios</span>
             <span class="nav-badge" id="count-all">0</span>
           </button>
           <button class="nav-item" id="manage-tags-btn">
-            <i class="fas fa-tags"></i> Gestionar Tags
+            <i class="fas fa-tags"></i> <span data-t="nav_manage_tags">Gestionar Tags</span>
             <span class="nav-badge" id="count-tags">0</span>
           </button>
           <button class="nav-item" id="manage-categories-btn">
-            <i class="fas fa-folder"></i> Gestionar Categorías
+            <i class="fas fa-folder"></i> <span data-t="nav_manage_categories">Gestionar Categorías</span>
             <span class="nav-badge" id="count-categories">0</span>
           </button>
           <button class="nav-item" id="manage-settings-btn">
-            <i class="fas fa-cog"></i> Configuración
+            <i class="fas fa-cog"></i> <span data-t="nav_settings">Configuración</span>
           </button>
         </nav>
 
         <div class="sidebar-stats">
-          <h3>Resumen</h3>
+          <h3 data-t="stat_summary">Resumen</h3>
           <div class="stat-item" data-priority="high">
-            <span><i class="fas fa-circle"></i> Prioridad Alta</span>
+            <span><i class="fas fa-circle"></i> <span data-t="stat_high">Prioridad Alta</span></span>
             <span id="stat-high">0</span>
           </div>
           <div class="stat-item" data-priority="medium">
-            <span><i class="fas fa-circle"></i> Prioridad Media</span>
+            <span><i class="fas fa-circle"></i> <span data-t="stat_medium">Prioridad Media</span></span>
             <span id="stat-medium">0</span>
           </div>
           <div class="stat-item" data-priority="low">
-            <span><i class="fas fa-circle"></i> Prioridad Baja</span>
+            <span><i class="fas fa-circle"></i> <span data-t="stat_low">Prioridad Baja</span></span>
             <span id="stat-low">0</span>
           </div>
           <div class="stat-item" data-filter="withAlarm">
-            <span><i class="fas fa-bell"></i> Con Alarma</span>
+            <span><i class="fas fa-bell"></i> <span data-t="stat_with_alarm">Con Alarma</span></span>
             <span id="stat-with-alarm">0</span>
           </div>
           <div class="stat-item" data-filter="expired">
-            <span><i class="fas fa-history"></i> Caducadas</span>
+            <span><i class="fas fa-history"></i> <span data-t="stat_expired">Caducadas</span></span>
             <span id="stat-expired-sidebar">0</span>
           </div>
         </div>
@@ -82,7 +82,7 @@
         <div class="theme-switch">
           <div class="theme-info">
             <i class="fas fa-moon"></i>
-            <span>Modo Oscuro</span>
+            <span data-t="theme_title">Modo Oscuro</span>
           </div>
           <label class="switch">
             <input type="checkbox" id="theme-toggle" checked />
@@ -106,7 +106,8 @@
               <input
                 type="text"
                 id="global-search"
-                placeholder="Buscar notas por nombre..."
+                data-t-placeholder="search_default"
+                placeholder="Buscar notas..."
               />
             </div>
             <div style="display: flex; gap: 12px; align-items: center">
@@ -117,7 +118,7 @@
                     font-weight: 500;
                     color: var(--text-main);
                   "
-                  >Tags</span
+                   data-t="search_tags_label">Tags</span
                 >
                 <label class="switch">
                   <input type="checkbox" id="search-tags" />
@@ -131,7 +132,7 @@
                     font-weight: 500;
                     color: var(--text-main);
                   "
-                  >Categoría</span
+                   data-t="search_cat_label">Categoría</span
                 >
                 <label class="switch">
                   <input type="checkbox" id="search-categories" />
@@ -141,7 +142,7 @@
             </div>
           </div>
           <div class="actions">
-            <button id="add-note-btn" class="btn-primary">Crear</button>
+            <button id="add-note-btn" class="btn-primary" data-t="btn_create">Crear</button>
           </div>
         </header>
 
@@ -156,7 +157,7 @@
     <div id="note-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 id="modal-title">Nueva Nota/Recordatorio</h2>
+          <h2 id="modal-title" data-t="note_new_note">Nueva Nota/Recordatorio</h2>
           <button type="button" class="close-icon-btn" id="modal-x">
             <i class="fas fa-times"></i>
           </button>
@@ -164,17 +165,18 @@
         <form id="note-form">
           <input type="hidden" id="note-id" />
           <div class="form-group">
-            <label><i class="fas fa-heading"></i> Título</label>
+            <label><i class="fas fa-heading"></i> <span data-t="label_title">Título</span></label>
             <input
               type="text"
               id="title"
               required
+              data-t-placeholder="label_title"
               placeholder="Ej: Reunión de ventas"
             />
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label><i class="far fa-calendar"></i> Fecha</label>
+              <label><i class="far fa-calendar"></i> <span data-t="label_date">Fecha</span></label>
               <div style="display: flex; gap: 8px">
                 <input type="date" id="date" style="flex: 1" />
                 <button
@@ -189,7 +191,7 @@
               </div>
             </div>
             <div class="form-group">
-              <label><i class="far fa-clock"></i> Hora</label>
+              <label><i class="far fa-clock"></i> <span data-t="label_time">Hora</span></label>
               <div style="display: flex; gap: 8px">
                 <input type="time" id="time" style="flex: 1" />
                 <button
@@ -206,30 +208,31 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label><i class="fas fa-flag"></i> Prioridad</label>
+              <label><i class="fas fa-flag"></i> <span data-t="label_priority">Prioridad</span></label>
               <select id="priority">
-                <option value="low">Baja</option>
-                <option value="medium" selected>Media</option>
-                <option value="high">Alta</option>
+                <option value="low" data-t="priority_low">Baja</option>
+                <option value="medium" selected data-t="priority_medium">Media</option>
+                <option value="high" data-t="priority_high">Alta</option>
               </select>
             </div>
             <div class="form-group">
-              <label><i class="fas fa-tag"></i> Categoría</label>
+              <label><i class="fas fa-tag"></i> <span data-t="label_category">Categoría</span></label>
               <select id="category">
                 <!-- Dinámico -->
               </select>
             </div>
           </div>
           <div class="form-group">
-            <label><i class="fas fa-align-left"></i> Descripción</label>
+            <label><i class="fas fa-align-left"></i> <span data-t="label_desc">Descripción</span></label>
             <textarea
               id="description"
               rows="3"
+              data-t-placeholder="label_desc"
               placeholder="Detalles adicionales..."
             ></textarea>
           </div>
           <div class="form-group">
-            <label><i class="fas fa-tags"></i> Tags</label>
+            <label><i class="fas fa-tags"></i> <span data-t="label_tags">Tags</span></label>
             <div id="tag-selection-container" class="tag-selection-list"></div>
           </div>
           <div class="form-group alarm-toggle">
@@ -237,7 +240,7 @@
               <input type="checkbox" id="alarm" />
               <span class="slider"></span>
             </label>
-            <span class="alarm-text">Activar alarma</span>
+            <span class="alarm-text" data-t="label_alarm">Activar alarma</span>
           </div>
           <div class="modal-actions">
             <button
@@ -252,12 +255,12 @@
               "
             >
               <i class="fas fa-trash" style="margin-right: 0.25rem"></i>
-              Eliminar
+              <span data-t="btn_delete">Eliminar</span>
             </button>
-            <button type="button" class="btn-ghost" id="close-modal">
+            <button type="button" class="btn-ghost" id="close-modal" data-t="btn_cancel">
               Cancelar
             </button>
-            <button type="submit" class="btn-primary">Guardar</button>
+            <button type="submit" class="btn-primary" data-t="btn_save">Guardar</button>
           </div>
         </form>
       </div>
@@ -267,7 +270,7 @@
     <div id="settings-modal" class="modal">
       <div class="modal-content" style="max-width: 450px">
         <div class="modal-header">
-          <h2>Configuración</h2>
+          <h2 data-t="settings_title">Configuración</h2>
           <button type="button" class="close-icon-btn" id="close-settings-x">
             <i class="fas fa-times"></i>
           </button>
@@ -277,7 +280,7 @@
           style="display: flex; flex-direction: column; gap: 1rem"
         >
           <section>
-            <h4 style="margin-bottom: 0.5rem; color: var(--text-muted)">
+            <h4 style="margin-bottom: 0.5rem; color: var(--text-muted)" data-t="settings_data">
               Gestión de Datos
             </h4>
             <div style="display: flex; flex-direction: column; gap: 0.75rem">
@@ -286,14 +289,14 @@
                 class="btn-secondary"
                 style="width: 100%"
               >
-                <i class="fas fa-file-export"></i> Exportar (JSON)
+                <i class="fas fa-file-export"></i> <span data-t="nav_export">Exportar (JSON)</span>
               </button>
               <button
                 id="import-data-btn"
                 class="btn-secondary"
                 style="width: 100%"
               >
-                <i class="fas fa-file-import"></i> Importar (JSON)
+                <i class="fas fa-file-import"></i> <span data-t="nav_import">Importar (JSON)</span>
               </button>
               <input
                 type="file"
@@ -311,7 +314,7 @@
               border-top: 1px solid var(--border);
             "
           >
-            <h4 style="margin-bottom: 0.5rem; color: var(--text-muted)">
+            <h4 style="margin-bottom: 0.5rem; color: var(--text-muted)" data-t="settings_maint">
               Mantenimiento
             </h4>
             <button
@@ -323,7 +326,7 @@
                 color: var(--medium);
               "
             >
-              <i class="fas fa-broom"></i> Limpiar Notas Pasadas
+              <i class="fas fa-broom"></i> <span data-t="nav_delete_past">Limpiar Notas Pasadas</span>
             </button>
           </section>
           <section
@@ -333,11 +336,11 @@
               border-top: 1px solid var(--border);
             "
           >
-            <h4 style="margin-bottom: 0.5rem; color: var(--high)">
+            <h4 style="margin-bottom: 0.5rem; color: var(--high)" data-t="settings_danger">
               Zona de Peligro
             </h4>
             <button id="reset-app-btn" class="btn-danger" style="width: 100%">
-              <i class="fas fa-trash-alt"></i> Resetear Aplicación Completamente
+              <i class="fas fa-trash-alt"></i> <span data-t="nav_reset">Resetear Aplicación Completamente</span>
             </button>
           </section>
         </div>
@@ -348,7 +351,7 @@
             id="close-settings-btn"
             style="width: 100%"
           >
-            Cerrar
+            <span data-t="btn_close">Cerrar</span>
           </button>
         </div>
       </div>
@@ -366,14 +369,15 @@
         <h3
           id="confirm-message"
           style="margin-bottom: 1.5rem; color: var(--text-main)"
+          data-t="conf_ok_title"
         >
           ¿Estás seguro?
         </h3>
         <div class="modal-actions" style="justify-content: center; gap: 1rem">
-          <button type="button" class="btn-ghost" id="confirm-cancel">
+          <button type="button" class="btn-ghost" id="confirm-cancel" data-t="conf_cancel">
             Cancelar
           </button>
-          <button type="button" class="btn-danger" id="confirm-ok">
+          <button type="button" class="btn-danger" id="confirm-ok" data-t="conf_ok">
             Eliminar
           </button>
         </div>
@@ -384,7 +388,7 @@
     <div id="tag-manager-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Gestionar Tags</h2>
+          <h2 data-t="tag_mgr_title">Gestionar Tags</h2>
           <button type="button" class="close-icon-btn" id="close-tag-manager">
             <i class="fas fa-times"></i>
           </button>
@@ -395,12 +399,13 @@
             <input
               type="text"
               id="tag-name"
+              data-t-placeholder="tag_mgr_placeholder"
               placeholder="Nuevo tag..."
               required
               style="flex: 1"
             />
             <input type="color" id="tag-color" value="#2563eb" />
-            <button type="submit" class="btn-primary" id="tag-submit-btn">
+            <button type="submit" class="btn-primary" id="tag-submit-btn" data-t="btn_add">
               Añadir
             </button>
           </form>
@@ -413,7 +418,7 @@
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-primary" id="close-tag-manager-btn">
-            Cerrar
+            <span data-t="btn_close">Cerrar</span>
           </button>
         </div>
       </div>
@@ -423,7 +428,7 @@
     <div id="category-manager-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Gestionar Categorías</h2>
+          <h2 data-t="cat_mgr_title">Gestionar Categorías</h2>
           <button
             type="button"
             class="close-icon-btn"
@@ -446,6 +451,7 @@
             <input
               type="text"
               id="category-name"
+              data-t-placeholder="cat_mgr_placeholder"
               placeholder="Nueva categoría..."
               required
               style="flex: 1"
@@ -464,7 +470,7 @@
                 background: var(--bg-main) !important;
               "
             />
-            <button type="submit" class="btn-primary" id="category-submit-btn">
+            <button type="submit" class="btn-primary" id="category-submit-btn" data-t="btn_add">
               Añadir
             </button>
           </form>
@@ -481,7 +487,7 @@
             class="btn-primary"
             id="close-category-manager-btn"
           >
-            Cerrar
+            <span data-t="btn_close">Cerrar</span>
           </button>
         </div>
       </div>

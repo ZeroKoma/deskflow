@@ -1,5 +1,6 @@
 import { state, mutations, getters } from "./store.js";
 import { dateUtils } from "./utils.js";
+import { t } from "../translations.js";
 import {
   priorityLabels,
   getCategoryInfo,
@@ -151,24 +152,24 @@ function renderDashboard() {
     .sort(sortNotesLogic);
   const noDateTotal = noDateTasksFull.length;
   const noDateLimited = noDateTasksFull.slice(0, 6);
-  const noDateCountDisplay = noDateTotal > 6 ? `Mostrando 6 de ${noDateTotal}` : `Mostrando ${noDateTotal}`;
+  const noDateCountDisplay = noDateTotal > 6 ? `${t('dash_showing')} 6 ${t('dash_of')} ${noDateTotal}` : `${t('dash_showing')} ${noDateTotal}`;
 
   viewContainer.innerHTML = `
     <div class="view-container-padding">
-        <h1 class="view-title">Panel de Control</h1>
-        <p class="view-subtitle">Vista general</p>
+        <h1 class="view-title">${t('dash_title')}</h1>
+        <p class="view-subtitle">${t('dash_subtitle')}</p>
         
         <div class="dashboard-grid">
-            ${renderDashboardColumn("Recordatorios de Hoy", todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
-            ${renderDashboardColumn("Recordatorios de Mañana", tomorrowTasks, "fa-calendar-plus", "var(--medium)", tomorrowStr)}
+            ${renderDashboardColumn(t('dash_today'), todayTasks, "fa-calendar-day", "var(--primary)", todayStr)}
+            ${renderDashboardColumn(t('dash_tomorrow'), tomorrowTasks, "fa-calendar-plus", "var(--medium)", tomorrowStr)}
         </div>
 
         <div class="card dashboard-column planning-card">
             <div class="flex-between column-title">
                 <h3 class="m-0">
-                    Planificación Semanal <span class="title-count">(Mostrando primeras 5 por día)</span>
+                    ${t('dash_weekly')} <span class="title-count">${t('dash_weekly_hint')}</span>
                 </h3>
-                <button class="btn-ghost btn-sm-border" onclick="window.seeFullWeek()" title="Ver semana completa">
+                <button class="btn-ghost btn-sm-border" onclick="window.seeFullWeek()" title="${t('dash_view_full_week')}">
                     <i class="fas fa-eye"></i>
                 </button>
             </div>
@@ -180,9 +181,9 @@ function renderDashboard() {
         <div class="card dashboard-column mb-0">
             <div class="flex-between column-title">
                 <h3 class="m-0">
-                    Notas <span class="title-count">(${noDateCountDisplay})</span>
+                    ${t('dash_notes')} <span class="title-count">(${noDateCountDisplay})</span>
                 </h3>
-                <button class="btn-ghost btn-sm-border" onclick="window.seeAllNoDateNotes()" title="Ver todas las notas">
+                <button class="btn-ghost btn-sm-border" onclick="window.seeAllNoDateNotes()" title="${t('dash_view_all_notes')}">
                     <i class="fas fa-eye"></i>
                 </button>
             </div>
@@ -190,21 +191,20 @@ function renderDashboard() {
                 ${
                   noDateLimited.length > 0
                     ? noDateLimited
-                        .map(
-                          (t) => `
-                    <div class="dashboard-note-item priority-${t.priority}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra esta nota a un día del calendario">
+                        .map((note) => `
+                    <div class="dashboard-note-item priority-${note.priority}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${note.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${note.id}" onclick="window.openNoteModal('${note.id}')" data-hint="${t('hint_drag_calendar')}">
                         <div class="flex-1 notes-stack-mini">
-                            <span style="font-weight: 600;">${t.title}</span>
+                            <span style="font-weight: 600;">${note.title}</span>
                             <div class="badge-row">
-                                ${renderCategoryBadge(t.category)}
-                                ${renderTagPills(t.tags)}
+                                ${renderCategoryBadge(note.category)}
+                                ${renderTagPills(note.tags)}
                             </div>
                         </div>
-                        <span class="note-time">${t.time || "--:--"}</span>
-                    </div>`,
+                        <span class="note-time">${note.time || "--:--"}</span>
+                    </div>`
                         )
                         .join("")
-                    : '<p style="color: var(--text-muted); text-align: center; width: 100%;">No tienes notas sin fecha.</p>'
+                    : `<p style="color: var(--text-muted); text-align: center; width: 100%;">${t('dash_no_notes')}</p>`
                 }
             </div>
         </div>
@@ -215,7 +215,7 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
   const todayStr = dateUtils.getTodayStr();
   const totalCount = tasks.length;
   const displayedTasks = tasks.slice(0, 3);
-  const countDisplay = totalCount > 3 ? `Mostrando 3 de ${totalCount}` : `Mostrando ${totalCount}`;
+  const countDisplay = totalCount > 3 ? `${t('dash_showing')} 3 ${t('dash_of')} ${totalCount}` : `${t('dash_showing')} ${totalCount}`;
 
   return `
     <div class="card dashboard-column drag-zone" data-drop-date="${targetDate}" ondragover="window.handleNoteDragOver(event)" ondragleave="window.handleNoteDragLeave(event)" ondrop="window.handleNoteDrop(event)">
@@ -223,30 +223,29 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
             <h3 class="m-0">
                 ${title} <span class="title-count">(${countDisplay})</span>
             </h3>
-            <button class="btn-ghost btn-sm-border" onclick="window.selectDayView('${targetDate}')" title="Ver día en calendario">
+            <button class="btn-ghost btn-sm-border" onclick="window.selectDayView('${targetDate}')" title="${t('dash_view_day')}">
                 <i class="fas fa-eye"></i>
             </button>
         </div>
         <div class="notes-stack">
             ${
               displayedTasks.length > 0
-                ? displayedTasks
-                    .map((t) => {
-                      const isPast = t.date && t.date < todayStr;
+                ? displayedTasks.map((note) => {
+                      const isPast = note.date && note.date < todayStr;
                       return `
-                <div class="dashboard-note-item priority-${t.priority} ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${t.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${t.id}" onclick="window.openNoteModal('${t.id}')" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">
+                <div class="dashboard-note-item priority-${note.priority} ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${note.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${note.id}" onclick="window.openNoteModal('${note.id}')" data-hint="${t('hint_drag_move')}">
                     <div class="flex-1 notes-stack-mini">
-                        <span style="font-weight: 500;">${t.title}</span>
+                        <span style="font-weight: 500;">${note.title}</span>
                         <div class="badge-row">
-                            ${renderCategoryBadge(t.category)}
-                            ${renderTagPills(t.tags)}
+                            ${renderCategoryBadge(note.category)}
+                            ${renderTagPills(note.tags)}
                         </div>
                     </div>
-                    <span class="note-time">${t.time || "--:--"}</span>
+                    <span class="note-time">${note.time || "--:--"}</span>
                 </div>`;
                     })
                     .join("")
-                : '<p style="color: var(--text-muted); text-align: center;">Sin recordatorios.</p>'
+                : `<p style="color: var(--text-muted); text-align: center;">${t('dash_rem_none')}</p>`
             }
         </div>
     </div>`;
@@ -265,13 +264,14 @@ function renderCalendar() {
   const todayStr = dateUtils.getTodayStr();
   const focusDateStr = dateUtils.formatYYYYMMDD(focusDate);
   const isPastDay = focusDateStr < todayStr;
+  const locale = state.language === 'en' ? 'en-US' : 'es-ES';
 
-  let title = new Intl.DateTimeFormat("es-ES", {
+  let title = new Intl.DateTimeFormat(locale, {
     month: "long",
     year: "numeric",
   }).format(focusDate);
 
-  let dayTitle = focusDate.toLocaleDateString("es-ES", {
+  let dayTitle = focusDate.toLocaleDateString(locale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -285,9 +285,9 @@ function renderCalendar() {
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
-  let weekTitle = `${startOfWeek.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(startOfWeek)} - ${endOfWeek.getDate()} ${new Intl.DateTimeFormat("es-ES", { month: "short" }).format(endOfWeek)}`;
+  let weekTitle = `${startOfWeek.getDate()} ${new Intl.DateTimeFormat(locale, { month: "short" }).format(startOfWeek)} - ${endOfWeek.getDate()} ${new Intl.DateTimeFormat(locale, { month: "short" }).format(endOfWeek)}`;
 
-  let monthTitle = new Intl.DateTimeFormat("es-ES", {
+  let monthTitle = new Intl.DateTimeFormat(locale, {
     month: "long",
     year: "numeric",
   }).format(focusDate);
@@ -316,7 +316,7 @@ function renderCalendar() {
 
   viewContainer.innerHTML = `
     <div class="view-container-padding">
-        <h1 class="view-title mb-0">Calendario</h1>
+        <h1 class="view-title mb-0">${t('cal_title')}</h1>
     </div>
     <div class="calendar-header">
         <div class="flex-center-gap-20">
@@ -325,7 +325,7 @@ function renderCalendar() {
                 ${
                   state.calendarSubView === "day" && focusDateStr === todayStr
                     ? ""
-                    : `<button class="btn-primary btn-sm" onclick="window.goToday()">Hoy</button>`
+                    : `<button class="btn-primary btn-sm" onclick="window.goToday()">${t('cal_today')}</button>`
                 }
                 ${
                   state.calendarSubView === "day"
@@ -333,7 +333,7 @@ function renderCalendar() {
                     <button class="btn-primary btn-sm ${isPastDay ? "disabled-btn" : ""}"
                             ${isPastDay ? "disabled" : ""}
                             onclick="${isPastDay ? "" : `window.openNoteModal(null, '${dateUtils.formatYYYYMMDD(focusDate)}')`}">
-                            Nuevo Recordatorio
+                            ${t('cal_new')}
                     </button>`
                     : ""
                 }
@@ -341,9 +341,9 @@ function renderCalendar() {
         </div>
         <div class="flex-center-gap-15">
             <div class="subview-selector">
-                <button class="subview-btn ${state.calendarSubView === "day" ? "active" : ""}" onclick="window.setSubView('day')">Día ${state.calendarSubView === "day" ? `<span class="title-count">(${dayCount})</span>` : ''}</button>
-                <button class="subview-btn ${state.calendarSubView === "week" ? "active" : ""}" onclick="window.setSubView('week')">Semana ${state.calendarSubView === "week" ? `<span class="title-count">(${weekCount})</span>` : ''}</button>
-                <button class="subview-btn ${state.calendarSubView === "month" ? "active" : ""}" onclick="window.setSubView('month')">Mes ${state.calendarSubView === "month" ? `<span class="title-count">(${monthCount})</span>` : ''}</button>
+                <button class="subview-btn ${state.calendarSubView === "day" ? "active" : ""}" onclick="window.setSubView('day')">${t('cal_day')} ${state.calendarSubView === "day" ? `<span class="title-count">(${dayCount})</span>` : ''}</button>
+                <button class="subview-btn ${state.calendarSubView === "week" ? "active" : ""}" onclick="window.setSubView('week')">${t('cal_week')} ${state.calendarSubView === "week" ? `<span class="title-count">(${weekCount})</span>` : ''}</button>
+                <button class="subview-btn ${state.calendarSubView === "month" ? "active" : ""}" onclick="window.setSubView('month')">${t('cal_month')} ${state.calendarSubView === "month" ? `<span class="title-count">(${monthCount})</span>` : ''}</button>
             </div>
             <div class="flex-gap-5">
                 <button class="btn-secondary btn-sm-nav" onclick="window.navigateCalendar(-1)"><i class="fas fa-chevron-left"></i></button>
@@ -357,6 +357,7 @@ function renderCalendar() {
 function renderCalendarGrid(focusDate, limit = null) {
   let html = "";
   const todayStr = dateUtils.getTodayStr();
+  const locale = state.language === 'en' ? 'en-US' : 'es-ES';
 
   if (state.calendarSubView === "month") {
     // Añadir nombres de los días
@@ -398,12 +399,12 @@ function renderCalendarGrid(focusDate, limit = null) {
       const d = new Date(startOfWeek);
       d.setDate(startOfWeek.getDate() + i);
       const dateStr = dateUtils.formatYYYYMMDD(d);
-      const label = `${new Intl.DateTimeFormat("es-ES", { weekday: "short" }).format(d)} ${d.getDate()}`;
+      const label = `${new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d)} ${d.getDate()}`;
       html += renderDayCell(label, dateStr, dateStr === todayStr, false, limit);
     }
   } else {
     const dateStr = dateUtils.formatYYYYMMDD(focusDate);
-    const label = `${new Intl.DateTimeFormat("es-ES", { weekday: "short" }).format(focusDate)} ${focusDate.getDate()}`;
+    const label = `${new Intl.DateTimeFormat(locale, { weekday: "short" }).format(focusDate)} ${focusDate.getDate()}`;
     html += renderDayCell(label, dateStr, dateStr === todayStr, true);
   }
   return html;
@@ -429,7 +430,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
 
       if (isFull) {
         return `
-        <div class="card note-card-full priority-${n.priority} ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
+        <div class="card note-card-full priority-${n.priority} ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
             <div class="flex-1 note-content-stack">
                 <div class="card-header-row">
                     <h3 class="m-0">${n.title}</h3>
@@ -441,10 +442,10 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
                 <div class="meta-row">
                     ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                 </div>
-                <p class="note-desc">${n.description || "Sin descripción adicional."}</p>
+                <p class="note-desc">${n.description || t('no_desc')}</p>
             </div>
             <div class="card-actions-col">
-                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-outline" data-note-id="${n.id}" data-hint="Eliminar nota"><i class="fas fa-trash"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-outline" data-note-id="${n.id}" data-hint="${t('btn_delete')}"><i class="fas fa-trash"></i></button>
             </div>
         </div>`;
       }
@@ -455,7 +456,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
         ? `if(window.innerWidth > 768) { event.stopPropagation(); window.openNoteModal('${n.id}'); }`
         : `event.stopPropagation(); window.openNoteModal('${n.id}');`;
 
-      return `<div class="note-pill priority-${n.priority} ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="${clickHandler}" data-hint="Haz clic para editar o arrastra este recordatorio a otro día">${n.title}</div>`;
+      return `<div class="note-pill priority-${n.priority} ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="${clickHandler}" data-hint="${t('hint_drag_move')}">${n.title}</div>`;
     })
     .join("");
 
@@ -463,7 +464,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
     isFull && dayNotes.length === 0
       ? `<div class="empty-state-placeholder">
         <i class="fas fa-calendar-day empty-state-icon"></i>
-        No hay recordatorios para este día.
+        ${t('cal_empty')}
        </div>`
       : notesHtml;
 
@@ -476,7 +477,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
   ].filter(Boolean).join(" ");
 
   const cellAttrs = !isFull 
-    ? `onclick="window.selectDayView('${dateStr}')" style="cursor:pointer;" ${dayNotes.length > 0 ? 'data-day-hint="Haz clic para ver las notas de este día"' : ''}` 
+    ? `onclick="window.selectDayView('${dateStr}')" style="cursor:pointer;" ${dayNotes.length > 0 ? `data-day-hint="${t('hint_view_day_notes')}"` : ''}` 
     : "";
 
   return `
@@ -527,7 +528,7 @@ function renderNoteList(title, data) {
   const todayStr = dateUtils.getTodayStr();
   viewContainer.innerHTML = `
     <div class="view-container-padding">
-        <h1 class="view-title">Notas y Recordatorios</h1>
+        <h1 class="view-title">${t('all_title')}</h1>
         <div class="view-header-row" style="margin-top: var(--space-l);">
             <div class="flex-center-gap-15">
                 ${
@@ -537,7 +538,7 @@ function renderNoteList(title, data) {
                   state.allNotesPriorityFilter
                     ? `
                 <div class="priority-filter-tag">
-                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Prioridad: ${priorityLabels[state.allNotesPriorityFilter]}</span>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">${t('filter_priority')}: ${priorityLabels[state.allNotesPriorityFilter]}</span>
                     <i class="fas fa-times" style="cursor: pointer; font-size: 0.8rem; color: var(--text-muted);" title="Quitar filtro" onclick="window.clearPriorityFilter()"></i>
                 </div>
                 `
@@ -547,28 +548,28 @@ function renderNoteList(title, data) {
                     <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterAll ? "checked" : ""} onchange="window.toggleAllNotesFilter('all', this.checked)"> 
-                        <span>Todo (${stats.all_total})</span>
+                        <span>${t('filter_all')} (${stats.all_total})</span>
                     </label>
                     <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterWithDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('withDate', this.checked)"> 
-                        <span>Recordatorios (${stats.activeWithDate})</span>
+                        <span>${t('filter_reminders')} (${stats.activeWithDate})</span>
                     </label>
                     <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
-                        <span>Notas (${stats.activeNoDate})</span>
+                        <span>${t('filter_notes')} (${stats.activeNoDate})</span>
                     </label>
                     <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterWithAlarm ? "checked" : ""} onchange="window.toggleAllNotesFilter('withAlarm', this.checked)"> 
-                        <span>Alarmas (${stats.withAlarm})</span>
+                        <span>${t('filter_alarms')} (${stats.withAlarm})</span>
                     </label>
                     <div class="flex-grow"></div>
                     <label class="filter-checkbox-group color-high">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterExpired ? "checked" : ""} onchange="window.toggleAllNotesFilter('expired', this.checked)"> 
-                        <span>Caducadas (${stats.expired})</span>
+                        <span>${t('filter_expired')} (${stats.expired})</span>
                     </label>
                 </div>`
                     : ""
@@ -580,7 +581,7 @@ function renderNoteList(title, data) {
               data.length === 0
                 ? `<div class="empty-state-placeholder list-variant">
                     <i class="fas fa-clipboard-list empty-state-icon-lg"></i>
-                    <p style="color: var(--text-muted);">No se encontraron resultados</p>
+                    <p style="color: var(--text-muted);">${t('no_results')}</p>
                  </div>`
                 : data
                     .map((n) => {
@@ -597,10 +598,10 @@ function renderNoteList(title, data) {
                             ${renderTagPills(n.tags)}
                         </div>
                         <div class="meta-row">
-                            <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? "Sin fecha (Recurrente)" : "Sin fecha"}</span>
+                            <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? t('no_date_recurrent') : t('no_date')}</span>
                             ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                         </div>
-                        <p class="note-desc">${n.description || "Sin descripción adicional."}</p>
+                        <p class="note-desc">${n.description || t('no_desc')}</p>
                     </div>
                     <div class="card-actions-col">
                         <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-fill" data-note-id="${n.id}" data-hint="Eliminar nota"><i class="fas fa-trash"></i></button>
@@ -696,10 +697,10 @@ window.selectDayView = (d) => {
 };
 window.deleteNote = (id) => {
   showConfirmModal(
-    "¿Estás seguro de que deseas eliminar esta nota permanentemente?",
+    t('conf_del_note'),
     () => {
       mutations.deleteNote(id);
-      showToast("Nota eliminada correctamente", "info");
+      showToast(t('toast_deleted'), "info");
       document.getElementById("note-modal").style.display = "none";
     },
   );
@@ -777,7 +778,7 @@ window.handleNoteDragStart = (e, id) => {
   
   const isReminder = !!(note && note.date);
   const iconClass = isReminder ? 'fa-calendar-check' : 'fa-sticky-note';
-  const noteTitle = note ? note.title : "Moviendo...";
+  const noteTitle = note ? note.title : t('hint_moving');
 
   dragIcon.innerHTML = `
     <div style="background: var(--primary); color: white; padding: 10px 16px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 10px; border: 2px solid rgba(255,255,255,0.2);">
@@ -834,7 +835,7 @@ window.handleNoteDrop = (e) => {
 
   // Validación: No permitir mover recordatorios a fechas pasadas
   if (targetDate && targetDate < todayStr) {
-    showToast("No puedes programar recordatorios en fechas pasadas", "error");
+    showToast(t('toast_err_past_date'), "error");
     return;
   }
 
@@ -843,7 +844,7 @@ window.handleNoteDrop = (e) => {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       if (note.time.slice(0, 5) < currentTime) {
-          showToast("No puedes mover un recordatorio con hora pasada al día de hoy", "error");
+          showToast(t('toast_move_err_past_today'), "error");
           return;
       }
   }
@@ -862,9 +863,9 @@ window.handleNoteDrop = (e) => {
   mutations.updateNote(id, updatedNote);
 
   // Feedback dinámico según la conversión
-  let msg = `Movido al ${dateUtils.formatDisplayDate(targetDate)}`;
-  if (wasNote && !isNowNote) msg = `Convertido en Recordatorio para el ${dateUtils.formatDisplayDate(targetDate)}`;
-  else if (!wasNote && isNowNote) msg = "Convertido en Nota (Sin fecha)";
+  let msg = `${t('toast_moved')} ${dateUtils.formatDisplayDate(targetDate)}`;
+  if (wasNote && !isNowNote) msg = `${t('toast_converted_rem')} ${dateUtils.formatDisplayDate(targetDate)}`;
+  else if (!wasNote && isNowNote) msg = t('toast_converted_note');
   
   showToast(msg, "info");
 };
