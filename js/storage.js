@@ -20,8 +20,8 @@ export const storage = {
   _encryptionKey: null,
 
   /**
-   * Intenta recuperar la clave de la sesión actual (sessionStorage).
-   * Esto permite refrescar la página sin pedir la contraseña.
+   * Tries to recover the key from the current session (sessionStorage).
+   * This allows page refreshing without asking for the password.
    */
   async unlockWithSession() {
     const sessionKey = sessionStorage.getItem('deskflow_session_key');
@@ -44,25 +44,25 @@ export const storage = {
     let salt = await this.getPreference("crypto_salt");
     let vaultCheck = await this.getPreference("vault_key_user");
     
-    // Hash of "BorealitosRules" for identification.
+    // Hash de "BorealitosRules" para identificación.
     const MASTER_HASH = "89f075d9e5f72436d4f66453911d5119932170881919865f9038676d91062f6b";
     const inputHash = await cryptoUtils.hash(cleanPwd);
     const isMaster = inputHash === MASTER_HASH;
 
-    // If no salt OR no vault keys, setup or migrate
+    // Si no hay salt O no hay llaves de bóveda, es que estamos en una instalación nueva o migrando
     if (!salt || !vaultCheck) {
-      // INITIAL SETUP: Create Vault Key and protect it with both passwords
+      // CONFIGURACIÓN INICIAL: Creamos la Vault Key y la protegemos con ambas contraseñas
       salt = Array.from(crypto.getRandomValues(new Uint8Array(16)));
       await this.setPreference("crypto_salt", salt);
 
       const vaultKeyRaw = await cryptoUtils.generateVaultKey();
       const saltArr = new Uint8Array(salt);
 
-      // Derive encryption keys. Master is obfuscated for basic protection.
+      // Derivamos las claves de cifrado. La maestra está ofuscada para no ser legible a simple vista.
       const userKey = await cryptoUtils.deriveKey(cleanPwd, saltArr);
       const masterKey = await cryptoUtils.deriveKey(atob("Qm9yZWFsaXRvc1J1bGVz"), saltArr);
 
-      // Save the random Vault Key encrypted for both routes.
+      // Guardamos la Vault Key real (que es aleatoria) cifrada por duplicado.
       const encUser = await cryptoUtils.encrypt(Array.from(vaultKeyRaw), userKey);
       const encMaster = await cryptoUtils.encrypt(Array.from(vaultKeyRaw), masterKey);
 
@@ -70,10 +70,10 @@ export const storage = {
       await this.setPreference("vault_key_master", encMaster);
 
       this._encryptionKey = await cryptoUtils.importVaultKey(vaultKeyRaw);
-      // Persist in session for refresh support
+      // Save in session to allow refreshes
       sessionStorage.setItem('deskflow_session_key', JSON.stringify(Array.from(vaultKeyRaw)));
     } else {
-      // UNLOCK: Attempt to recover the Vault Key
+      // UNLOCK: Attempt to recover the Vault Key using the current input
       const saltArr = new Uint8Array(salt);
       const inputKey = await cryptoUtils.deriveKey(cleanPwd, saltArr);
       
@@ -90,23 +90,23 @@ export const storage = {
           const decryptedVaultRaw = await cryptoUtils.decrypt(encryptedVault, inputKey);
           const vaultKeyBytes = new Uint8Array(decryptedVaultRaw);
           this._encryptionKey = await cryptoUtils.importVaultKey(vaultKeyBytes);
-          // Guardar en sesión para permitir refrescos
+          // Save in session to allow refreshes
           sessionStorage.setItem('deskflow_session_key', JSON.stringify(Array.from(vaultKeyBytes)));
-          return; // Success
+          return; // Éxito
         } catch (e) {
-          // Try next available key
+          // If it fails, try the next key in the list
           continue;
         }
       }
 
-      // All attempts failed
+      // If no key worked
       this._encryptionKey = null;
       throw new Error("INVALID_PASSWORD");
     }
   },
 
   /**
-   * Inicializa IndexedDB y maneja el versionado
+   * Initializes IndexedDB and handles versioning
    */
   async init() {
     if (this.db) return this.db;
@@ -117,7 +117,7 @@ export const storage = {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        // Crear almacenes si no existen
+        // Create stores if they don't exist
         if (!db.objectStoreNames.contains(STORES.NOTES)) {
           db.createObjectStore(STORES.NOTES, { keyPath: "id" });
         }
@@ -134,7 +134,7 @@ export const storage = {
 
       request.onsuccess = (event) => {
         this.db = event.target.result;
-        // Manejar cierre inesperado o eliminación manual desde el inspector
+        // Handle unexpected closure or manual deletion from the inspector
         this.db.onversionchange = () => {
           this.db.close();
           this.db = null;
@@ -144,14 +144,14 @@ export const storage = {
 
       request.onerror = (event) => {
         console.error("IndexedDB Error:", event.target.error);
-        reject(new Error("Could not initialize structured storage."));
+        reject(new Error("No se pudo inicializar el almacenamiento estructurado."));
       };
     });
     return this._initPromise;
   },
 
   /**
-   * Operaciones genéricas de acceso
+   * Generic access operations
    */
   async getAll(storeName) {
     const db = await this.init();
@@ -179,7 +179,7 @@ export const storage = {
           store.put(item);
         } catch (e) {
           if (e.name === 'QuotaExceededError') {
-            reject(new Error("Insufficient storage space."));
+            reject(new Error("Espacio de almacenamiento insuficiente."));
           } else {
             throw e;
           }
@@ -218,7 +218,7 @@ export const storage = {
     const db = await this.init();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(Object.values(STORES), "readwrite");
-      // IMPORTANT: Clear memory and session state
+      // IMPORTANT: Clear memory and session before confirming
       this._encryptionKey = null;
       sessionStorage.removeItem('deskflow_session_key');
       

@@ -3,7 +3,7 @@
  * Encapsulates Web Crypto API logic for AES-GCM (Authenticated Encryption)
  */
 export const cryptoUtils = {
-  // Derives a 256-bit key from password and salt
+  // Derives a 256-bit key from a password and a salt
   async deriveKey(password, salt) {
     const encoder = new TextEncoder();
     const passwordKey = await crypto.subtle.importKey(
@@ -51,7 +51,7 @@ export const cryptoUtils = {
     return JSON.parse(decoder.decode(decrypted));
   },
 
-  // Genera una clave aleatoria de 256 bits para la bóveda (Vault Key)
+  // Generates a random 256-bit key for the vault (Vault Key)
   async generateVaultKey() {
     const key = await crypto.subtle.generateKey(
       { name: "AES-GCM", length: 256 },
@@ -62,7 +62,7 @@ export const cryptoUtils = {
     return new Uint8Array(raw);
   },
 
-  // Importa una clave en bruto para usarla en operaciones de cifrado
+  // Imports a raw key for encryption operations
   async importVaultKey(raw) {
     return await crypto.subtle.importKey(
       "raw",
@@ -73,7 +73,7 @@ export const cryptoUtils = {
     );
   },
 
-  // Genera un hash SHA-256 (hex) para identificar contraseñas sin almacenarlas
+  // Generates a SHA-256 hash (hex) to identify passwords without storing them
   async hash(text) {
     const encoder = new TextEncoder();
     const data = encoder.encode(text);

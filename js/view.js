@@ -139,11 +139,11 @@ function renderDashboard() {
     )
     .sort(sortNotesLogic);
 
-  // Generate the weekly view for the Dashboard (using the current date)
+  // Generate weekly view for Dashboard (using the current date)
   const focusDate = new Date(); // Current date for dashboard week view
   const originalSubView = state.calendarSubView;
   state.calendarSubView = "week"; // Force weekly subview temporarily
-  const weekGridHtml = renderCalendarGrid(focusDate, 5); // Limit to 5 reminders per day in Dashboard
+  const weekGridHtml = renderCalendarGrid(focusDate, 5); // Limit to 5 per day in Dashboard
   state.calendarSubView = originalSubView;
 
   // Filter undated notes for the bottom list
@@ -529,7 +529,7 @@ function renderAllNotes(filtered = null) {
   });
 
   const sortedData = [...filteredData].sort(sortNotesLogic);
-  renderNoteList("Todas las Notas", sortedData);
+  renderNoteList("All Notes", sortedData);
 }
 
 function renderNoteList(title, data) {
@@ -623,7 +623,7 @@ function renderNoteList(title, data) {
     </div>`;
 }
 
-// --- Exponer funciones a Window para compatibilidad con HTML strings ---
+// --- Expose functions to Window for HTML string compatibility ---
 window.openNoteModal = openNoteModal;
 window.closeToast = (el) => {
   const toast = el.closest(".toast");
@@ -697,7 +697,7 @@ window.selectDayView = (d) => {
   state.calendarSubView = "day";
   state.currentView = "calendar";
 
-  // Visually update sidebar navigation to reflect we are in Calendar
+  // Visually update sidebar navigation to reflect Calendar view
   document
     .querySelectorAll(".nav-item")
     .forEach((b) => b.classList.remove("active"));
@@ -767,7 +767,7 @@ window.snoozeNote = (id) => {
   }
 };
 
-// --- Search listener ---
+// --- Search Listener ---
 window.addEventListener("search-notes", () => {
   renderView();
 });

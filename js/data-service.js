@@ -7,23 +7,23 @@ import { cryptoUtils } from "./crypto-utils.js";
  * Facilitates the future transition to a Backend (REST API or GraphQL).
  */
 
-// Change to 'true' and configure URL when the backend is ready
+// Change to 'true' and configure URL when backend is ready
 const USE_BACKEND = false;
 const API_BASE_URL = "https://api.deskflow.com/v1";
 
 /**
- * Internal helpers to process encryption/decryption centrally.
- * If there is no active key (app locked), it returns the data as is.
+ * Internal helpers for centralized encryption/decryption.
+ * If no active key (locked app), it returns data as is.
  */
 const processIncoming = async (items) => {
-  if (!storage._encryptionKey || !Array.isArray(items)) return items; // If no encryption key or not an array, return as is
+  if (!storage._encryptionKey || !Array.isArray(items)) return items;
   
   const results = await Promise.all(items.map(async item => {
     if (!item._encrypted) return item;
     try {
-      return await cryptoUtils.decrypt(item, storage._encryptionKey); // Decrypt the item
+      return await cryptoUtils.decrypt(item, storage._encryptionKey);
     } catch (e) {
-      console.error(`Error decrypting item ${item.id}:`, e); // Log decryption error
+      console.error(`Error descifrando elemento ${item.id}:`, e);
       return null; // Ignore elements that cannot be decrypted
     }
   }));
@@ -40,7 +40,7 @@ const processOutgoing = async (items) => {
 };
 
 export const dataService = {
-  // NOTES
+  // NOTAS
   async getAllNotes() {
     const rawData = USE_BACKEND 
       ? await (await fetch(`${API_BASE_URL}/notes`)).json()
@@ -58,7 +58,7 @@ export const dataService = {
     return storage.saveAll("notes", processed);
   },
 
-  // TAGS AND CATEGORIES
+  // TAGS Y CATEGORÍAS
   async getAllTags() {
     const raw = USE_BACKEND ? await (await fetch(`${API_BASE_URL}/tags`)).json() : await storage.getAll("tags");
     return processIncoming(raw);
@@ -79,7 +79,7 @@ export const dataService = {
     return USE_BACKEND ? null : storage.saveAll("categories", processed);
   },
 
-  // PREFERENCES AND MAINTENANCE
+  // PREFERENCIAS Y MANTENIMIENTO
   async getPreference(key, defaultValue) {
     return USE_BACKEND ? defaultValue : storage.getPreference(key, defaultValue);
   },

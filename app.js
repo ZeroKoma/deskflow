@@ -54,14 +54,6 @@ async function init() {
   // Automatically set focus on the password field
   passwordInput.focus();
 
-  // Detect Caps Lock state
-  const capsWarning = document.getElementById("caps-lock-warning");
-  const checkCapsLock = (e) => {
-    capsWarning.style.display = e.getModifierState('CapsLock') ? "block" : "none";
-  };
-  passwordInput.addEventListener('keyup', checkCapsLock);
-  passwordInput.addEventListener('keydown', checkCapsLock);
-
   document.getElementById("unlock-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const password = document.getElementById("unlock-password").value;
@@ -87,18 +79,18 @@ async function init() {
 }
 
 /**
- * Translates elements that are fixed in the HTML (Sidebar, fixed buttons, etc.)
+ * Traduce elementos que están fijos en el HTML (Sidebar, botones fijos, etc)
  */
 function translateStaticUI() {
-  // Update document lang attribute for accessibility and SEO
+  // Actualizar el atributo lang del documento para accesibilidad y SEO
   document.documentElement.lang = state.language;
 
-  // Translate labels
+  // Traducir textos
   document.querySelectorAll('[data-t]').forEach(el => {
     el.innerText = t(el.dataset.t);
   });
 
-  // Translate placeholders
+  // Traducir placeholders
   document.querySelectorAll('[data-t-placeholder]').forEach(el => {
     el.placeholder = t(el.dataset.tPlaceholder);
   });
@@ -142,7 +134,7 @@ function setupGlobalEvents() {
 
   // Helper function to sync menu icons
   const updateToggleIcons = (isOpen) => {
-    // Only desktop button changes icon
+    // Only the desktop button changes icon
     const desktopBtn = document.getElementById('sidebar-open-btn');
     if (desktopBtn) desktopBtn.innerHTML = isOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
   };
@@ -156,7 +148,7 @@ function setupGlobalEvents() {
     }
   };
 
-  // Close sidebar when clicking the overlay
+  // Close sidebar when clicking the overlay (dark area outside the drawer)
   sidebarOverlay?.addEventListener('click', closeSidebarOnMobile);
 
   if (topBar && !document.getElementById('mobile-header-row')) {
@@ -183,7 +175,7 @@ function setupGlobalEvents() {
 
     topBar.prepend(mobileHeader);
 
-    // Listener to toggle search on mobile
+    // Listener to toggle the search bar on mobile
     searchToggle?.addEventListener('click', () => {
       const isActive = topBar.classList.toggle('search-active');
       const icon = searchToggle.querySelector('i');
@@ -220,7 +212,7 @@ function setupGlobalEvents() {
     });
   }
 
-  // Close sidebar clicking 'X' (responsive only)
+  // Close sidebar clicking the 'X' button (responsive only)
   document.getElementById('sidebar-close-btn').addEventListener('click', () => {
     sidebar.classList.remove('open');
     sidebarOverlay.classList.remove('active');
@@ -250,7 +242,7 @@ function setupGlobalEvents() {
       state.allNotesFilterExpired = item.dataset.filter === 'expired';
 
       state.currentView = "all-notes";
-      // Update sidebar navigation active state
+      // Visually update sidebar navigation
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       const allNotesBtn = document.querySelector('[data-view="all-notes"]');
       if (allNotesBtn) allNotesBtn.classList.add("active");
@@ -265,7 +257,7 @@ function setupGlobalEvents() {
     document.documentElement.setAttribute("data-theme", theme);
   });
 
-  // Inject Language Selector in Sidebar (if missing)
+  // Inject Language Selector in the Sidebar (if it missing)
   if (sidebar && !document.getElementById('language-select-container')) {
     const langContainer = document.createElement('div');
     langContainer.id = 'language-select-container';
@@ -330,7 +322,7 @@ function setupGlobalEvents() {
     renderTagManager();
   });
 
-  // Centralize UI actions to avoid 'window' pollution
+  // UI actions centralization to avoid 'window' pollution
   const uiActions = {
     'edit-tag': (id) => {
       const tag = state.tags.find(t => t.id === id);
@@ -486,7 +478,7 @@ function setupGlobalEvents() {
 
   document.getElementById("clear-date").addEventListener("click", () => {
     document.getElementById("date").value = "";
-    // Trigger 'input' to update modal title
+    // Disparar el evento 'input' para que el título del modal se actualice
     document.getElementById("date").dispatchEvent(new Event('input'));
   });
 
@@ -507,7 +499,7 @@ function setupGlobalEvents() {
   });
 
   document.getElementById("global-search").addEventListener("input", (e) => {
-    // Filtering logic delegated via event
+    // Filtering logic delegated to view.js
     window.dispatchEvent(new CustomEvent('search-notes', { detail: e.target.value }));
   });
 
@@ -527,7 +519,7 @@ function setupGlobalEvents() {
     }
   };
 
-  // Refresh on search option change
+  // Refresh when changing search options
   document.getElementById("search-tags").addEventListener("change", () => {
     updateSearchPlaceholder();
     renderView();

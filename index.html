@@ -10,7 +10,7 @@
       href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%232563eb" d="M128 64c0-35.3 28.7-64 64-64h128c35.3 0 64 28.7 64 64v64h64c35.3 0 64 28.7 64 64v288c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V192c0-35.3 28.7-64 64-64h64V64zm64 64h128V64H192v64z"/></svg>'
     />
     <link rel="stylesheet" href="css/style.css" />
-    <!-- FontAwesome Icons (Optional, but recommended for professional look) -->
+    <!-- Iconos vía FontAwesome (Opcional, pero recomendado para el look profesional) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -153,7 +153,7 @@
       </main>
     </div>
 
-    <!-- Notes Modal -->
+    <!-- Modal para Notas -->
     <div id="note-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -266,7 +266,7 @@
       </div>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- Modal Configuración -->
     <div id="settings-modal" class="modal">
       <div class="modal-content" style="max-width: 450px">
         <div class="modal-header">
@@ -357,7 +357,7 @@
       </div>
     </div>
 
-    <!-- Custom Confirmation Modal -->
+    <!-- Modal de Confirmación Personalizado -->
     <div id="confirm-modal" class="modal">
       <div
         class="modal-content"
@@ -384,7 +384,7 @@
       </div>
     </div>
 
-    <!-- Tag Management Modal -->
+    <!-- Modal Gestión de Tags -->
     <div id="tag-manager-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -413,7 +413,7 @@
             id="tags-list-container"
             style="max-height: 300px; overflow-y: auto"
           >
-            <!-- Dynamic tags list -->
+            <!-- Lista de tags dinámicos -->
           </div>
         </div>
         <div class="modal-actions">
@@ -424,7 +424,7 @@
       </div>
     </div>
 
-    <!-- Category Management Modal -->
+    <!-- Modal Gestión de Categorías -->
     <div id="category-manager-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -493,7 +493,7 @@
       </div>
     </div>
 
-    <!-- Security / Unlock Modal -->
+    <!-- Modal de Seguridad / Desbloqueo -->
     <div id="unlock-modal" class="modal" style="display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); z-index: 9999;">
       <div class="modal-content" style="max-width: 400px; text-align: center;">
         <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">
@@ -521,9 +521,6 @@
               <i class="fas fa-eye"></i>
             </button>
           </div>
-          <div id="caps-lock-warning" style="color: var(--medium); font-size: 0.85rem; margin-top: -10px; margin-bottom: 15px; display: none; font-weight: 600;">
-            <i class="fas fa-arrow-up"></i> <span data-t="crypto_caps_lock">¡Mayúsculas activadas!</span>
-          </div>
           <div id="unlock-error" style="color: var(--high); font-size: 0.85rem; margin-top: -10px; margin-bottom: 15px; display: none;" data-t="crypto_err_invalid">
             Contraseña incorrecta
           </div>
@@ -532,10 +529,10 @@
       </div>
     </div>
 
-    <!-- Overlay for active alarms (locking and blurring) -->
+    <!-- Overlay para alarmas activas (bloqueo y difuminado) -->
     <div id="alarm-overlay" class="alarm-overlay"></div>
 
-    <!-- Dynamic tooltip for notes -->
+    <!-- Tooltip dinámico para notas -->
     <div id="note-tooltip" class="note-tooltip"></div>
 
     <!-- Toast Notifications Container -->

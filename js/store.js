@@ -5,7 +5,7 @@ import { storage } from "./storage.js";
 const listeners = new Set();
 
 /**
- * Suscribe una función para que se ejecute cada vez que el estado cambie.
+ * Subscribes a function to be executed every time the state changes.
  */
 export const subscribe = (callback) => {
   listeners.add(callback);
@@ -13,7 +13,7 @@ export const subscribe = (callback) => {
 
 let notifyPending = false;
 /**
- * Notifica a los suscriptores. Usa microtareas para agrupar cambios (debouncing).
+ * Notifies subscribers. Uses microtasks to group changes (debouncing).
  */
 const notify = () => {
   if (notifyPending) return;
@@ -87,7 +87,7 @@ const validators = {
  */
 const validateNoteBusinessRules = (note) => {
   if (!note.title || note.title.trim().length === 0) {
-    return { valid: false, error: "El título es obligatorio" };
+    return { valid: false, error: "Title is required" };
   }
 
   if (note.date) {
@@ -139,12 +139,12 @@ export const state = new Proxy(_state, proxyHandler);
 
 export const mutations = {
   async initStore() {
-    // 1. Cargar datos desde el servicio (Local o API)
+    // 1. Load data from the service (Local or API)
     const loadedNotes = await dataService.getAllNotes();
     const loadedTags = await dataService.getAllTags();
     const loadedCategories = await dataService.getAllCategories();
 
-    // 2. Poblar estado (si IDB está vacío, se mantienen los valores por defecto)
+    // 2. Populate state (if IDB is empty, default values are maintained)
     if (loadedNotes.length) state.notes = loadedNotes.filter(validators.note);
     if (loadedTags.length) state.tags = loadedTags.filter(validators.tag);
     if (loadedCategories.length) state.categories = loadedCategories.filter(validators.category);
@@ -163,11 +163,11 @@ export const mutations = {
    */
   async unlockStorage(password) {
     await storage.unlock(password);
-    // Recargar todo el estado ahora que tenemos la clave para descifrar
+    // Reload all state now that we have the key to decrypt
     await this.initStore();
 
-    // Migración: Guardar de nuevo para asegurar que los datos que estaban en plano
-    // ahora se persistan cifrados en IndexedDB.
+    // Migration: Save again to ensure that data previously in plain text
+    // is now persisted encrypted in IndexedDB.
     this.saveNotes();
     this.saveTags();
     this.saveCategories();
@@ -285,7 +285,7 @@ export const mutations = {
 
   deleteTag(id) {
     state.tags = state.tags.filter((t) => t.id !== id);
-    // Limpiar el tag de las notas que lo usen
+    // Clear the tag from the notes that use it
     state.notes = state.notes.map((n) => ({
       ...n,
       tags: n.tags ? n.tags.filter((tId) => tId !== id) : [],
@@ -314,7 +314,7 @@ export const mutations = {
 
   deleteCategory(id) {
     state.categories = state.categories.filter((c) => c.id !== id);
-    // Las notas que usaban esta categoría pasan a 'Otros' o quedan sin categoría
+    // Notes that used this category are moved to 'Others' or left without category
     state.notes = state.notes.map((n) =>
       n.category === id ? { ...n, category: "Otros" } : n,
     );
@@ -340,15 +340,15 @@ export const mutations = {
   },
 
   async resetApp() {
-    // 1. Limpiar el estado en memoria inmediatamente
+    // 1. Clear the state in memory immediately
     state.notes = [];
     state.tags = JSON.parse(JSON.stringify(defaultTags));
     state.categories = JSON.parse(JSON.stringify(defaultCategories));
     
-    // 2. Limpiar el almacenamiento (esto ahora también limpia la clave en storage.js)
+    // 2. Clear storage (this now also clears the key in storage.js)
     await dataService.clearAll();
     
-    // 3. Forzar recarga para asegurar un entorno criptográfico limpio
+    // 3. Force reload to ensure a clean cryptographic environment
     window.location.reload();
   },
 
@@ -369,16 +369,16 @@ export const mutations = {
   },
 
   mergeState(data) {
-    // 1. Fusionar Notas (bulkAddNotes ya gestiona el "upsert" por ID)
+    // 1. Merge Notes (bulkAddNotes manages upsert by ID)
     this.bulkAddNotes(data.notes || []);
 
-    // 2. Fusionar Tags
+    // 2. Merge Tags
     (data.tags || []).filter(validators.tag).forEach(t => {
       if (!state.tags.find(existing => existing.id === t.id)) state.tags.push(t);
     });
     this.saveTags();
 
-    // 3. Fusionar Categorías
+    // 3. Merge Categories
     (data.categories || []).filter(validators.category).forEach(c => {
       if (!state.categories.find(existing => existing.id === c.id)) state.categories.push(c);
     });
