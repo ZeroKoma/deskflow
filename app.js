@@ -79,12 +79,18 @@ function setupGlobalEvents() {
     mobileLogo.className = 'logo mobile-logo';
     mobileLogo.innerHTML = '<div><i class="fas fa-layer-group"></i> <span>DeskFlow</span></div>';
 
+    const searchToggle = document.getElementById('search-toggle-btn');
+    const actions = document.querySelector('.top-bar .actions');
+
     mobileHeader.appendChild(menuBtn);
     mobileHeader.appendChild(mobileLogo);
+    if (actions) mobileHeader.appendChild(actions);
+    if (searchToggle) mobileHeader.appendChild(searchToggle);
+
     topBar.prepend(mobileHeader);
 
-    const searchToggle = document.getElementById('search-toggle-btn');
-    searchToggle.addEventListener('click', () => {
+    // Listener para alternar el buscador en móvil
+    searchToggle?.addEventListener('click', () => {
       const isActive = topBar.classList.toggle('search-active');
       const icon = searchToggle.querySelector('i');
       if (icon) {

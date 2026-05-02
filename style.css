@@ -11,9 +11,9 @@
   --radius: 12px;
 
   /* Prioridades */
-  --low: #22c55e;    /* Verde estándar */
+  --low: #22c55e; /* Verde estándar */
   --medium: #eab308; /* Amarillo estándar */
-  --high: #ef4444;   /* Rojo estándar */
+  --high: #ef4444; /* Rojo estándar */
 
   /* Escala de Espaciado (Coherencia Visual) */
   --space-xs: 0.25rem; /* 4px */
@@ -110,7 +110,10 @@ body {
   overflow-x: hidden;
   flex-shrink: 0; /* Importante para que no se colapse */
   z-index: 100;
-  transition: width 0.3s ease, padding 0.3s ease, border-width 0.3s ease;
+  transition:
+    width 0.3s ease,
+    padding 0.3s ease,
+    border-width 0.3s ease;
   white-space: nowrap;
 }
 
@@ -206,9 +209,15 @@ body {
   text-align: center;
 }
 
-.stat-item[data-priority="high"] i { color: var(--high); }
-.stat-item[data-priority="medium"] i { color: var(--medium); }
-.stat-item[data-priority="low"] i { color: var(--low); }
+.stat-item[data-priority="high"] i {
+  color: var(--high);
+}
+.stat-item[data-priority="medium"] i {
+  color: var(--medium);
+}
+.stat-item[data-priority="low"] i {
+  color: var(--low);
+}
 
 .stat-item:hover {
   background: rgba(37, 99, 235, 0.1);
@@ -443,9 +452,15 @@ body {
   border-left: 5px solid transparent;
 }
 
-.note-card-full.priority-high { border-left-color: var(--high); }
-.note-card-full.priority-medium { border-left-color: var(--medium); }
-.note-card-full.priority-low { border-left-color: var(--low); }
+.note-card-full.priority-high {
+  border-left-color: var(--high);
+}
+.note-card-full.priority-medium {
+  border-left-color: var(--medium);
+}
+.note-card-full.priority-low {
+  border-left-color: var(--low);
+}
 
 .note-card-full.bg-sidebar {
   background: var(--bg-sidebar);
@@ -810,9 +825,15 @@ body {
   margin-left: 0;
 }
 
-.note-pill.priority-high { border-left-color: var(--high); }
-.note-pill.priority-medium { border-left-color: var(--medium); }
-.note-pill.priority-low { border-left-color: var(--low); }
+.note-pill.priority-high {
+  border-left-color: var(--high);
+}
+.note-pill.priority-medium {
+  border-left-color: var(--medium);
+}
+.note-pill.priority-low {
+  border-left-color: var(--low);
+}
 
 /* Buttons & Forms */
 .btn-primary {
@@ -1459,10 +1480,17 @@ body.alarm-active .alarm-overlay {
   }
 
   /* Ajuste de encabezados globales en móvil */
-  h2 { font-size: 1.3rem !important; }
-  h3 { font-size: 1.15rem !important; }
+  h2 {
+    font-size: 1.3rem !important;
+  }
+  h3 {
+    font-size: 1.15rem !important;
+  }
 
-  .nav-item { font-size: 1rem; padding: 1rem var(--space-l); } /* Mejor touch target */
+  .nav-item {
+    font-size: 1rem;
+    padding: 1rem var(--space-l);
+  } /* Mejor touch target */
 
   .top-bar,
   .calendar-header {
@@ -1472,8 +1500,13 @@ body.alarm-active .alarm-overlay {
     justify-content: space-between; /* Lupa a la izquierda, Crear a la derecha */
     align-items: center;
     gap: var(--space-l);
-    padding: var(--space-m) var(--container-h-padding);
+    padding: var(--space-m) var(--container-h-padding) 0
+      var(--container-h-padding);
     height: auto;
+  }
+
+  .calendar-header {
+    padding: var(--space-m) var(--container-h-padding);
   }
 
   .mobile-header-row {
@@ -1483,28 +1516,39 @@ body.alarm-active .alarm-overlay {
 
   .search-toggle-btn {
     display: block;
-    order: 2;
     padding: 8px;
-    margin-left: -8px; /* Compensa el padding para alinear al borde izquierdo */
+    margin-left: 0;
   }
 
   .top-bar .actions {
-    order: 3;
     width: auto;
   }
 
   .search-content-wrapper {
-    display: none !important; /* Oculto por defecto */
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
     order: 4;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    margin-top: 0;
+    margin-bottom: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s ease,
+      margin 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0.35s;
   }
 
   /* Estado expandido */
   .top-bar.search-active .search-content-wrapper {
-    display: flex !important;
-    flex-direction: column;
-    flex: 1;
-    width: auto;
-    margin-bottom: 5px; /* Permitir que se sitúe al lado de la lupa */
+    max-height: 160px;
+    opacity: 1;
+    visibility: visible;
+    margin-top: var(--space-s);
+    margin-bottom: var(--space-m);
   }
 
   .top-bar.search-active .search-toggle-btn {
@@ -1524,18 +1568,18 @@ body.alarm-active .alarm-overlay {
   .mobile-header-row {
     display: flex;
     align-items: center;
-    position: relative;
-    min-height: 40px;
-    margin-bottom: var(--space-xs);
+    justify-content: flex-start;
+    width: 100%;
+    gap: var(--space-l);
   }
 
   .mobile-logo.logo {
-    position: absolute;
-    left: 50%;
-    top: 8px; 
-    transform: translateX(-50%);
+    position: static;
+    transform: none;
     margin-bottom: 0;
-    font-size: 1.35rem;
+    font-size: 1.5rem;
+    margin-right: auto;
+    align-items: flex-start;
   }
 
   .mobile-logo.logo div {
@@ -1686,10 +1730,15 @@ body.alarm-active .alarm-overlay {
     box-shadow: none;
   }
 
-  .calendar-grid.month .note-pill.priority-high { border-left-color: var(--high); }
-  .calendar-grid.month .note-pill.priority-medium { border-left-color: var(--medium); }
-  .calendar-grid.month .note-pill.priority-low { border-left-color: var(--low); }
-
+  .calendar-grid.month .note-pill.priority-high {
+    border-left-color: var(--high);
+  }
+  .calendar-grid.month .note-pill.priority-medium {
+    border-left-color: var(--medium);
+  }
+  .calendar-grid.month .note-pill.priority-low {
+    border-left-color: var(--low);
+  }
 
   /* Forzar 1 columna para planificación semanal en móvil */
   .calendar-grid.week {
@@ -1720,9 +1769,19 @@ body.alarm-active .alarm-overlay {
 
 /* Efecto de Pulso para Alarmas Hoy */
 @keyframes pulse-alarm {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.8; color: var(--high); }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+    color: var(--high);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .pulse-animation {
