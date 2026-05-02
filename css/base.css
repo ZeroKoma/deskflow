@@ -1,0 +1,78 @@
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --bg-main: #e2e8f0;
+  --bg-sidebar: #f1f5f9;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border: #cbd5e1;
+  --white: #f1f5f9;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --radius: 12px;
+
+  /* Prioridades */
+  --low: #22c55e; /* Verde estándar */
+  --medium: #eab308; /* Amarillo estándar */
+  --high: #ef4444; /* Rojo estándar */
+
+  /* Escala de Espaciado (Coherencia Visual) */
+  --space-xs: 0.25rem; /* 4px */
+  --space-s: 0.5rem; /* 8px */
+  --space-m: 0.75rem; /* 12px */
+  --space-l: 1rem; /* 16px */
+  --space-xl: 1.5rem; /* 24px */
+  --space-2xl: 2rem; /* 32px */
+  --space-3xl: 3rem; /* 48px */
+
+  /* Variables de Espaciado Responsivo */
+  --container-h-padding: var(--space-2xl);
+}
+
+[data-theme="dark"] {
+  --bg-main: #0f172a;
+  --bg-sidebar: #1e293b;
+  color-scheme: dark;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --white: #1e293b;
+
+  /* Prioridades en Modo Oscuro: Colores vibrantes estándar */
+  --low: #22c55e;
+  --medium: #eab308;
+  --high: #ef4444;
+}
+
+/* Asegura que los iconos nativos de fecha/hora sean visibles en modo oscuro */
+[data-theme="dark"] #date::-webkit-calendar-picker-indicator,
+[data-theme="dark"] #time::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1) !important;
+  cursor: pointer;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background 0.3s ease;
+}
+
+.author {
+  font-size: 0.8rem;
+}
