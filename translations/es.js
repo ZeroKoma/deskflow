@@ -184,5 +184,6 @@ export const es = {
   crypto_desc_unlock: "Introduce tu contraseña para descifrar tus notas y recordatorios.",
   crypto_placeholder: "Escribe tu contraseña...",
   crypto_btn_unlock: "Desbloquear",
-  crypto_err_invalid: "Contraseña incorrecta. Inténtalo de nuevo."
+  crypto_err_invalid: "Contraseña incorrecta. Inténtalo de nuevo.",
+  crypto_caps_lock: "¡Mayúsculas activadas!"
 };

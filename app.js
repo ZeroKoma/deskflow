@@ -54,6 +54,14 @@ async function init() {
   // Automatically set focus on the password field
   passwordInput.focus();
 
+  // Detect Caps Lock state
+  const capsWarning = document.getElementById("caps-lock-warning");
+  const checkCapsLock = (e) => {
+    capsWarning.style.display = e.getModifierState('CapsLock') ? "block" : "none";
+  };
+  passwordInput.addEventListener('keyup', checkCapsLock);
+  passwordInput.addEventListener('keydown', checkCapsLock);
+
   document.getElementById("unlock-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const password = document.getElementById("unlock-password").value;

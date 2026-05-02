@@ -186,4 +186,5 @@ export const en = {
   crypto_placeholder: "Type your password...",
   crypto_btn_unlock: "Unlock",
   crypto_err_invalid: "Incorrect password. Please try again.",
+  crypto_caps_lock: "Caps Lock is on!",
 };
