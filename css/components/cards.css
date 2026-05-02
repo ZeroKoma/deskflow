@@ -29,6 +29,12 @@
   opacity: 0.8;
 }
 
+/* Estado mientras se arrastra el elemento */
+.is-dragging {
+  opacity: 0.4 !important;
+  cursor: grabbing !important;
+}
+
 .dashboard-note-item[draggable="true"],
 .note-pill[draggable="true"],
 .card[draggable="true"] {

@@ -780,24 +780,36 @@ window.handleNoteDragStart = (e, id) => {
   e.dataTransfer.setData("text/plain", id);
   e.dataTransfer.effectAllowed = "move";
 
+  // Añadir clase visual al elemento original
+  const target = e.target.closest('[draggable="true"]');
+  if (target) target.classList.add('is-dragging');
+
   // Crear un icono fantasma dinámico para el puntero
   const dragIcon = document.createElement('div');
+  dragIcon.id = 'drag-ghost';
   const isReminder = !!(note && note.date);
   const iconClass = isReminder ? 'fa-calendar-check' : 'fa-sticky-note';
   
-  dragIcon.innerHTML = `<i class="fas ${iconClass}" style="color: white; background: #2563eb; padding: 8px; border-radius: 6px; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></i>`;
-  dragIcon.style.position = 'absolute';
+  dragIcon.innerHTML = `<i class="fas ${iconClass}" style="color: white; background: var(--primary); padding: 12px; border-radius: 8px; font-size: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);"></i>`;
+  dragIcon.style.position = 'fixed';
   dragIcon.style.top = '-1000px';
+  dragIcon.style.zIndex = '9999';
   document.body.appendChild(dragIcon);
   
-  e.dataTransfer.setDragImage(dragIcon, 20, 20);
-  setTimeout(() => document.body.removeChild(dragIcon), 0);
+  e.dataTransfer.setDragImage(dragIcon, 25, 25);
 };
 
 window.handleNoteDragEnd = (e) => {
+  // Quitar clase visual al elemento original
+  document.querySelectorAll(".is-dragging").forEach(el => el.classList.remove("is-dragging"));
+
   document.querySelectorAll(".drag-zone").forEach((zone) => {
     zone.classList.remove("zone-valid", "zone-invalid", "drag-over");
   });
+
+  // Eliminar el icono fantasma del DOM
+  const ghost = document.getElementById('drag-ghost');
+  if (ghost) ghost.remove();
 };
 
 window.handleNoteDragOver = (e) => {
