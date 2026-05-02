@@ -10,6 +10,7 @@ La aplicación sigue un patrón de diseño modular basado en **ES Modules (ESM)*
 
 - **`index.html`**: Punto de entrada único (SPA - Single Page Application). Contiene la estructura base y los contenedores de los modales.
 - **`store.js`**: El "corazón" de la aplicación. Maneja el estado global (`state`), las mutaciones de datos (`mutations`) y los selectores calculados (`getters`). Sincroniza automáticamente con `localStorage`.
+- **`data-service.js`**: Capa de abstracción de datos. Decide si la información se lee/guarda en el almacenamiento local (IndexedDB) o en un servidor remoto.
 - **`app.js`**: Orquestador principal. Configura los eventos globales y coordina la inicialización del sistema.
 - **`view.js`**: Motor de renderizado de las vistas principales (Dashboard, Calendario, Lista de Notas).
 - **`view-components.js`**: Componentes de UI reutilizables como badges, pills, notificaciones (toasts) y el sistema de tooltips.
@@ -45,9 +46,24 @@ El servicio de alarmas (`app-alarms.js`) se ejecuta cada 10 segundos, permitiend
 
 Vistas adaptables de Mes, Semana y Día, con persistencia de estado para una navegación fluida entre fechas.
 
-## Gestión de Datos
+## Gestión de Datos e Implementación de Backend
 
-La persistencia de datos se maneja localmente:
+DeskFlow está diseñado siguiendo el patrón de **Service Layer**, lo que permite alternar entre almacenamiento local y remoto sin modificar la lógica de la interfaz de usuario.
+
+### Guía para implementar un Backend remoto
+
+Si deseas migrar los datos a una base de datos en la nube, debes realizar lo siguiente:
+
+1.  **Activar el modo Backend**: En `js/data-service.js`, cambia la constante `USE_BACKEND` a `true`.
+2.  **Configurar la API**: Define la URL de tu servidor en la constante `API_BASE_URL`.
+3.  **Implementar Endpoints**: Tu servidor deberá exponer rutas REST (o GraphQL) para:
+    - `GET /notes`: Recuperar la lista de notas.
+    - `POST /notes`: Guardar o sincronizar notas.
+    - `GET/POST /tags` y `/categories`: Gestión de diccionarios de etiquetas.
+    - `GET/POST /preferences`: Para persistir el tema elegido por el usuario.
+4.  **Transparencia**: El archivo `store.js` ya utiliza `async/await`, por lo que simplemente esperará la respuesta de la red en lugar de la respuesta de IndexedDB, sin necesidad de cambios adicionales.
+
+### Persistencia Local (Modo actual)
 
 - **IndexedDB**: Almacena de forma persistente notas, preferencias (como el tema), tags y categorías.
 - **Exportación/Importación JSON**: Permite la portabilidad de los datos. El sistema valida la estructura del archivo JSON durante la importación para evitar la corrupción de datos.

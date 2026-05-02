@@ -1,6 +1,8 @@
-import { state, mutations } from './store.js';
-import { dateUtils } from './utils.js';
+import { state, mutations, subscribe, getters } from './store.js';
 import { showToast, renderView } from './view.js';
+
+// Icono oficial de DeskFlow para las notificaciones (Data URL para máxima compatibilidad)
+const APP_ICON = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%232563eb" d="M128 64c0-35.3 28.7-64 64-64h128c35.3 0 64 28.7 64 64v64h64c35.3 0 64 28.7 64 64v288c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V192c0-35.3 28.7-64 64-64h64V64zm64 64h128V64H192v64z"/></svg>';
 
 export function playAlarmSound() {
   try {
@@ -19,59 +21,54 @@ export function playAlarmSound() {
   }
 }
 
+let alarmWorker;
+
 export function startAlarmService() {
-  setInterval(() => {
-    const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const currentDate = dateUtils.getTodayStr();
+  if (!window.Worker) return;
 
-    state.notes.forEach((note) => {
-      const isScheduledToday = !note.date || note.date === currentDate;
+  alarmWorker = new Worker('./js/alarms-worker.js');
 
-      if (note.alarm && isScheduledToday && note.time) {
-        const [hrs, mins] = note.time.split(':').map(Number);
-        const noteTime = new Date();
-        noteTime.setHours(hrs, mins, 0, 0);
+  alarmWorker.onmessage = (e) => {
+    const { type, noteId, key } = e.data;
+    const note = getters.getNoteById(noteId);
+    if (!note) return;
 
-        const diff = now - noteTime;
+    if (type === 'ALARM_NOW' && note.lastAlarmKey !== key) {
+      // Actualizar inmediatamente para evitar duplicados
+      mutations.updateNote(note.id, { ...note, lastAlarmKey: key, alarm: false });
+      
+      playAlarmSound();
+      triggerBrowserNotification("DeskFlow: Recordatorio", note.title);
+      showToast(`¡ALERTA!: ${note.title}`, "high", note.id);
+      renderView();
 
-        // --- Lógica de Pre-Alarma (5 minutos antes) ---
-        const preAlarmDiff = now - (noteTime.getTime() - 5 * 60000);
-        if (preAlarmDiff >= 0 && preAlarmDiff < 60000 && note.lastPreAlarmKey !== currentDate) {
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("DeskFlow: Aviso (5 min)", {
-              body: `Próximamente: ${note.title}`,
-              icon: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/layer-group.svg",
-              requireInteraction: true
-            });
-          }
-          showToast(`Aviso previo (5 min): ${note.title}`, "info");
-          note.lastPreAlarmKey = currentDate;
-          mutations.saveNotes();
-        }
+    } else if (type === 'ALARM_PRE' && note.lastPreAlarmKey !== key) {
+      mutations.updateNote(note.id, { ...note, lastPreAlarmKey: key });
+      triggerBrowserNotification("DeskFlow: Aviso (5 min)", `Próximamente: ${note.title}`);
+      showToast(`Aviso previo (5 min): ${note.title}`, "info");
+    }
+  };
 
-        // Alarma Real (ventana de 2 min)
-        if (diff >= 0 && diff < 120000 && note.lastAlarmKey !== currentDate) { 
-          playAlarmSound();
+  // Mantener al Worker sincronizado con el estado
+  subscribe(() => {
+    const cleanNotes = JSON.parse(JSON.stringify(state.notes));
+    alarmWorker.postMessage({ type: 'SYNC_NOTES', notes: cleanNotes });
+  });
 
-          if ("Notification" in window && Notification.permission === "granted") {
-            const notification = new Notification("DeskFlow: Recordatorio", {
-              body: note.title,
-              icon: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/layer-group.svg",
-              requireInteraction: true
-            });
-            notification.onclick = () => { window.focus(); notification.close(); };
-          }
+  // Sincronización inicial
+  const initialNotes = JSON.parse(JSON.stringify(state.notes));
+  alarmWorker.postMessage({ type: 'SYNC_NOTES', notes: initialNotes });
+}
 
-          showToast(`¡ALERTA!: ${note.title}`, "high", note.id);
-          
-          if (note.date) note.alarm = false;
-          
-          note.lastAlarmKey = currentDate;
-          mutations.saveNotes();
-          renderView();
-        }
-      }
-    });
-  }, 10000);
+function triggerBrowserNotification(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    try {
+      const n = new Notification(title, {
+        body: body,
+        icon: APP_ICON,
+        requireInteraction: true
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch (e) { console.error("Fallo al lanzar notificación:", e); }
+  }
 }

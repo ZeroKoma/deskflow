@@ -109,8 +109,8 @@ export function renderTagManager() {
           isProtected
             ? `<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;"><i class="fas fa-lock"></i>&nbsp;&nbsp;Sistema</span>`
             : `<div style="display: flex; gap: 10px;">
-            <button onclick="window.editTag('${tag.id}')" class="btn-ghost" style="padding:4px"><i class="fas fa-pencil-alt"></i></button>
-            <button onclick="window.deleteTag('${tag.id}')" class="btn-ghost" style="color:var(--high); padding:4px"><i class="fas fa-times"></i></button>
+            <button data-action="edit-tag" data-id="${tag.id}" class="btn-ghost" style="padding:4px"><i class="fas fa-pencil-alt"></i></button>
+            <button data-action="delete-tag" data-id="${tag.id}" class="btn-ghost" style="color:var(--high); padding:4px"><i class="fas fa-times"></i></button>
           </div>`
         }
       </div>`;
@@ -129,8 +129,8 @@ export function renderCategoryManager() {
         <span>${cat.name}</span>
       </div>
       <div style="display: flex; gap: 10px;">
-        <button onclick="window.editCategory('${cat.id}')" class="btn-ghost" style="padding:4px"><i class="fas fa-pencil-alt"></i></button>
-        <button onclick="window.deleteCategory('${cat.id}')" class="btn-ghost" style="color:var(--high); padding:4px"><i class="fas fa-times"></i></button>
+        <button data-action="edit-category" data-id="${cat.id}" class="btn-ghost" style="padding:4px"><i class="fas fa-pencil-alt"></i></button>
+        <button data-action="delete-category" data-id="${cat.id}" class="btn-ghost" style="color:var(--high); padding:4px"><i class="fas fa-times"></i></button>
       </div>
     </div>`,
     )

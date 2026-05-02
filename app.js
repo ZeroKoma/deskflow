@@ -1,4 +1,4 @@
-import { state, mutations } from './js/store.js';
+import { state, mutations, subscribe } from './js/store.js';
 import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './js/view.js';
 import { dateUtils, downloadFile } from './js/utils.js';
 import { startAlarmService } from './js/app-alarms.js';
@@ -7,6 +7,12 @@ import * as settings from './js/app-settings.js';
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  // Suscribir la actualización de la UI al estado antes de cargar datos
+  subscribe(() => {
+    renderView();
+    updateUIStats();
+  });
+
   // FASE 6 — Esperar a que los datos se carguen desde IndexedDB
   await mutations.initStore();
 
@@ -15,8 +21,6 @@ async function init() {
   requestNotificationPermission();
   setFavicon();
   startAlarmService();
-  renderView();
-  updateUIStats();
 }
 
 function setFavicon() {
@@ -29,11 +33,17 @@ function setFavicon() {
 }
 
 function requestNotificationPermission() {
-  if ("Notification" in window && Notification.permission === "default") {
+  if (!("Notification" in window)) {
+    console.warn("Este navegador no soporta notificaciones.");
+    return;
+  }
+
+  console.log("Estado de permisos de notificación:", Notification.permission);
+
+  if (Notification.permission === "default") {
     Notification.requestPermission().then(permission => {
-      if (permission === "granted") {
-        showToast("Notificaciones activadas correctamente", "info");
-      }
+      console.log("Nuevo estado de permiso:", permission);
+      if (permission === "granted") showToast("Notificaciones activadas", "info");
     });
   }
 }
@@ -144,7 +154,6 @@ function setupGlobalEvents() {
       e.currentTarget.classList.add("active");
       state.allNotesPriorityFilter = null;
       state.currentView = view;
-      renderView();
       closeSidebarOnMobile();
     });
   });
@@ -164,7 +173,6 @@ function setupGlobalEvents() {
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       const allNotesBtn = document.querySelector('[data-view="all-notes"]');
       if (allNotesBtn) allNotesBtn.classList.add("active");
-      renderView();
       closeSidebarOnMobile();
     });
   });
@@ -220,40 +228,82 @@ function setupGlobalEvents() {
     document.getElementById("tag-id").value = "";
     document.getElementById("tag-submit-btn").innerText = "Añadir";
     renderTagManager();
-    renderView();
-    updateUIStats();
   });
 
-  window.editTag = (id) => {
-    const tag = state.tags.find(t => t.id === id);
-    if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
-      showToast("Esta etiqueta de sistema no se puede modificar", "error");
-      return;
-    }
-
-    if (tag) {
-      document.getElementById("tag-id").value = tag.id;
-      document.getElementById("tag-name").value = tag.name;
-      document.getElementById("tag-color").value = tag.color;
-      document.getElementById("tag-submit-btn").innerText = "Guardar";
+  // Centralización de acciones de UI para evitar el uso de 'window'
+  const uiActions = {
+    'edit-tag': (id) => {
+      const tag = state.tags.find(t => t.id === id);
+      if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
+        showToast("Esta etiqueta de sistema no se puede modificar", "error");
+        return;
+      }
+      if (tag) {
+        document.getElementById("tag-id").value = tag.id;
+        document.getElementById("tag-name").value = tag.name;
+        document.getElementById("tag-color").value = tag.color;
+        document.getElementById("tag-submit-btn").innerText = "Guardar";
+      }
+    },
+    'delete-tag': (id) => {
+      const tag = state.tags.find(t => t.id === id);
+      if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
+        showToast("Esta etiqueta de sistema no se puede eliminar", "error");
+        return;
+      }
+      showConfirmModal("¿Eliminar este tag de todas las notas? Esta acción no se puede deshacer.", () => {
+        mutations.deleteTag(id);
+        renderTagManager();
+        showToast("Tag eliminado de todas las notas", "info");
+      });
+    },
+    'edit-category': (id) => {
+      const cat = state.categories.find(c => c.id === id);
+      if (cat) {
+        document.getElementById("category-id").value = cat.id;
+        document.getElementById("category-name").value = cat.name;
+        document.getElementById("category-color").value = cat.color;
+        document.getElementById("category-submit-btn").innerText = "Guardar";
+      }
+    },
+    'delete-category': (id) => {
+      showConfirmModal("¿Eliminar esta categoría? Las notas asociadas pasarán a 'Otros'.", () => {
+        mutations.deleteCategory(id);
+        renderCategoryManager();
+        showToast("Categoría eliminada", "info");
+      });
+    },
+    'view-day': (id, target) => {
+      window.selectDayView(id);
+      uiActions['close-toast'](null, target);
+    },
+    'snooze': (id, target) => {
+      window.snoozeNote(id);
+      uiActions['close-toast'](null, target);
+    },
+    'close-toast': (id, target) => {
+      const toast = target.closest('.toast');
+      if (toast) {
+        toast.remove();
+        if (document.querySelectorAll('.toast.high').length === 0) {
+          document.body.classList.remove("alarm-active");
+        }
+      }
     }
   };
 
-  window.deleteTag = (id) => {
-    const tag = state.tags.find(t => t.id === id);
-    if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
-      showToast("Esta etiqueta de sistema no se puede eliminar", "error");
-      return;
-    }
+  // Delegación de eventos global
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
 
-    showConfirmModal("¿Eliminar este tag de todas las notas? Esta acción no se puede deshacer.", () => {
-      mutations.deleteTag(id);
-      renderTagManager();
-      renderView();
-      showToast("Tag eliminado de todas las notas", "info");
-      updateUIStats();
-    });
-  };
+    const action = target.dataset.action;
+    const id = target.dataset.id;
+
+    if (uiActions[action]) {
+      uiActions[action](id, target);
+    }
+  });
 
   // Category Manager
   const catModal = document.getElementById("category-manager-modal");
@@ -282,29 +332,7 @@ function setupGlobalEvents() {
     }
     e.target.reset();
     renderCategoryManager();
-    renderView();
-    updateUIStats();
   });
-
-  window.editCategory = (id) => {
-    const cat = state.categories.find(c => c.id === id);
-    if (cat) {
-      document.getElementById("category-id").value = cat.id;
-      document.getElementById("category-name").value = cat.name;
-      document.getElementById("category-color").value = cat.color;
-      document.getElementById("category-submit-btn").innerText = "Guardar";
-    }
-  };
-
-  window.deleteCategory = (id) => {
-    showConfirmModal("¿Eliminar esta categoría? Las notas asociadas pasarán a 'Otros'.", () => {
-      mutations.deleteCategory(id);
-      renderCategoryManager();
-      renderView();
-      updateUIStats();
-      showToast("Categoría eliminada", "info");
-    });
-  };
 
   // Configuración y Reset
   const settingsModal = document.getElementById("settings-modal");
@@ -413,66 +441,27 @@ function setupGlobalEvents() {
 function handleFormSubmit(e) {
   e.preventDefault();
   const id = document.getElementById('note-id').value;
-  const timeValue = document.getElementById("time").value;
-  const dateValue = document.getElementById("date").value;
-  const existingNote = id ? state.notes.find(n => n.id === id) : null;
-  const todayStr = dateUtils.getTodayStr();
+  const existing = id ? state.notes.find(n => n.id === id) : null;
 
-  // Si no hay fecha seleccionada, no aplicamos validaciones de tiempo.
-  // Esto permite que las "notas" (sin fecha) se guarden con cualquier hora.
-  if (dateValue === "") {
-    // No hay fecha, se omite la validación de tiempo.
-  }
-  // Si hay fecha, aplicamos las validaciones de recordatorio.
-  else {
-    // 1. No permitir fechas pasadas
-    if (dateValue < todayStr) {
-      showToast("No se pueden programar recordatorios en fechas pasadas", "error");
-      return;
-    }
-
-    // 2. Si la fecha es hoy, la hora no puede ser anterior a la actual
-    if (dateValue === todayStr && timeValue && timeValue.slice(0, 5) < `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`) {
-      showToast("No puedes programar un recordatorio para una hora que ya pasó hoy", "error");
-      return;
-    }
-  }
-
-  const selectedTags = Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value);
-  const isAlarmActive = document.getElementById("alarm").checked;
-
-  const alarmTag = state.tags.find(t => t.name === "Alarma");
-
-  // Sincronizar automáticamente el tag "Alarma" según el estado del checkbox
-  if (alarmTag) {
-    const tagIndex = selectedTags.indexOf(alarmTag.id);
-    if (isAlarmActive) {
-      if (tagIndex === -1) selectedTags.push(alarmTag.id);
-    } else {
-      if (tagIndex !== -1) selectedTags.splice(tagIndex, 1);
-    }
-  }
-
-  const noteData = {
-    id: id || Date.now().toString(),
+  const formData = {
     title: document.getElementById("title").value,
     date: document.getElementById("date").value,
     time: document.getElementById("time").value,
     priority: document.getElementById("priority").value,
     category: document.getElementById("category").value,
     description: document.getElementById("description").value,
-    alarm: isAlarmActive,
-    tags: selectedTags,
-    lastAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastAlarmKey : null,
-    lastPreAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastPreAlarmKey : null
+    alarm: document.getElementById("alarm").checked,
+    tags: Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value),
+    // Preservamos las llaves de alarmas; el store decidirá si resetearlas si cambia la fecha/hora
+    lastAlarmKey: existing ? existing.lastAlarmKey : null,
+    lastPreAlarmKey: existing ? existing.lastPreAlarmKey : null
   };
 
-  id ? mutations.updateNote(id, noteData) : mutations.addNote(noteData);
-  
-  const typeLabel = noteData.date ? "Recordatorio" : "Nota";
-  showToast(id ? `${typeLabel} actualizado` : `${typeLabel} creado`);
-  
-  document.getElementById("note-modal").style.display = "none";
-  renderView();
-  updateUIStats();
+  try {
+    id ? mutations.updateNote(id, formData) : mutations.addNote(formData);
+    showToast(id ? "Cambios guardados" : (formData.date ? "Recordatorio creado" : "Nota creada"));
+    document.getElementById("note-modal").style.display = "none";
+  } catch (error) {
+    showToast(error.message, "error");
+  }
 }

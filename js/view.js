@@ -630,7 +630,6 @@ window.clearPriorityFilter = () => {
   state.allNotesFilterNoDate = false;
   state.allNotesFilterExpired = false;
   state.allNotesFilterWithAlarm = false;
-  renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
   state.allNotesFilterAll = type === "all";
@@ -638,7 +637,6 @@ window.toggleAllNotesFilter = (type, val) => {
   state.allNotesFilterNoDate = type === "noDate";
   state.allNotesFilterExpired = type === "expired";
   state.allNotesFilterWithAlarm = type === "withAlarm";
-  renderView();
 };
 window.seeAllNoDateNotes = () => {
   state.currentView = "all-notes";
@@ -654,7 +652,6 @@ window.seeAllNoDateNotes = () => {
     .forEach((b) => b.classList.remove("active"));
   const allNotesBtn = document.querySelector('[data-view="all-notes"]');
   if (allNotesBtn) allNotesBtn.classList.add("active");
-  renderView();
 };
 window.seeFullWeek = () => {
   state.currentView = "calendar";
@@ -665,7 +662,6 @@ window.seeFullWeek = () => {
     .forEach((b) => b.classList.remove("active"));
   const calendarBtn = document.querySelector('[data-view="calendar"]');
   if (calendarBtn) calendarBtn.classList.add("active");
-  renderView();
 };
 window.goToday = () => {
   const now = new Date();
@@ -675,7 +671,6 @@ window.goToday = () => {
     now.getDate(),
   );
   state.calendarSubView = "day";
-  renderView();
 };
 window.setSubView = (v) => {
   const now = new Date();
@@ -685,7 +680,6 @@ window.setSubView = (v) => {
     now.getDate(),
   );
   state.calendarSubView = v;
-  renderView();
 };
 window.selectDayView = (d) => {
   const [y, m, day] = d.split("-").map(Number);
@@ -699,16 +693,12 @@ window.selectDayView = (d) => {
     .forEach((b) => b.classList.remove("active"));
   const calendarBtn = document.querySelector('[data-view="calendar"]');
   if (calendarBtn) calendarBtn.classList.add("active");
-
-  renderView();
 };
 window.deleteNote = (id) => {
   showConfirmModal(
     "¿Estás seguro de que deseas eliminar esta nota permanentemente?",
     () => {
       mutations.deleteNote(id);
-      updateUIStats();
-      renderView();
       showToast("Nota eliminada correctamente", "info");
       document.getElementById("note-modal").style.display = "none";
     },
@@ -733,41 +723,36 @@ window.navigateCalendar = (diff) => {
     date.getMonth(),
     date.getDate(),
   );
-  renderView();
 };
 
 window.snoozeNote = (id) => {
   const note = getters.getNoteById(id);
   if (note) {
-    const date = new Date();
+    const now = new Date();
+    let targetDate = new Date();
+
     if (note.date) {
       const [year, month, day] = note.date.split("-").map(Number);
-      date.setFullYear(year, month - 1, day);
+      targetDate.setFullYear(year, month - 1, day);
     }
 
     const [hours, minutes] = note.time.split(":").map(Number);
-    date.setHours(hours, minutes, 0, 0);
+    targetDate.setHours(hours, minutes, 0, 0);
 
-    // Añadir 5 minutos
-    date.setMinutes(date.getMinutes() + 5);
+    // Si la hora de la nota ya pasó (que es lo normal al posponer), 
+    // sumamos 5 minutos a partir de "ahora" para asegurar que suene pronto.
+    const baseDate = targetDate < now ? now : targetDate;
+    const newTime = new Date(baseDate.getTime() + 5 * 60000);
 
-    if (note.date) {
-      note.date = dateUtils.formatYYYYMMDD(date);
-    }
-    note.time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-    note.alarm = true; // Reactivar la alarma para la nueva hora
-    note.lastAlarmKey = null; // Resetear rastreo para que pueda sonar de nuevo
-    note.lastPreAlarmKey = null;
+    mutations.updateNote(id, {
+      ...note,
+      date: dateUtils.formatYYYYMMDD(newTime),
+      time: `${String(newTime.getHours()).padStart(2, "0")}:${String(newTime.getMinutes()).padStart(2, "0")}`,
+      alarm: true,
+      lastAlarmKey: null,
+      lastPreAlarmKey: null
+    });
 
-    mutations.saveNotes();
-    const toast = document.getElementById(`toast-${id}`);
-    if (toast) {
-      toast.remove();
-      if (!document.querySelector(".toast.high")) {
-        document.body.classList.remove("alarm-active");
-      }
-    }
-    renderView();
     showToast("Alarma pospuesta 5 minutos", "info");
   }
 };
@@ -875,8 +860,6 @@ window.handleNoteDrop = (e) => {
   }
 
   mutations.updateNote(id, updatedNote);
-  renderView();
-  updateUIStats();
 
   // Feedback dinámico según la conversión
   let msg = `Movido al ${dateUtils.formatDisplayDate(targetDate)}`;

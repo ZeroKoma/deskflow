@@ -1,4 +1,49 @@
-import { storage } from "./storage.js";
+import { dataService } from "./data-service.js";
+import { dateUtils } from "./utils.js";
+
+const listeners = new Set();
+
+/**
+ * Suscribe una función para que se ejecute cada vez que el estado cambie.
+ */
+export const subscribe = (callback) => {
+  listeners.add(callback);
+};
+
+let notifyPending = false;
+/**
+ * Notifica a los suscriptores. Usa microtareas para agrupar cambios (debouncing).
+ */
+const notify = () => {
+  if (notifyPending) return;
+  notifyPending = true;
+  queueMicrotask(() => {
+    listeners.forEach(callback => callback());
+    notifyPending = false;
+  });
+};
+
+const proxyHandler = {
+  get(target, key) {
+    const value = target[key];
+    if (value !== null && typeof value === 'object') {
+      return new Proxy(value, proxyHandler);
+    }
+    return value;
+  },
+  set(target, key, value) {
+    if (target[key] !== value) {
+      target[key] = value;
+      notify();
+    }
+    return true;
+  },
+  deleteProperty(target, key) {
+    const result = delete target[key];
+    if (result) notify();
+    return result;
+  }
+};
 
 const defaultCategories = [
   { id: "Categoría 1", name: "Categoría 1", color: "#2563eb" },
@@ -35,7 +80,41 @@ const validators = {
   theme: (t) => ["light", "dark"].includes(t)
 };
 
-export const state = {
+/**
+ * Validación de reglas de negocio para Notas/Recordatorios
+ */
+const validateNoteBusinessRules = (note) => {
+  if (!note.title || note.title.trim().length === 0) {
+    return { valid: false, error: "El título es obligatorio" };
+  }
+
+  if (note.date) {
+    const todayStr = dateUtils.getTodayStr();
+    if (note.date < todayStr) {
+      return { valid: false, error: "No se pueden programar recordatorios en fechas pasadas" };
+    }
+
+    if (note.date === todayStr && note.time) {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      if (note.time.slice(0, 5) < currentTime) {
+        return { valid: false, error: "No puedes programar un recordatorio para una hora que ya pasó hoy" };
+      }
+    }
+  }
+  return { valid: true };
+};
+
+const syncAlarmTag = (note) => {
+  if (!note.tags) note.tags = [];
+  const alarmTag = state.tags.find(t => t.name === "Alarma");
+  if (!alarmTag) return;
+  const tagIndex = note.tags.indexOf(alarmTag.id);
+  if (note.alarm) { if (tagIndex === -1) note.tags.push(alarmTag.id); }
+  else { if (tagIndex !== -1) note.tags.splice(tagIndex, 1); }
+};
+
+const _state = {
   notes: [],
   tags: [...defaultTags],
   categories: [...defaultCategories],
@@ -53,40 +132,54 @@ export const state = {
   allNotesFilterExpired: false,
 };
 
+export const state = new Proxy(_state, proxyHandler);
+
 export const mutations = {
   async initStore() {
-    // 1. Cargar datos desde IndexedDB
-    const loadedNotes = await storage.getAll("notes");
-    const loadedTags = await storage.getAll("tags");
-    const loadedCategories = await storage.getAll("categories");
+    // 1. Cargar datos desde el servicio (Local o API)
+    const loadedNotes = await dataService.getAllNotes();
+    const loadedTags = await dataService.getAllTags();
+    const loadedCategories = await dataService.getAllCategories();
 
     // 2. Poblar estado (si IDB está vacío, se mantienen los valores por defecto)
     if (loadedNotes.length) state.notes = loadedNotes.filter(validators.note);
     if (loadedTags.length) state.tags = loadedTags.filter(validators.tag);
     if (loadedCategories.length) state.categories = loadedCategories.filter(validators.category);
     
-    const theme = await storage.getPreference("deskflow_theme", "dark");
+    const theme = await dataService.getPreference("deskflow_theme", "dark");
     state.theme = validators.theme(theme) ? theme : "dark";
   },
 
   saveNotes() {
-    const valid = state.notes.filter(validators.note);
-    storage.saveAll("notes", valid).catch(console.error);
+    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    const rawNotes = JSON.parse(JSON.stringify(state.notes));
+    const valid = rawNotes.filter(validators.note);
+    dataService.saveAllNotes(valid).catch(console.error);
   },
 
   saveTags() {
-    const valid = state.tags.filter(validators.tag);
-    storage.saveAll("tags", valid).catch(console.error);
+    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    const rawTags = JSON.parse(JSON.stringify(state.tags));
+    const valid = rawTags.filter(validators.tag);
+    dataService.saveAllTags(valid).catch(console.error);
   },
 
   saveCategories() {
-    const valid = state.categories.filter(validators.category);
-    storage.saveAll("categories", valid).catch(console.error);
+    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    const rawCategories = JSON.parse(JSON.stringify(state.categories));
+    const valid = rawCategories.filter(validators.category);
+    dataService.saveAllCategories(valid).catch(console.error);
   },
 
   addNote(noteData) {
-    if (!validators.note(noteData)) return;
-    state.notes.push(noteData);
+    const validation = validateNoteBusinessRules(noteData);
+    if (!validation.valid) throw new Error(validation.error);
+
+    const note = { ...noteData, id: noteData.id || Date.now().toString() };
+    if (!validators.note(note)) return;
+
+    syncAlarmTag(note);
+    state.notes.push(note);
     this.saveNotes();
   },
 
@@ -109,8 +202,24 @@ export const mutations = {
   },
 
   updateNote(id, noteData) {
-    if (!validators.note(noteData)) return;
-    state.notes = state.notes.map((n) => (n.id === id ? noteData : n));
+    const validation = validateNoteBusinessRules(noteData);
+    if (!validation.valid) throw new Error(validation.error);
+
+    const existingIndex = state.notes.findIndex(n => n.id === id);
+    if (existingIndex === -1) return;
+
+    const existing = state.notes[existingIndex];
+    const updated = { ...noteData, id };
+    if (!validators.note(updated)) return;
+
+    // Si cambió fecha u hora, reseteamos el rastreo de alarmas para que vuelvan a sonar
+    if (existing.date !== updated.date || existing.time !== updated.time) {
+      updated.lastAlarmKey = null;
+      updated.lastPreAlarmKey = null;
+    }
+
+    syncAlarmTag(updated);
+    state.notes[existingIndex] = updated;
     this.saveNotes();
   },
 
@@ -179,7 +288,7 @@ export const mutations = {
   setTheme(theme) {
     if (!validators.theme(theme)) return;
     state.theme = theme;
-    storage.setPreference("deskflow_theme", theme).catch(console.error);
+    dataService.setPreference("deskflow_theme", theme).catch(console.error);
   },
 
   updateCalendarState(year, month, day) {
@@ -193,7 +302,7 @@ export const mutations = {
     state.tags = JSON.parse(JSON.stringify(defaultTags));
     state.categories = JSON.parse(JSON.stringify(defaultCategories));
     
-    await storage.clearAll();
+    await dataService.clearAll();
 
     this.saveNotes();
     this.saveTags();
