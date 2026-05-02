@@ -38,13 +38,13 @@ export function showToast(msg, type = "info", noteId = null, action = null) {
   if (type === "high" && noteId) {
     const note = getters.getNoteById(noteId);
     const dateBtn = note && note.date
-        ? `<button class="btn-primary" onclick="window.selectDayView('${note.date}'); window.closeToast(this)" style="background: var(--primary); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
+        ? `<button class="btn-primary" data-action="view-day" data-id="${note.date}" style="background: var(--primary); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
            <i class="fas fa-calendar-day"></i> Ver día
          </button>` : "";
 
     actionButtons = `<div style="display: flex; gap: var(--space-m); margin-top: var(--space-l);">
         ${dateBtn}
-        <button class="btn-primary" onclick="window.snoozeNote('${noteId}')" style="background: var(--high); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
+        <button class="btn-primary" data-action="snooze" data-id="${noteId}" style="background: var(--high); color: white; flex: 1; border: 1px solid rgba(255,255,255,0.3);">
           <i class="fas fa-clock"></i> Posponer
         </button>
       </div>`;
@@ -60,7 +60,7 @@ export function showToast(msg, type = "info", noteId = null, action = null) {
     <div style="display: flex; flex-direction: column;">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
             <span><i class="fas ${icon}"></i> ${msg}</span>
-            <i class="fas fa-times" style="cursor: pointer; opacity: 0.7;" onclick="window.closeToast(this)"></i>
+            <i class="fas fa-times" style="cursor: pointer; opacity: 0.7;" data-action="close-toast"></i>
         </div>
         ${actionButtons}
     </div>`;

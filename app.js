@@ -224,36 +224,76 @@ function setupGlobalEvents() {
     updateUIStats();
   });
 
-  window.editTag = (id) => {
-    const tag = state.tags.find(t => t.id === id);
-    if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
-      showToast("Esta etiqueta de sistema no se puede modificar", "error");
-      return;
-    }
-
-    if (tag) {
-      document.getElementById("tag-id").value = tag.id;
-      document.getElementById("tag-name").value = tag.name;
-      document.getElementById("tag-color").value = tag.color;
-      document.getElementById("tag-submit-btn").innerText = "Guardar";
+  // Centralización de acciones de UI para evitar el uso de 'window'
+  const uiActions = {
+    'edit-tag': (id) => {
+      const tag = state.tags.find(t => t.id === id);
+      if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
+        showToast("Esta etiqueta de sistema no se puede modificar", "error");
+        return;
+      }
+      if (tag) {
+        document.getElementById("tag-id").value = tag.id;
+        document.getElementById("tag-name").value = tag.name;
+        document.getElementById("tag-color").value = tag.color;
+        document.getElementById("tag-submit-btn").innerText = "Guardar";
+      }
+    },
+    'delete-tag': (id) => {
+      const tag = state.tags.find(t => t.id === id);
+      if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
+        showToast("Esta etiqueta de sistema no se puede eliminar", "error");
+        return;
+      }
+      showConfirmModal("¿Eliminar este tag de todas las notas? Esta acción no se puede deshacer.", () => {
+        mutations.deleteTag(id);
+        renderTagManager();
+        renderView();
+        showToast("Tag eliminado de todas las notas", "info");
+        updateUIStats();
+      });
+    },
+    'edit-category': (id) => {
+      const cat = state.categories.find(c => c.id === id);
+      if (cat) {
+        document.getElementById("category-id").value = cat.id;
+        document.getElementById("category-name").value = cat.name;
+        document.getElementById("category-color").value = cat.color;
+        document.getElementById("category-submit-btn").innerText = "Guardar";
+      }
+    },
+    'delete-category': (id) => {
+      showConfirmModal("¿Eliminar esta categoría? Las notas asociadas pasarán a 'Otros'.", () => {
+        mutations.deleteCategory(id);
+        renderTagManager(); // Asumiendo que es renderCategoryManager lo correcto aquí
+        renderView();
+        updateUIStats();
+        showToast("Categoría eliminada", "info");
+      });
+    },
+    'close-toast': (id, target) => {
+      const toast = target.closest('.toast');
+      if (toast) {
+        toast.remove();
+        if (document.querySelectorAll('.toast.high').length === 0) {
+          document.body.classList.remove("alarm-active");
+        }
+      }
     }
   };
 
-  window.deleteTag = (id) => {
-    const tag = state.tags.find(t => t.id === id);
-    if (tag && (tag.name === "Alarma" || tag.id === "tag-alarm-default")) {
-      showToast("Esta etiqueta de sistema no se puede eliminar", "error");
-      return;
-    }
+  // Delegación de eventos global
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
 
-    showConfirmModal("¿Eliminar este tag de todas las notas? Esta acción no se puede deshacer.", () => {
-      mutations.deleteTag(id);
-      renderTagManager();
-      renderView();
-      showToast("Tag eliminado de todas las notas", "info");
-      updateUIStats();
-    });
-  };
+    const action = target.dataset.action;
+    const id = target.dataset.id;
+
+    if (uiActions[action]) {
+      uiActions[action](id, target);
+    }
+  });
 
   // Category Manager
   const catModal = document.getElementById("category-manager-modal");
@@ -285,26 +325,6 @@ function setupGlobalEvents() {
     renderView();
     updateUIStats();
   });
-
-  window.editCategory = (id) => {
-    const cat = state.categories.find(c => c.id === id);
-    if (cat) {
-      document.getElementById("category-id").value = cat.id;
-      document.getElementById("category-name").value = cat.name;
-      document.getElementById("category-color").value = cat.color;
-      document.getElementById("category-submit-btn").innerText = "Guardar";
-    }
-  };
-
-  window.deleteCategory = (id) => {
-    showConfirmModal("¿Eliminar esta categoría? Las notas asociadas pasarán a 'Otros'.", () => {
-      mutations.deleteCategory(id);
-      renderCategoryManager();
-      renderView();
-      updateUIStats();
-      showToast("Categoría eliminada", "info");
-    });
-  };
 
   // Configuración y Reset
   const settingsModal = document.getElementById("settings-modal");
