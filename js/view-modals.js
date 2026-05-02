@@ -122,6 +122,7 @@ export function renderTagManager() {
 
 export function renderCategoryManager() {
   const container = document.getElementById("categories-list-container");
+  if (!container) return;
   container.innerHTML = state.categories
     .map( // Dynamic list
       (cat) => `

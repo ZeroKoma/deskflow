@@ -42,10 +42,6 @@
             <i class="fas fa-sticky-note"></i> <span data-t="nav_all_notes">Notas y Recordatorios</span>
             <span class="nav-badge" id="count-all">0</span>
           </button>
-          <button class="nav-item" id="manage-categories-btn">
-            <i class="fas fa-folder"></i> <span data-t="nav_manage_categories">Gestionar Categorías</span>
-            <span class="nav-badge" id="count-categories">0</span>
-          </button>
           <button class="nav-item" data-view="settings">
             <i class="fas fa-cog"></i> <span data-t="nav_settings">Ajustes</span>
           </button>
@@ -284,75 +280,6 @@
           </button>
           <button type="button" class="btn-danger" id="confirm-ok" data-t="conf_ok">
             Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Gestión de Categorías -->
-    <div id="category-manager-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 data-t="cat_mgr_title">Gestionar Categorías</h2>
-          <button
-            type="button"
-            class="close-icon-btn"
-            id="close-category-manager"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="tag-manager-body">
-          <form
-            id="category-form"
-            style="
-              display: flex;
-              gap: 10px;
-              margin-bottom: 1.5rem;
-              align-items: center;
-            "
-          >
-            <input type="hidden" id="category-id" />
-            <input
-              type="text"
-              id="category-name"
-              data-t-placeholder="cat_mgr_placeholder"
-              placeholder="Nueva categoría..."
-              required
-              style="flex: 1"
-            />
-            <input
-              type="color"
-              id="category-color"
-              value="#2563eb"
-              style="
-                width: 50px;
-                height: 42px;
-                padding: 0;
-                border-radius: 8px;
-                overflow: hidden;
-                border: 1px solid var(--border);
-                background: var(--bg-main) !important;
-              "
-            />
-            <button type="submit" class="btn-primary" id="category-submit-btn" data-t="btn_add">
-              Añadir
-            </button>
-          </form>
-          <div
-            id="categories-list-container"
-            style="max-height: 300px; overflow-y: auto"
-          >
-            <!-- Dynamic list -->
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button
-            type="button"
-            class="btn-primary"
-            id="close-category-manager-btn"
-          >
-            <span data-t="btn_close">Cerrar</span>
           </button>
         </div>
       </div>

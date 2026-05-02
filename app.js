@@ -314,6 +314,29 @@ function setupGlobalEvents() {
       if (idInput) idInput.value = "";
       if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus"></i>';
       renderTagManager();
+    } else if (e.target.id === "category-form") {
+      e.preventDefault();
+      const idInput = document.getElementById("category-id");
+      const nameInput = document.getElementById("category-name");
+      const colorInput = document.getElementById("category-color");
+      const submitBtn = document.getElementById("category-submit-btn");
+
+      const name = nameInput.value;
+      const color = colorInput.value;
+      const id = idInput.value;
+
+      if (id) {
+        mutations.updateCategory(id, { name, color });
+        showToast(t('toast_cat_updated'));
+      } else {
+        mutations.addCategory({ id: Date.now().toString(), name, color });
+        showToast(t('toast_cat_created'));
+      }
+
+      e.target.reset();
+      if (idInput) idInput.value = "";
+      if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus"></i>';
+      renderCategoryManager();
     }
   });
 
@@ -350,7 +373,7 @@ function setupGlobalEvents() {
         document.getElementById("category-id").value = cat.id;
         document.getElementById("category-name").value = cat.name;
         document.getElementById("category-color").value = cat.color;
-        document.getElementById("category-submit-btn").innerText = t('btn_save');
+        document.getElementById("category-submit-btn").innerHTML = '<i class="fas fa-save"></i>';
       }
     },
     'delete-category': (id) => {
@@ -394,35 +417,6 @@ function setupGlobalEvents() {
     if (uiActions[action]) {
       uiActions[action](id, target);
     }
-  });
-
-  // Category Manager
-  const catModal = document.getElementById("category-manager-modal");
-  document.getElementById("manage-categories-btn").addEventListener("click", () => {
-    document.getElementById("category-form").reset();
-    document.getElementById("category-id").value = "";
-    document.getElementById("category-submit-btn").innerText = t('btn_add');
-    renderCategoryManager();
-    catModal.style.display = "flex";
-    closeSidebarOnMobile();
-  });
-  document.getElementById("close-category-manager").onclick = () => catModal.style.display = "none";
-  document.getElementById("close-category-manager-btn").onclick = () => catModal.style.display = "none";
-
-  document.getElementById("category-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const id = document.getElementById("category-id").value;
-    const name = document.getElementById("category-name").value;
-    const color = document.getElementById("category-color").value;
-    if (id) {
-      mutations.updateCategory(id, { name, color });
-      showToast(t('toast_cat_updated'));
-    } else {
-      mutations.addCategory({ id: Date.now().toString(), name, color });
-      showToast(t('toast_cat_created'));
-    }
-    e.target.reset();
-    renderCategoryManager();
   });
 
   // Alarm switch control based on time

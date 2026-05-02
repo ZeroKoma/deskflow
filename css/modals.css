@@ -274,10 +274,21 @@ input:checked + .slider:before {
 
 /* --- Settings View Styles --- */
 .settings-section {
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
-    padding: var(--space-xl) !important;
+    padding: var(--space-2xl) !important;
     height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-section .column-title {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--space-m);
+    margin-bottom: var(--space-xl);
 }
 
 .settings-content {

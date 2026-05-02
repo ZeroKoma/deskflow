@@ -636,7 +636,7 @@ function renderSettings() {
         <h1 class="view-title">${t('nav_settings')}</h1>
         <p class="view-subtitle">${t('dash_subtitle')}</p>
 
-        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: var(--space-xl); margin-top: var(--space-xl);">
+        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-xl); margin-top: var(--space-xl);">
             
             <!-- Tag Management Section -->
             <section class="card settings-section">
@@ -665,13 +665,30 @@ function renderSettings() {
                 </div>
             </section>
 
-            <!-- Category Management (Placeholder for Step 2) -->
-            <section class="card settings-section" style="opacity: 0.7;">
+            <!-- Category Management Section -->
+            <section class="card settings-section">
                 <div class="column-title">
                     <h3 class="m-0"><i class="fas fa-folder"></i> ${t('cat_mgr_title')}</h3>
                 </div>
-                <div class="settings-content" style="text-align: center; padding: var(--space-xl); color: var(--text-muted); font-style: italic;">
-                    Integración en ajustes próximamente.<br>Usa el botón del sidebar por ahora.
+                <div class="settings-content">
+                    <form id="category-form" style="display: flex; gap: var(--space-m); margin-bottom: var(--space-xl); align-items: center;">
+                        <input type="hidden" id="category-id" />
+                        <input
+                          type="text"
+                          id="category-name"
+                          data-t-placeholder="cat_mgr_placeholder"
+                          placeholder="${t('cat_mgr_placeholder')}"
+                          required
+                          style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-main); color: var(--text-main);"
+                        />
+                        <input type="color" id="category-color" value="#2563eb" style="width: 50px; height: 38px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;" />
+                        <button type="submit" class="btn-primary" id="category-submit-btn" style="padding: 8px 16px;">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                    </form>
+                    <div id="categories-list-container" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-main);">
+                        <!-- Dynamic categories list -->
+                    </div>
                 </div>
             </section>
 
@@ -681,12 +698,12 @@ function renderSettings() {
                     <h3 class="m-0"><i class="fas fa-tools"></i> ${t('settings_data')}</h3>
                 </div>
                 <div class="settings-content" style="display: flex; flex-direction: column; gap: var(--space-l);">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-m);">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-m);">
                         <button data-action="export-data" class="btn-secondary" style="width: 100%">
-                            <i class="fas fa-file-export"></i> <span>${t('nav_export')}</span>
+                            <i class="fas fa-download"></i> <span>${t('nav_export')}</span>
                         </button>
                         <button data-action="import-data" class="btn-secondary" style="width: 100%">
-                            <i class="fas fa-file-import"></i> <span>${t('nav_import')}</span>
+                            <i class="fas fa-upload"></i> <span>${t('nav_import')}</span>
                         </button>
                     </div>
                     
@@ -711,6 +728,7 @@ function renderSettings() {
     </div>`;
 
   renderTagManager();
+  renderCategoryManager();
   // Load storage info
   import('./app-settings.js').then(module => {
     module.updateStorageInfoUI();
