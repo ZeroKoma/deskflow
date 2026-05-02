@@ -2,7 +2,7 @@ import { state, mutations } from './store.js';
 import { dataService } from './data-service.js';
 import { dateUtils, downloadFile } from './utils.js';
 import { showToast, showConfirmModal } from './view.js';
-import { t } from '../translations.js';
+import { t } from '../translations/translations.js';
 
 const APP_VERSION = "1.0";
 

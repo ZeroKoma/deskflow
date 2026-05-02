@@ -3,7 +3,7 @@ import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, 
 import { dateUtils, downloadFile } from './js/utils.js';
 import { startAlarmService } from './js/app-alarms.js';
 import * as settings from './js/app-settings.js';
-import { t } from './translations.js';
+import { t } from './translations/translations.js';
 
 document.addEventListener("DOMContentLoaded", init);
 

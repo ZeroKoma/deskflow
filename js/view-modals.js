@@ -1,6 +1,6 @@
 import { state, mutations, getters } from "./store.js";
 import { dateUtils } from "./utils.js";
-import { t } from "../translations.js";
+import { t } from "../translations/translations.js";
 
 export function openNoteModal(id = null, defaultDate = null) {
   const noteModal = document.getElementById("note-modal");

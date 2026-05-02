@@ -1,6 +1,6 @@
 import { state, getters } from "./store.js";
 import { dateUtils } from "./utils.js";
-import { t } from "../translations.js";
+import { t } from "../translations/translations.js";
 
 export const priorityLabels = {
   get high() { return t('priority_high') },

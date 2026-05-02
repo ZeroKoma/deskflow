@@ -285,6 +285,16 @@
   transform: none !important;
 }
 
+/* --- Estilo para Fines de Semana --- */
+.calendar-day.weekend {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .calendar-day.weekend {
+  background-color: rgba(0, 0, 0, 0.22) !important; /* Oscurece lo suficiente para resaltar sobre el fondo principal */
+}
+
 /* --- Responsive Cards & Grids --- */
 @media (max-width: 768px) {
   .dashboard-grid,

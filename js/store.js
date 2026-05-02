@@ -151,8 +151,10 @@ export const mutations = {
     const theme = await dataService.getPreference("deskflow_theme", "dark");
     state.theme = validators.theme(theme) ? theme : "dark";
 
-    const lang = await dataService.getPreference("deskflow_language", "es");
-    state.language = validators.language(lang) ? lang : "es";
+    const browserLang = (navigator.language || navigator.userLanguage || "es").split("-")[0];
+    const defaultFallback = validators.language(browserLang) ? browserLang : "es";
+    const lang = await dataService.getPreference("deskflow_language", defaultFallback);
+    state.language = validators.language(lang) ? lang : defaultFallback;
   },
 
   saveNotes() {

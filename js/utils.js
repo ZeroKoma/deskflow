@@ -22,7 +22,15 @@ export const dateUtils = {
     const locale = state.language === 'en' ? 'en-US' : 'es-ES';
     const dayName = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
     const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-    return `${capitalizedDay} ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${String(year).slice(-2)}`;
+
+    // Formateamos la fecha corta según el estándar del idioma seleccionado
+    const shortDate = date.toLocaleDateString(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit'
+    });
+
+    return `${capitalizedDay} ${shortDate}`;
   }
 };
 

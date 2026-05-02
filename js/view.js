@@ -1,6 +1,6 @@
 import { state, mutations, getters } from "./store.js";
 import { dateUtils } from "./utils.js";
-import { t } from "../translations.js";
+import { t } from "../translations/translations.js";
 import {
   priorityLabels,
   getCategoryInfo,
@@ -358,14 +358,21 @@ function renderCalendarGrid(focusDate, limit = null) {
   let html = "";
   const todayStr = dateUtils.getTodayStr();
   const locale = state.language === 'en' ? 'en-US' : 'es-ES';
+  const firstDayOfWeek = state.language === 'en' ? 0 : 1;
 
   if (state.calendarSubView === "month") {
-    // Añadir nombres de los días
-    const days = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-    days.forEach(
-      (d) =>
-        (html += `<div class="day-header" style="text-align:center; padding: 10px; background: var(--bg-main)">${d}</div>`),
-    );
+    // Generar nombres de los días de la semana dinámicamente según el idioma
+    const weekDays = [];
+    const baseDate = new Date(2021, 0, 3 + firstDayOfWeek); 
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(baseDate);
+      d.setDate(baseDate.getDate() + i);
+      weekDays.push(new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d));
+    }
+
+    weekDays.forEach(d => {
+      html += `<div class="day-header text-capitalize" style="text-align:center; padding: 10px; background: var(--bg-main)">${d}</div>`;
+    });
 
     const firstDay = new Date(
       state.currentYear,
@@ -378,34 +385,36 @@ function renderCalendarGrid(focusDate, limit = null) {
       0,
     ).getDate();
 
-    // Ajuste para que la semana empiece en Lunes (JS: 0=Dom, 1=Lun...)
-    const offset = firstDay === 0 ? 6 : firstDay - 1;
+    // Offset dinámico basado en el primer día de la semana
+    const offset = (firstDay - firstDayOfWeek + 7) % 7;
 
     for (let i = 0; i < offset; i++)
       html += `<div class="calendar-day empty"></div>`;
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = dateUtils.formatYYYYMMDD(
-        new Date(state.currentYear, state.currentMonth, day),
-      );
-      html += renderDayCell(day, dateStr, dateStr === todayStr);
+      const dObj = new Date(state.currentYear, state.currentMonth, day);
+      const dateStr = dateUtils.formatYYYYMMDD(dObj);
+      const isWeekend = dObj.getDay() === 0 || dObj.getDay() === 6;
+      html += renderDayCell(day, dateStr, dateStr === todayStr, false, null, isWeekend);
     }
   } else if (state.calendarSubView === "week") {
     const startOfWeek = new Date(focusDate);
     const day = focusDate.getDay();
-    const diff = focusDate.getDate() - day + (day === 0 ? -6 : 1);
+    const diff = focusDate.getDate() - ((day - firstDayOfWeek + 7) % 7);
     startOfWeek.setDate(diff);
     for (let i = 0; i < 7; i++) {
       const d = new Date(startOfWeek);
       d.setDate(startOfWeek.getDate() + i);
       const dateStr = dateUtils.formatYYYYMMDD(d);
       const label = `${new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d)} ${d.getDate()}`;
-      html += renderDayCell(label, dateStr, dateStr === todayStr, false, limit);
+      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+      html += renderDayCell(label, dateStr, dateStr === todayStr, false, limit, isWeekend);
     }
   } else {
     const dateStr = dateUtils.formatYYYYMMDD(focusDate);
     const label = `${new Intl.DateTimeFormat(locale, { weekday: "short" }).format(focusDate)} ${focusDate.getDate()}`;
-    html += renderDayCell(label, dateStr, dateStr === todayStr, true);
+    const isWeekend = focusDate.getDay() === 0 || focusDate.getDay() === 6;
+    html += renderDayCell(label, dateStr, dateStr === todayStr, true, null, isWeekend);
   }
   return html;
 }
@@ -588,7 +597,7 @@ function renderNoteList(title, data) {
                       const isPast = n.date && n.date < todayStr;
                       const expiredClass = isPast ? "expired" : "";
                       return `
-                <div class="card note-card-full priority-${n.priority} bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="Haz clic para editar">
+                <div class="card note-card-full priority-${n.priority} bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
                     <div class="flex-1 note-content-stack">
                         <div class="card-header-row">
                             <h3 class="m-0">${n.title}</h3>
@@ -604,7 +613,7 @@ function renderNoteList(title, data) {
                         <p class="note-desc">${n.description || t('no_desc')}</p>
                     </div>
                     <div class="card-actions-col">
-                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-fill" data-note-id="${n.id}" data-hint="Eliminar nota"><i class="fas fa-trash"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-fill" data-note-id="${n.id}" data-hint="${t('btn_delete')}"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`;
                     })
@@ -754,7 +763,7 @@ window.snoozeNote = (id) => {
       lastPreAlarmKey: null
     });
 
-    showToast("Alarma pospuesta 5 minutos", "info");
+    showToast(t('toast_snoozed'), "info");
   }
 };
 
