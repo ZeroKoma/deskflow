@@ -10,6 +10,9 @@
 /* --- Drag and Drop Interactions --- */
 .drag-zone.drag-over {
   position: relative;
+  transform: scale(1.02);
+  z-index: 10;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Evitar que los hijos de la zona de arrastre capturen eventos durante el drag */
@@ -19,20 +22,25 @@
 
 .drag-zone.zone-valid {
   /* Usamos box-shadow en lugar de border para evitar que la caja cambie de tamaño y parpadee */
-  box-shadow: inset 0 0 0 1px var(--low) !important;
-  border-color: transparent !important;
+  box-shadow: 0 0 0 3px var(--low), 0 10px 20px rgba(0,0,0,0.1) !important;
+  border-color: var(--low) !important;
+  background: rgba(16, 185, 129, 0.05) !important; /* Un toque de verde suave */
 }
 
 .drag-zone.zone-invalid {
-  box-shadow: inset 0 0 0 1px var(--high) !important;
-  border-color: transparent !important;
+  box-shadow: 0 0 0 3px var(--high) !important;
+  border-color: var(--high) !important;
   opacity: 0.8;
+  background: rgba(239, 68, 68, 0.05) !important;
 }
 
 /* Estado mientras se arrastra el elemento */
 .is-dragging {
   opacity: 0.4 !important;
   cursor: grabbing !important;
+  transform: scale(0.95);
+  filter: grayscale(0.5);
+  border-style: dashed !important;
 }
 
 .dashboard-note-item[draggable="true"],

@@ -780,23 +780,30 @@ window.handleNoteDragStart = (e, id) => {
   e.dataTransfer.setData("text/plain", id);
   e.dataTransfer.effectAllowed = "move";
 
-  // Añadir clase visual al elemento original
+  // Añadir clase visual al elemento original para que se vea "hueco"
   const target = e.target.closest('[draggable="true"]');
   if (target) target.classList.add('is-dragging');
 
-  // Crear un icono fantasma dinámico para el puntero
+  // Crear un elemento fantasma que incluya el título para mejor feedback en móviles
   const dragIcon = document.createElement('div');
   dragIcon.id = 'drag-ghost';
+  
   const isReminder = !!(note && note.date);
   const iconClass = isReminder ? 'fa-calendar-check' : 'fa-sticky-note';
-  
-  dragIcon.innerHTML = `<i class="fas ${iconClass}" style="color: white; background: var(--primary); padding: 12px; border-radius: 8px; font-size: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);"></i>`;
+  const noteTitle = note ? note.title : "Moviendo...";
+
+  dragIcon.innerHTML = `
+    <div style="background: var(--primary); color: white; padding: 10px 16px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 10px; border: 2px solid rgba(255,255,255,0.2);">
+        <i class="fas ${iconClass}" style="font-size: 1.2rem;"></i>
+        <span style="font-weight: 600; font-size: 0.9rem; white-space: nowrap;">${noteTitle.substring(0, 25)}${noteTitle.length > 25 ? '...' : ''}</span>
+    </div>`;
   dragIcon.style.position = 'fixed';
   dragIcon.style.top = '-1000px';
   dragIcon.style.zIndex = '9999';
   document.body.appendChild(dragIcon);
-  
-  e.dataTransfer.setDragImage(dragIcon, 25, 25);
+
+  // En móviles, el desplazamiento del icono ayuda a que no quede justo bajo el dedo (tapado)
+  e.dataTransfer.setDragImage(dragIcon, 20, 20);
 };
 
 window.handleNoteDragEnd = (e) => {
