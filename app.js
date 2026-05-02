@@ -1,4 +1,4 @@
-import { state, mutations } from './js/store.js';
+import { state, mutations, subscribe } from './js/store.js';
 import { renderView, updateUIStats, openNoteModal, showToast, renderTagManager, showConfirmModal, renderCategoryManager } from './js/view.js';
 import { dateUtils, downloadFile } from './js/utils.js';
 import { startAlarmService } from './js/app-alarms.js';
@@ -7,6 +7,12 @@ import * as settings from './js/app-settings.js';
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  // Suscribir la actualización de la UI al estado antes de cargar datos
+  subscribe(() => {
+    renderView();
+    updateUIStats();
+  });
+
   // FASE 6 — Esperar a que los datos se carguen desde IndexedDB
   await mutations.initStore();
 
@@ -15,8 +21,6 @@ async function init() {
   requestNotificationPermission();
   setFavicon();
   startAlarmService();
-  renderView();
-  updateUIStats();
 }
 
 function setFavicon() {
@@ -144,7 +148,6 @@ function setupGlobalEvents() {
       e.currentTarget.classList.add("active");
       state.allNotesPriorityFilter = null;
       state.currentView = view;
-      renderView();
       closeSidebarOnMobile();
     });
   });
@@ -164,7 +167,6 @@ function setupGlobalEvents() {
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       const allNotesBtn = document.querySelector('[data-view="all-notes"]');
       if (allNotesBtn) allNotesBtn.classList.add("active");
-      renderView();
       closeSidebarOnMobile();
     });
   });
@@ -220,8 +222,6 @@ function setupGlobalEvents() {
     document.getElementById("tag-id").value = "";
     document.getElementById("tag-submit-btn").innerText = "Añadir";
     renderTagManager();
-    renderView();
-    updateUIStats();
   });
 
   // Centralización de acciones de UI para evitar el uso de 'window'
@@ -248,9 +248,7 @@ function setupGlobalEvents() {
       showConfirmModal("¿Eliminar este tag de todas las notas? Esta acción no se puede deshacer.", () => {
         mutations.deleteTag(id);
         renderTagManager();
-        renderView();
         showToast("Tag eliminado de todas las notas", "info");
-        updateUIStats();
       });
     },
     'edit-category': (id) => {
@@ -265,9 +263,7 @@ function setupGlobalEvents() {
     'delete-category': (id) => {
       showConfirmModal("¿Eliminar esta categoría? Las notas asociadas pasarán a 'Otros'.", () => {
         mutations.deleteCategory(id);
-        renderTagManager(); // Asumiendo que es renderCategoryManager lo correcto aquí
-        renderView();
-        updateUIStats();
+        renderCategoryManager();
         showToast("Categoría eliminada", "info");
       });
     },
@@ -322,8 +318,6 @@ function setupGlobalEvents() {
     }
     e.target.reset();
     renderCategoryManager();
-    renderView();
-    updateUIStats();
   });
 
   // Configuración y Reset
@@ -493,6 +487,4 @@ function handleFormSubmit(e) {
   showToast(id ? `${typeLabel} actualizado` : `${typeLabel} creado`);
   
   document.getElementById("note-modal").style.display = "none";
-  renderView();
-  updateUIStats();
 }

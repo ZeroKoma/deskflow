@@ -1,7 +1,7 @@
 import { state, mutations } from './store.js';
 import { storage } from './storage.js';
 import { dateUtils, downloadFile } from './utils.js';
-import { showToast, renderView, updateUIStats, showConfirmModal } from './view.js';
+import { showToast, showConfirmModal } from './view.js';
 
 const APP_VERSION = "1.0";
 
@@ -63,16 +63,12 @@ export function importData(file, onThemeUpdate) {
         };
 
         const finalizeImport = (msg) => {
-          renderView();
-          updateUIStats();
           showToast(msg, "info", null, {
             label: "Deshacer",
             callback: () => {
               mutations.restoreState(stateBackup);
               if (stateBackup.theme) mutations.setTheme(stateBackup.theme);
               if (onThemeUpdate) onThemeUpdate();
-              renderView();
-              updateUIStats();
               showToast("Cambios revertidos correctamente");
             }
           });
@@ -148,8 +144,6 @@ export function deletePastNotes() {
   showConfirmModal(`¿Eliminar ${pastNotesCount} notas pasadas?`, () => {
     mutations.deletePastNotes(todayStr);
     showToast("Notas eliminadas", "info");
-    renderView(); 
-    updateUIStats();
     closeSettingsModal();
   });
 }
@@ -158,8 +152,6 @@ export function resetApp() {
   showConfirmModal("¿BORRAR TODO? Esta acción es irreversible.", () => {
     mutations.resetApp();
     showToast("Aplicación reseteada correctamente", "info");
-    renderView(); 
-    updateUIStats();
     closeSettingsModal();
   });
 }

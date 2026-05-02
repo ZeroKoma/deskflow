@@ -1,5 +1,49 @@
 import { storage } from "./storage.js";
 
+const listeners = new Set();
+
+/**
+ * Suscribe una función para que se ejecute cada vez que el estado cambie.
+ */
+export const subscribe = (callback) => {
+  listeners.add(callback);
+};
+
+let notifyPending = false;
+/**
+ * Notifica a los suscriptores. Usa microtareas para agrupar cambios (debouncing).
+ */
+const notify = () => {
+  if (notifyPending) return;
+  notifyPending = true;
+  queueMicrotask(() => {
+    listeners.forEach(callback => callback());
+    notifyPending = false;
+  });
+};
+
+const proxyHandler = {
+  get(target, key) {
+    const value = target[key];
+    if (value !== null && typeof value === 'object') {
+      return new Proxy(value, proxyHandler);
+    }
+    return value;
+  },
+  set(target, key, value) {
+    if (target[key] !== value) {
+      target[key] = value;
+      notify();
+    }
+    return true;
+  },
+  deleteProperty(target, key) {
+    const result = delete target[key];
+    if (result) notify();
+    return result;
+  }
+};
+
 const defaultCategories = [
   { id: "Categoría 1", name: "Categoría 1", color: "#2563eb" },
   { id: "Categoría 2", name: "Categoría 2", color: "#10b981" },
@@ -35,7 +79,7 @@ const validators = {
   theme: (t) => ["light", "dark"].includes(t)
 };
 
-export const state = {
+const _state = {
   notes: [],
   tags: [...defaultTags],
   categories: [...defaultCategories],
@@ -52,6 +96,8 @@ export const state = {
   allNotesPriorityFilter: null,
   allNotesFilterExpired: false,
 };
+
+export const state = new Proxy(_state, proxyHandler);
 
 export const mutations = {
   async initStore() {
@@ -70,17 +116,23 @@ export const mutations = {
   },
 
   saveNotes() {
-    const valid = state.notes.filter(validators.note);
+    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    const rawNotes = JSON.parse(JSON.stringify(state.notes));
+    const valid = rawNotes.filter(validators.note);
     storage.saveAll("notes", valid).catch(console.error);
   },
 
   saveTags() {
-    const valid = state.tags.filter(validators.tag);
+    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    const rawTags = JSON.parse(JSON.stringify(state.tags));
+    const valid = rawTags.filter(validators.tag);
     storage.saveAll("tags", valid).catch(console.error);
   },
 
   saveCategories() {
-    const valid = state.categories.filter(validators.category);
+    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    const rawCategories = JSON.parse(JSON.stringify(state.categories));
+    const valid = rawCategories.filter(validators.category);
     storage.saveAll("categories", valid).catch(console.error);
   },
 

@@ -630,7 +630,6 @@ window.clearPriorityFilter = () => {
   state.allNotesFilterNoDate = false;
   state.allNotesFilterExpired = false;
   state.allNotesFilterWithAlarm = false;
-  renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
   state.allNotesFilterAll = type === "all";
@@ -638,7 +637,6 @@ window.toggleAllNotesFilter = (type, val) => {
   state.allNotesFilterNoDate = type === "noDate";
   state.allNotesFilterExpired = type === "expired";
   state.allNotesFilterWithAlarm = type === "withAlarm";
-  renderView();
 };
 window.seeAllNoDateNotes = () => {
   state.currentView = "all-notes";
@@ -654,7 +652,6 @@ window.seeAllNoDateNotes = () => {
     .forEach((b) => b.classList.remove("active"));
   const allNotesBtn = document.querySelector('[data-view="all-notes"]');
   if (allNotesBtn) allNotesBtn.classList.add("active");
-  renderView();
 };
 window.seeFullWeek = () => {
   state.currentView = "calendar";
@@ -665,7 +662,6 @@ window.seeFullWeek = () => {
     .forEach((b) => b.classList.remove("active"));
   const calendarBtn = document.querySelector('[data-view="calendar"]');
   if (calendarBtn) calendarBtn.classList.add("active");
-  renderView();
 };
 window.goToday = () => {
   const now = new Date();
@@ -675,7 +671,6 @@ window.goToday = () => {
     now.getDate(),
   );
   state.calendarSubView = "day";
-  renderView();
 };
 window.setSubView = (v) => {
   const now = new Date();
@@ -685,7 +680,6 @@ window.setSubView = (v) => {
     now.getDate(),
   );
   state.calendarSubView = v;
-  renderView();
 };
 window.selectDayView = (d) => {
   const [y, m, day] = d.split("-").map(Number);
@@ -699,16 +693,12 @@ window.selectDayView = (d) => {
     .forEach((b) => b.classList.remove("active"));
   const calendarBtn = document.querySelector('[data-view="calendar"]');
   if (calendarBtn) calendarBtn.classList.add("active");
-
-  renderView();
 };
 window.deleteNote = (id) => {
   showConfirmModal(
     "¿Estás seguro de que deseas eliminar esta nota permanentemente?",
     () => {
       mutations.deleteNote(id);
-      updateUIStats();
-      renderView();
       showToast("Nota eliminada correctamente", "info");
       document.getElementById("note-modal").style.display = "none";
     },
@@ -733,7 +723,6 @@ window.navigateCalendar = (diff) => {
     date.getMonth(),
     date.getDate(),
   );
-  renderView();
 };
 
 window.snoozeNote = (id) => {
@@ -767,7 +756,6 @@ window.snoozeNote = (id) => {
         document.body.classList.remove("alarm-active");
       }
     }
-    renderView();
     showToast("Alarma pospuesta 5 minutos", "info");
   }
 };
@@ -868,8 +856,6 @@ window.handleNoteDrop = (e) => {
   }
 
   mutations.updateNote(id, updatedNote);
-  renderView();
-  updateUIStats();
 
   // Feedback dinámico según la conversión
   let msg = `Movido al ${dateUtils.formatDisplayDate(targetDate)}`;
