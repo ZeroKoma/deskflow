@@ -427,64 +427,27 @@ function setupGlobalEvents() {
 function handleFormSubmit(e) {
   e.preventDefault();
   const id = document.getElementById('note-id').value;
-  const timeValue = document.getElementById("time").value;
-  const dateValue = document.getElementById("date").value;
-  const existingNote = id ? state.notes.find(n => n.id === id) : null;
-  const todayStr = dateUtils.getTodayStr();
+  const existing = id ? state.notes.find(n => n.id === id) : null;
 
-  // Si no hay fecha seleccionada, no aplicamos validaciones de tiempo.
-  // Esto permite que las "notas" (sin fecha) se guarden con cualquier hora.
-  if (dateValue === "") {
-    // No hay fecha, se omite la validación de tiempo.
-  }
-  // Si hay fecha, aplicamos las validaciones de recordatorio.
-  else {
-    // 1. No permitir fechas pasadas
-    if (dateValue < todayStr) {
-      showToast("No se pueden programar recordatorios en fechas pasadas", "error");
-      return;
-    }
-
-    // 2. Si la fecha es hoy, la hora no puede ser anterior a la actual
-    if (dateValue === todayStr && timeValue && timeValue.slice(0, 5) < `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`) {
-      showToast("No puedes programar un recordatorio para una hora que ya pasó hoy", "error");
-      return;
-    }
-  }
-
-  const selectedTags = Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value);
-  const isAlarmActive = document.getElementById("alarm").checked;
-
-  const alarmTag = state.tags.find(t => t.name === "Alarma");
-
-  // Sincronizar automáticamente el tag "Alarma" según el estado del checkbox
-  if (alarmTag) {
-    const tagIndex = selectedTags.indexOf(alarmTag.id);
-    if (isAlarmActive) {
-      if (tagIndex === -1) selectedTags.push(alarmTag.id);
-    } else {
-      if (tagIndex !== -1) selectedTags.splice(tagIndex, 1);
-    }
-  }
-
-  const noteData = {
-    id: id || Date.now().toString(),
+  const formData = {
     title: document.getElementById("title").value,
     date: document.getElementById("date").value,
     time: document.getElementById("time").value,
     priority: document.getElementById("priority").value,
     category: document.getElementById("category").value,
     description: document.getElementById("description").value,
-    alarm: isAlarmActive,
-    tags: selectedTags,
-    lastAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastAlarmKey : null,
-    lastPreAlarmKey: (existingNote && existingNote.time === timeValue && existingNote.date === dateValue) ? existingNote.lastPreAlarmKey : null
+    alarm: document.getElementById("alarm").checked,
+    tags: Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value),
+    // Preservamos las llaves de alarmas; el store decidirá si resetearlas si cambia la fecha/hora
+    lastAlarmKey: existing ? existing.lastAlarmKey : null,
+    lastPreAlarmKey: existing ? existing.lastPreAlarmKey : null
   };
 
-  id ? mutations.updateNote(id, noteData) : mutations.addNote(noteData);
-  
-  const typeLabel = noteData.date ? "Recordatorio" : "Nota";
-  showToast(id ? `${typeLabel} actualizado` : `${typeLabel} creado`);
-  
-  document.getElementById("note-modal").style.display = "none";
+  try {
+    id ? mutations.updateNote(id, formData) : mutations.addNote(formData);
+    showToast(id ? "Cambios guardados" : (formData.date ? "Recordatorio creado" : "Nota creada"));
+    document.getElementById("note-modal").style.display = "none";
+  } catch (error) {
+    showToast(error.message, "error");
+  }
 }

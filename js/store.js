@@ -1,4 +1,5 @@
 import { storage } from "./storage.js";
+import { dateUtils } from "./utils.js";
 
 const listeners = new Set();
 
@@ -79,6 +80,40 @@ const validators = {
   theme: (t) => ["light", "dark"].includes(t)
 };
 
+/**
+ * Validación de reglas de negocio para Notas/Recordatorios
+ */
+const validateNoteBusinessRules = (note) => {
+  if (!note.title || note.title.trim().length === 0) {
+    return { valid: false, error: "El título es obligatorio" };
+  }
+
+  if (note.date) {
+    const todayStr = dateUtils.getTodayStr();
+    if (note.date < todayStr) {
+      return { valid: false, error: "No se pueden programar recordatorios en fechas pasadas" };
+    }
+
+    if (note.date === todayStr && note.time) {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      if (note.time.slice(0, 5) < currentTime) {
+        return { valid: false, error: "No puedes programar un recordatorio para una hora que ya pasó hoy" };
+      }
+    }
+  }
+  return { valid: true };
+};
+
+const syncAlarmTag = (note) => {
+  if (!note.tags) note.tags = [];
+  const alarmTag = state.tags.find(t => t.name === "Alarma");
+  if (!alarmTag) return;
+  const tagIndex = note.tags.indexOf(alarmTag.id);
+  if (note.alarm) { if (tagIndex === -1) note.tags.push(alarmTag.id); }
+  else { if (tagIndex !== -1) note.tags.splice(tagIndex, 1); }
+};
+
 const _state = {
   notes: [],
   tags: [...defaultTags],
@@ -137,8 +172,14 @@ export const mutations = {
   },
 
   addNote(noteData) {
-    if (!validators.note(noteData)) return;
-    state.notes.push(noteData);
+    const validation = validateNoteBusinessRules(noteData);
+    if (!validation.valid) throw new Error(validation.error);
+
+    const note = { ...noteData, id: noteData.id || Date.now().toString() };
+    if (!validators.note(note)) return;
+
+    syncAlarmTag(note);
+    state.notes.push(note);
     this.saveNotes();
   },
 
@@ -161,8 +202,24 @@ export const mutations = {
   },
 
   updateNote(id, noteData) {
-    if (!validators.note(noteData)) return;
-    state.notes = state.notes.map((n) => (n.id === id ? noteData : n));
+    const validation = validateNoteBusinessRules(noteData);
+    if (!validation.valid) throw new Error(validation.error);
+
+    const existingIndex = state.notes.findIndex(n => n.id === id);
+    if (existingIndex === -1) return;
+
+    const existing = state.notes[existingIndex];
+    const updated = { ...noteData, id };
+    if (!validators.note(updated)) return;
+
+    // Si cambió fecha u hora, reseteamos el rastreo de alarmas para que vuelvan a sonar
+    if (existing.date !== updated.date || existing.time !== updated.time) {
+      updated.lastAlarmKey = null;
+      updated.lastPreAlarmKey = null;
+    }
+
+    syncAlarmTag(updated);
+    state.notes[existingIndex] = updated;
     this.saveNotes();
   },
 
