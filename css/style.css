@@ -106,65 +106,6 @@
   border: none !important;
 }
 
-/* Calendar & Dashboard Layouts */
-.drag-zone.drag-over {
-  position: relative;
-}
-
-.drag-zone.zone-valid {
-  /* Usamos box-shadow en lugar de border para evitar que la caja cambie de tamaño y parpadee */
-  box-shadow: inset 0 0 0 1px var(--low) !important;
-  border-color: transparent !important;
-}
-
-.drag-zone.zone-invalid {
-  box-shadow: inset 0 0 0 1px var(--high) !important;
-  border-color: transparent !important;
-  opacity: 0.8;
-}
-
-.dashboard-note-item[draggable="true"],
-.note-pill[draggable="true"],
-.card[draggable="true"] {
-  cursor: grab;
-}
-
-.dashboard-note-item:active,
-.note-pill:active,
-.card:active {
-  cursor: grabbing;
-}
-
-/* Tags UI */
-.tag-selection-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 5px;
-}
-
-.tag-chip {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tag-chip.protected-tag {
-  cursor: not-allowed;
-}
-
-.tag-chip.inactive {
-  opacity: 0.5;
-  filter: grayscale(0.8);
-}
-
 .modal {
   display: none;
   position: fixed;
@@ -426,56 +367,6 @@ input:checked + .slider:before {
   transform: scale(1);
 }
 
-.category-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.tag-pill {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 1px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid transparent;
-}
-
-/* Notas Caducadas / Archivo */
-.card.expired,
-.dashboard-note-item.expired,
-.note-pill.expired {
-  opacity: 0.5 !important;
-  filter: grayscale(1) !important;
-  cursor: default;
-}
-
-.card.expired,
-.dashboard-note-item.expired {
-  border-style: dashed !important;
-  border-top-color: var(--text-muted) !important;
-  border-right-color: var(--text-muted) !important;
-  border-bottom-color: var(--text-muted) !important;
-  background: var(
-    --bg-main
-  ) !important; /* Usamos background para anular el inline style */
-  box-shadow: none !important;
-  transform: none !important;
-}
-
-/* Evitar que los hijos de la zona de arrastre capturen eventos durante el drag */
-.drag-zone.drag-over * {
-  pointer-events: none;
-}
-
 /* Fila superior móvil oculta en desktop */
 .mobile-header-row {
   display: none;
@@ -714,26 +605,6 @@ input:checked + .slider:before {
   .main-content {
     height: auto;
     overflow-y: visible; /* El scroll lo manejará el body en móvil */
-  }
-
-  /* Paso 5: Componentes Pequeños y Ajustes de UI */
-  .dashboard-grid,
-  .notes-grid-300 {
-    grid-template-columns: 1fr;
-  }
-
-  .note-card-full {
-    flex-direction: column;
-    padding: var(--space-l);
-  }
-
-  .card-actions-col {
-    margin-left: 0;
-    margin-top: var(--space-m);
-    width: 100%;
-    justify-content: flex-end;
-    border-top: 1px solid var(--border);
-    padding-top: var(--space-m);
   }
 
   .modal-content {
