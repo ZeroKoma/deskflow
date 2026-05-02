@@ -161,11 +161,29 @@
   background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border);
   display: flex;
-  justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 1200;
+}
+
+/* Reordenación para escritorio: 
+   1. Hamburguesa (Izquierda) 
+   2. Buscador + Checks (Centro) 
+   3. Botón Crear (Derecha - dentro de mobile-header-row) 
+*/
+.top-bar > .hamburger-btn.desktop-menu-btn {
+  order: 1;
+}
+
+.top-bar > .flex-center-gap-20 {
+  order: 2;
+  flex: 1;
+  justify-content: center;
+}
+
+.top-bar > .mobile-header-row {
+  order: 3;
 }
 
 /* --- Generic Layout Helpers --- */
@@ -187,3 +205,139 @@
 .view-title { margin-bottom: var(--space-s); }
 .view-subtitle { color: var(--text-muted); margin-bottom: var(--space-l); }
 .view-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2xl); }
+
+/* --- Responsive Layout --- */
+@media (max-width: 768px) {
+  :root {
+    --container-h-padding: var(--space-l);
+  }
+
+  .view-container-padding {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  .app-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 2000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 10px 0 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-l);
+  }
+
+  .nav-item {
+    font-size: 1rem;
+    padding: 1rem var(--space-l);
+  }
+
+  .top-bar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-l);
+    padding: var(--space-m) var(--container-h-padding);
+    height: auto;
+  }
+
+  .top-bar .mobile-header-row {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start; /* Cambiamos a flex-start para controlar grupos con márgenes */
+    width: 100%;
+    order: 1 !important;
+    gap: var(--space-l);
+  }
+
+  .search-content-wrapper {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    order: 2;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    overflow: hidden;
+  }
+
+  .top-bar.search-active .search-content-wrapper {
+    max-height: 160px;
+    opacity: 1;
+    visibility: visible;
+    margin-top: var(--space-s);
+    margin-bottom: var(--space-m);
+  }
+
+  /* Ocultar solo las acciones para dar espacio al buscador expandido sin quitar el logo */
+  .top-bar.search-active .actions {
+    display: none !important;
+  }
+
+  .mobile-logo.logo {
+    position: static;
+    transform: none;
+    margin-bottom: 0;
+    font-size: 1.5rem;
+    margin-right: auto !important; /* El margen auto empuja los siguientes elementos a la derecha */
+    align-items: flex-start;
+  }
+
+  .mobile-logo.logo div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .top-bar .flex-center-gap-20 {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-l);
+    width: 100%;
+  }
+
+  /* Alinear los filtros (checks) al centro en móvil */
+  .top-bar .flex-center-gap-20 > div {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-xl);
+  }
+
+  .view-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-l);
+  }
+
+  .main-content {
+    height: auto;
+    overflow-y: visible;
+  }
+  
+  /* Tipografía */
+  .view-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+  .view-subtitle { font-size: 0.95rem; line-height: 1.4; opacity: 0.9; }
+  h2 { font-size: 1.3rem !important; }
+  h3 { font-size: 1.15rem !important; }
+}

@@ -120,6 +120,24 @@
 @media (max-width: 768px) {
   .calendar-header {
     padding: var(--space-m) var(--container-h-padding);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    height: auto;
+    gap: var(--space-l);
+  }
+
+  .calendar-header .flex-center-gap-20,
+  .calendar-header .flex-center-gap-15 {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .calendar-header h2 {
+    width: 100%;
+    margin-bottom: var(--space-s) !important;
   }
 
   .calendar-grid {

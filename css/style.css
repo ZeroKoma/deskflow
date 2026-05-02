@@ -4,6 +4,7 @@
 @import "components/cards.css";
 @import "calendar.css";
 @import "components/notifications.css";
+@import "modals.css";
 
 /* --- Calendar, Modals, Forms and UI States remain here until next steps --- */
 
@@ -89,15 +90,20 @@
   display: flex;
   align-items: center;
   gap: var(--space-m);
-  width: 300px;
+  width: 320px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
 .search-box input {
   background: transparent;
   border: none !important;
   outline: none;
+  padding: 0 !important; /* Evita que herede padding de modals.css */
+  height: 32px !important; /* Altura fija para consistencia */
   color: var(--text-main);
   width: 100%;
+  font-size: 0.9rem;
 }
 
 .search-box input:focus {
@@ -106,229 +112,9 @@
   border: none !important;
 }
 
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 3000;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Asegura que el modal de confirmación esté sobre otros modales */
-#confirm-modal {
-  z-index: 3100;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.close-icon-btn {
-  background: transparent;
-  border: none;
+.search-box i {
   color: var(--text-muted);
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.close-icon-btn:hover {
-  color: var(--high);
-  transform: rotate(90deg);
-}
-
-.modal-content {
-  background: var(--bg-sidebar);
-  padding: 2.5rem;
-  border-radius: var(--radius);
-  width: 90%;
-  max-width: 550px;
-  animation: slideIn 0.3s ease;
-  box-shadow:
-    0 20px 25px -5px rgb(0 0 0 / 0.1),
-    0 8px 10px -6px rgb(0 0 0 / 0.1);
-}
-
-.form-group {
-  margin-bottom: var(--space-xl);
-}
-
-.form-group label,
-.tag-manager-body label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: var(--space-s);
-  display: flex;
-  align-items: center;
-  gap: var(--space-s);
-}
-
-/* Selectores globales para inputs, asegurando consistencia en todo el proyecto */
-input[type="text"],
-input[type="date"],
-input[type="time"],
-select,
-textarea {
-  width: 100%;
-  padding: var(--space-m) var(--space-l);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-main);
-  color: var(--text-main);
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-}
-
-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1rem;
-  padding-right: 2.5rem;
-  cursor: pointer;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-  background: var(--bg-sidebar);
-}
-
-/* Estilos específicos para el formulario de Tags */
-#tag-form {
-  display: flex;
-  gap: var(--space-m);
-  margin-bottom: var(--space-xl);
-  align-items: center; /* Alineación vertical central perfecta */
-}
-
-input[type="color"] {
-  padding: 0;
-  height: 42px; /* Altura calculada para igualar al input de texto y botón */
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background-color: var(--bg-main) !important;
-  cursor: pointer;
-  width: 50px;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 4px;
-}
-input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 4px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-xl);
-}
-
-.alarm-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-m);
-  background: var(--bg-main);
-  padding: var(--space-l);
-  border-radius: 8px;
-  margin-top: var(--space-l);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-m);
-  margin-top: var(--space-2xl);
-}
-
-/* Estilo Switch para Alarma */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
-  margin-bottom: 0 !important;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--border);
-  transition: 0.4s;
-  border-radius: 34px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 14px;
-  width: 14px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: var(--primary);
-}
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-.switch input:disabled + .slider {
-  background-color: var(--border);
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.alarm-text {
   font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-main);
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 
 /* Checkboxes Redondos Personalizados */
@@ -367,9 +153,42 @@ input:checked + .slider:before {
   transform: scale(1);
 }
 
-/* Fila superior móvil oculta en desktop */
-.mobile-header-row {
-  display: none;
+/* Pero ocultamos los elementos que son estrictamente de la interfaz móvil cuando estamos en escritorio */
+@media (min-width: 769px) {
+  #mobile-menu-btn, 
+  .mobile-logo {
+    display: none !important;
+  }
+
+  .mobile-header-row {
+    display: flex;
+    align-items: center;
+    width: auto;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-bar {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-m);
+    padding: var(--space-m);
+    border-radius: var(--radius);
+    width: 100%;
+  }
+
+  .filters-bar .flex-grow {
+    display: none;
+  }
+
+  .search-box {
+    width: 100%;
+    background: var(--bg-sidebar); /* Contraste en móvil */
+    border: 1px solid var(--border);
+    padding: 4px 15px;
+  }
 }
 
 /* Overlay para el sidebar en móvil */
@@ -394,229 +213,4 @@ input:checked + .slider:before {
   visibility: visible;
 }
 
-/* --- Media Queries de Ajuste Global --- */
-@media (max-width: 768px) {
-  :root {
-    --container-h-padding: var(
-      --space-l
-    ); /* Reducimos de 32px a 16px en móviles */
-  }
-
-  .view-container-padding {
-    padding-top: var(--space-xl);
-    padding-bottom: var(--space-xl);
-  }
-
-  /* --- Tipografía Responsiva (UX Expert Mix) --- */
-  .view-title {
-    font-size: 1.6rem; /* Un poco más de presencia que el 1.5 anterior */
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin-bottom: var(--space-xs);
-  }
-
-  .view-subtitle {
-    font-size: 0.95rem;
-    line-height: 1.4;
-    margin-bottom: var(--space-xl);
-    opacity: 0.9;
-  }
-
-  .app-container {
-    flex-direction: column;
-    height: auto;
-    min-height: 100vh;
-  }
-
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 100%;
-    z-index: 2000; /* Prioridad máxima sobre todo */
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    box-shadow: 10px 0 15px rgba(0, 0, 0, 0.1);
-    padding: var(--space-xl) var(--container-h-padding); /* Ajuste de padding para el botón de cierre */
-    position: fixed; /* Ya es fixed, pero lo reafirmo para el contexto */
-    /* No es necesario position: relative aquí si el botón de cierre es hijo directo y se posiciona con top/right */
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .logo {
-    /* Ajustar el margen del logo para que no choque con el botón de cierre */
-    font-size: 1.5rem;
-    margin-bottom: var(--space-l);
-    font-size: 1.5rem;
-  }
-
-  /* Ajuste de encabezados globales en móvil */
-  h2 {
-    font-size: 1.3rem !important;
-  }
-  h3 {
-    font-size: 1.15rem !important;
-  }
-
-  .nav-item {
-    font-size: 1rem;
-    padding: 1rem var(--space-l);
-  } /* Mejor touch target */
-
-  .top-bar,
-  .calendar-header {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between; /* Lupa a la izquierda, Crear a la derecha */
-    align-items: center;
-    gap: var(--space-l);
-    padding: var(--space-m) var(--container-h-padding) 0
-      var(--container-h-padding);
-    height: auto;
-  }
-
-  .mobile-header-row {
-    width: 100%;
-    order: 1;
-  }
-
-  .top-bar .actions {
-    width: auto;
-  }
-
-  .search-content-wrapper {
-    display: flex !important;
-    flex-direction: column;
-    width: 100%;
-    order: 4;
-    max-height: 0;
-    opacity: 0;
-    visibility: hidden;
-    margin-top: 0;
-    margin-bottom: 0;
-    overflow: hidden;
-    transition:
-      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.3s ease,
-      margin 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-      visibility 0.35s;
-  }
-
-  /* Estado expandido */
-  .top-bar.search-active .search-content-wrapper {
-    max-height: 160px;
-    opacity: 1;
-    visibility: visible;
-    margin-top: var(--space-s);
-    margin-bottom: var(--space-m);
-  }
-
-  .top-bar.search-active .search-toggle-btn {
-    color: var(--high);
-    align-self: flex-start; /* Alinea la X con la parte superior del buscador */
-    margin-top: 4px;
-  }
-
-  .top-bar.search-active .actions {
-    display: none;
-  }
-
-  .top-bar.search-active .actions .btn-primary {
-    width: 100%;
-  }
-
-  .mobile-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    gap: var(--space-l);
-  }
-
-  .mobile-logo.logo {
-    position: static;
-    transform: none;
-    margin-bottom: 0;
-    font-size: 1.5rem;
-    margin-right: auto;
-    align-items: flex-start;
-  }
-
-  .mobile-logo.logo div {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--space-s);
-  }
-
-  .top-bar .flex-center-gap-20,
-  .calendar-header .flex-center-gap-20 {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-l);
-  }
-
-  .calendar-header .flex-center-gap-15 {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: var(--space-s);
-  }
-
-  /* Centrar switches de búsqueda en móvil */
-  .top-bar .flex-center-gap-20 > div:last-child {
-    justify-content: center;
-  }
-
-  .search-box {
-    width: 100%;
-  }
-
-  .top-bar .actions .btn-primary {
-    padding: 0.5rem 1rem; /* Botón pequeño */
-    width: auto;
-  }
-
-  /* Eliminar el bloqueo de ancho en los filtros de la lista de notas */
-  .filters-bar {
-    min-width: 0;
-    flex-wrap: wrap;
-    gap: var(--space-m);
-    padding: var(--space-m);
-    border-radius: var(--radius);
-  }
-
-  .filters-bar .flex-grow {
-    display: none;
-  }
-
-  .view-header-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-l);
-  }
-
-  .main-content {
-    height: auto;
-    overflow-y: visible; /* El scroll lo manejará el body en móvil */
-  }
-
-  .modal-content {
-    padding: var(--space-l);
-    width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0; /* Los form-groups ya tienen su propio margen inferior */
-  }
-
-}
+/* Las Media Queries han sido movidas a sus componentes respectivos (layout.css, calendar.css, etc.) */
