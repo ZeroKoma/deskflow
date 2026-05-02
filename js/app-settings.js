@@ -50,7 +50,7 @@ export function importData(file, onThemeUpdate) {
       }
 
       const processImport = () => {
-        // Backup para "Deshacer"
+        // Backup for "Undo"
         const stateBackup = {
           notes: JSON.parse(JSON.stringify(state.notes)),
           tags: JSON.parse(JSON.stringify(state.tags)),
@@ -76,7 +76,7 @@ export function importData(file, onThemeUpdate) {
           closeSettings();
         };
 
-        // Comprobar si la aplicación está en su estado inicial (sin datos creados por el usuario)
+        // Check if the application is in its initial state (no user-created data)
         const isInitialState = state.notes.length === 0 && 
                                state.tags.length === 1 && 
                                state.categories.length === 4;
@@ -104,7 +104,7 @@ export function importData(file, onThemeUpdate) {
         }
       };
 
-      // Validación de versión
+      // Version validation
       if (!data.version || data.version !== APP_VERSION) {
         let warning = !data.version 
           ? t('import_warn_no_version') 

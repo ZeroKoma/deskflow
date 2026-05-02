@@ -1,2 +1,2 @@
-// Este archivo ha sido refactorizado en módulos dentro de la carpeta /src
-// El punto de entrada principal ahora es src/app.js
+// This file has been refactored into modules inside the /js folder
+// The main entry point is now app.js

@@ -56,7 +56,7 @@ export function showToast(msg, type = "info", noteId = null, action = null) {
   }
 
   if (!actionButtons && action && action.label) {
-    actionButtons = `<div style="display: flex; gap: 10px; margin-top: 10px;">
+    actionButtons = `<div style="display: flex; gap: 10px; margin-top: 10px;"> <!-- Action buttons for toast -->
         <button id="toast-action-btn" class="btn-secondary" style="font-size: 0.8rem; padding: 4px 10px; width: 100%; border: 1px solid var(--border);"><i class="fas fa-undo"></i> ${action.label}</button>
     </div>`;
   }
@@ -78,8 +78,8 @@ export function showToast(msg, type = "info", noteId = null, action = null) {
     if (btn) btn.onclick = () => { action.callback(); toast.remove(); };
   }
 
-  // Si la notificación es una alarma crítica, un aviso previo o contiene una acción (como Deshacer),
-  // NO se eliminará automáticamente. Solo el usuario puede cerrarla o ejecutar la acción.
+  // If the notification is a critical alarm, an advance notice or contains an action (like Undo),
+  // it will NOT be removed automatically. Only the user can close it or execute the action.
   if (!(type === "high" || msg.includes(t('toast_pre_alarm')) || action)) {
     setTimeout(() => { if (toast.parentElement) toast.remove(); }, 4000);
   }
@@ -108,7 +108,7 @@ export function showConfirmModal(message, onConfirm, onCancel = null, options = 
   cancelBtn.onclick = () => { if (onCancel) onCancel(); cleanup(); };
 }
 
-// --- Sistema de Tooltips ---
+// --- Tooltip System ---
 const tooltip = document.getElementById("note-tooltip");
 let isDraggingActive = false;
 
@@ -124,10 +124,10 @@ document.addEventListener("mouseover", (e) => {
       tooltip.style.borderLeftColor = `var(--${note.priority})`;
 
       if (isFullView && hint) {
-        // En vista detallada, solo mostramos el consejo de acción para no ser redundantes
+        // In detailed view, only show action hint to avoid redundancy
         tooltip.innerHTML = `<div style="font-size: 0.8rem; font-weight: 600; color: var(--primary);"><i class="fas fa-info-circle"></i> ${hint}</div>`;
       } else if (!isFullView) {
-        // En vistas compactas (dashboard, mes), mostramos toda la info + el consejo
+        // In compact views (dashboard, month), show all info + hint
         tooltip.innerHTML = `
           <div style="font-weight: 700; margin-bottom: 5px;">${note.title}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
@@ -146,7 +146,7 @@ document.addEventListener("mouseover", (e) => {
       }
     }
   } else if (dayTarget && !e.target.closest(".modal") && !isDraggingActive) {
-    // Tooltip para el día del calendario (solo si no estamos sobre una nota)
+    // Tooltip for calendar day (only if not over a note)
     tooltip.style.display = "block";
     tooltip.style.borderLeftColor = "var(--primary)";
     tooltip.innerHTML = `<div style="font-size: 0.8rem; font-weight: 600; color: var(--primary);"><i class="fas fa-search-plus"></i> ${dayTarget.dataset.dayHint}</div>`;
@@ -163,7 +163,7 @@ document.addEventListener("mousemove", (e) => {
 });
 document.addEventListener("mouseout", (e) => { if (e.target.closest("[data-note-id]") || e.target.closest("[data-day-hint]")) tooltip.style.display = "none"; });
 
-// Limpieza de tooltips durante operaciones de arrastre
+// Tooltip cleanup during drag operations
 document.addEventListener("dragstart", () => {
   isDraggingActive = true;
   if (tooltip) tooltip.style.display = "none";

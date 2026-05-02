@@ -2,7 +2,7 @@ import { state, mutations, subscribe, getters } from './store.js';
 import { showToast, renderView } from './view.js';
 import { t } from '../translations/translations.js';
 
-// Icono oficial de DeskFlow para las notificaciones (Data URL para máxima compatibilidad)
+// Official DeskFlow notification icon (Data URL for maximum compatibility)
 const APP_ICON = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%232563eb" d="M128 64c0-35.3 28.7-64 64-64h128c35.3 0 64 28.7 64 64v64h64c35.3 0 64 28.7 64 64v288c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V192c0-35.3 28.7-64 64-64h64V64zm64 64h128V64H192v64z"/></svg>';
 
 export function playAlarmSound() {
@@ -18,7 +18,7 @@ export function playAlarmSound() {
     osc.start();
     osc.stop(context.currentTime + 1);
   } catch (e) {
-    console.error("Audio no soportado o bloqueado por el navegador");
+    console.error("Audio not supported or blocked by the browser");
   }
 }
 
@@ -35,7 +35,7 @@ export function startAlarmService() {
     if (!note) return;
 
     if (type === 'ALARM_NOW' && note.lastAlarmKey !== key) {
-      // Actualizar inmediatamente para evitar duplicados
+      // Update immediately to avoid duplicates
       mutations.updateNote(note.id, { ...note, lastAlarmKey: key, alarm: false });
       
       playAlarmSound();
@@ -50,13 +50,13 @@ export function startAlarmService() {
     }
   };
 
-  // Mantener al Worker sincronizado con el estado
+  // Keep Worker synchronized with state
   subscribe(() => {
     const cleanNotes = JSON.parse(JSON.stringify(state.notes));
     alarmWorker.postMessage({ type: 'SYNC_NOTES', notes: cleanNotes });
   });
 
-  // Sincronización inicial
+  // Initial synchronization
   const initialNotes = JSON.parse(JSON.stringify(state.notes));
   alarmWorker.postMessage({ type: 'SYNC_NOTES', notes: initialNotes });
 }
@@ -70,6 +70,6 @@ function triggerBrowserNotification(title, body) {
         requireInteraction: true
       });
       n.onclick = () => { window.focus(); n.close(); };
-    } catch (e) { console.error("Fallo al lanzar notificación:", e); }
+    } catch (e) { console.error("Failed to launch notification:", e); }
   }
 }

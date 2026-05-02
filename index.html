@@ -10,14 +10,14 @@
       href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%232563eb" d="M128 64c0-35.3 28.7-64 64-64h128c35.3 0 64 28.7 64 64v64h64c35.3 0 64 28.7 64 64v288c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V192c0-35.3 28.7-64 64-64h64V64zm64 64h128V64H192v64z"/></svg>'
     />
     <link rel="stylesheet" href="css/style.css" />
-    <!-- Iconos vía FontAwesome (Opcional, pero recomendado para el look profesional) -->
+    <!-- FontAwesome Icons (Optional, but recommended for professional look) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
   <body>
-    <!-- Overlay para el sidebar en móvil -->
+    <!-- Mobile Sidebar Overlay -->
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
     <div class="app-container">
       <!-- Sidebar -->
@@ -148,12 +148,12 @@
 
         <!-- Dynamic Views Container -->
         <section id="view-container">
-          <!-- El contenido se genera dinámicamente con JS -->
+          <!-- Content is dynamically generated with JS -->
         </section>
       </main>
     </div>
 
-    <!-- Modal para Notas -->
+    <!-- Notes Modal -->
     <div id="note-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -218,7 +218,7 @@
             <div class="form-group">
               <label><i class="fas fa-tag"></i> <span data-t="label_category">Categoría</span></label>
               <select id="category">
-                <!-- Dinámico -->
+                <!-- Dynamic -->
               </select>
             </div>
           </div>
@@ -266,7 +266,7 @@
       </div>
     </div>
 
-    <!-- Modal Configuración -->
+    <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
       <div class="modal-content" style="max-width: 450px">
         <div class="modal-header">
@@ -357,7 +357,7 @@
       </div>
     </div>
 
-    <!-- Modal de Confirmación Personalizado -->
+    <!-- Custom Confirmation Modal -->
     <div id="confirm-modal" class="modal">
       <div
         class="modal-content"
@@ -384,7 +384,7 @@
       </div>
     </div>
 
-    <!-- Modal Gestión de Tags -->
+    <!-- Tag Management Modal -->
     <div id="tag-manager-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -413,7 +413,7 @@
             id="tags-list-container"
             style="max-height: 300px; overflow-y: auto"
           >
-            <!-- Lista de tags dinámicos -->
+            <!-- Dynamic tags list -->
           </div>
         </div>
         <div class="modal-actions">
@@ -424,7 +424,7 @@
       </div>
     </div>
 
-    <!-- Modal Gestión de Categorías -->
+    <!-- Category Management Modal -->
     <div id="category-manager-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -478,7 +478,7 @@
             id="categories-list-container"
             style="max-height: 300px; overflow-y: auto"
           >
-            <!-- Lista dinámica -->
+            <!-- Dynamic list -->
           </div>
         </div>
         <div class="modal-actions">
@@ -493,7 +493,7 @@
       </div>
     </div>
 
-    <!-- Modal de Seguridad / Desbloqueo -->
+    <!-- Security / Unlock Modal -->
     <div id="unlock-modal" class="modal" style="display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); z-index: 9999;">
       <div class="modal-content" style="max-width: 400px; text-align: center;">
         <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">
@@ -504,7 +504,7 @@
           Introduce tu contraseña para descifrar tus notas.
         </p>
         <form id="unlock-form">
-          <!-- Campo de usuario oculto para accesibilidad y evitar advertencias del DOM -->
+          <!-- Hidden username field for accessibility and avoiding DOM warnings -->
           <input type="text" name="username" value="DeskFlowUser" style="display:none" autocomplete="username">
           <div class="form-group" style="position: relative; display: flex; align-items: center;">
             <input 
@@ -529,10 +529,10 @@
       </div>
     </div>
 
-    <!-- Overlay para alarmas activas (bloqueo y difuminado) -->
+    <!-- Overlay for active alarms (locking and blurring) -->
     <div id="alarm-overlay" class="alarm-overlay"></div>
 
-    <!-- Tooltip dinámico para notas -->
+    <!-- Dynamic tooltip for notes -->
     <div id="note-tooltip" class="note-tooltip"></div>
 
     <!-- Toast Notifications Container -->

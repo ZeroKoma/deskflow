@@ -14,7 +14,7 @@
   justify-content: center;
 }
 
-/* Asegura que el modal de confirmación esté sobre otros modales */
+/* Ensures confirmation modal is always on top */
 #confirm-modal {
   z-index: 3100;
 }
@@ -107,7 +107,7 @@
   background: var(--bg-sidebar);
 }
 
-/* Estilos específicos para el formulario de Tags */
+/* Specific styles for the Tag form */
 #tag-form {
   display: flex;
   gap: var(--space-m);
@@ -158,7 +158,7 @@ input[type="color"]::-webkit-color-swatch {
   margin-top: var(--space-2xl);
 }
 
-/* Estilo Switch para Alarma */
+/* Alarm Switch Style */
 .switch {
   position: relative;
   display: inline-block;

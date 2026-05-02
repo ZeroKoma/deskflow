@@ -1,4 +1,4 @@
-/* Mejoras en las tarjetas de notas para evitar parpadeos y añadir interactividad */
+/* Card improvements for better performance and interactivity */
 .dashboard-note-item,
 .card {
   transition:
@@ -15,16 +15,16 @@
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Evitar que los hijos de la zona de arrastre capturen eventos durante el drag */
+/* Prevent children from capturing drag events */
 .drag-zone.drag-over * {
   pointer-events: none;
 }
 
 .drag-zone.zone-valid {
-  /* Usamos box-shadow en lugar de border para evitar que la caja cambie de tamaño y parpadee */
+  /* Use box-shadow to prevent box-sizing shifts during hover */
   box-shadow: 0 0 0 3px var(--low), 0 10px 20px rgba(0,0,0,0.1) !important;
   border-color: var(--low) !important;
-  background: rgba(16, 185, 129, 0.05) !important; /* Un toque de verde suave */
+  background: rgba(16, 185, 129, 0.05) !important; /* Soft green tint */
 }
 
 .drag-zone.zone-invalid {
@@ -34,7 +34,7 @@
   background: rgba(239, 68, 68, 0.05) !important;
 }
 
-/* Estado mientras se arrastra el elemento */
+/* Dragging state */
 .is-dragging {
   opacity: 0.4 !important;
   cursor: grabbing !important;
@@ -60,7 +60,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* --- Grid Systems --- */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -92,7 +91,6 @@
   gap: var(--space-m);
 }
 
-/* --- Components --- */
 .dashboard-column {
   background: var(--bg-sidebar);
   padding: var(--space-l);
@@ -229,7 +227,6 @@
   border: 1px solid transparent;
 }
 
-/* Planificación Semanal Full Bleed */
 .planning-card {
   padding-bottom: 0 !important;
   padding-left: 0 !important;
@@ -265,7 +262,6 @@
   margin-bottom: 0;
 }
 
-/* Notas Caducadas / Archivo */
 .card.expired,
 .dashboard-note-item.expired,
 .note-pill.expired {
@@ -285,17 +281,15 @@
   transform: none !important;
 }
 
-/* --- Estilo para Fines de Semana --- */
 .calendar-day.weekend {
   background-color: rgba(0, 0, 0, 0.03) !important;
   border-color: var(--border);
 }
 
 [data-theme="dark"] .calendar-day.weekend {
-  background-color: rgba(0, 0, 0, 0.22) !important; /* Oscurece lo suficiente para resaltar sobre el fondo principal */
+  background-color: rgba(0, 0, 0, 0.22) !important;
 }
 
-/* --- Responsive Cards & Grids --- */
 @media (max-width: 768px) {
   .dashboard-grid,
   .notes-grid-300 {

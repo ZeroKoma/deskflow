@@ -1,97 +1,97 @@
-# DeskFlow - Sistema de Gestión de Productividad
+# DeskFlow - Productivity Management System
 
-DeskFlow es una aplicación web diseñada para la gestión de notas, recordatorios y tareas diarias.
+DeskFlow is a web application designed for managing notes, reminders, and daily tasks.
 
-## Arquitectura del Proyecto
+## Project Architecture
 
-La aplicación sigue un patrón de diseño modular basado en **ES Modules (ESM)**, separando la lógica de negocio, el estado y la interfaz de usuario.
+The application follows a modular design pattern based on **ES Modules (ESM)**, separating business logic, state, and user interface.
 
-### Estructura de Archivos
+### File Structure
 
-- **`index.html`**: Punto de entrada único (SPA - Single Page Application). Contiene la estructura base y los contenedores de los modales.
-- **`store.js`**: El "corazón" de la aplicación. Maneja el estado global (`state`), las mutaciones de datos (`mutations`) y los selectores calculados (`getters`). Sincroniza automáticamente con el servicio de datos (`data-service.js`).
-- **`data-service.js`**: Capa de abstracción de datos. Decide si la información se lee/guarda en el almacenamiento local (IndexedDB) o en un servidor remoto.
-- **`app.js`**: Orquestador principal. Configura los eventos globales y coordina la inicialización del sistema.
-- **`view.js`**: Motor de renderizado de las vistas principales (Dashboard, Calendario, Lista de Notas).
-- **`view-components.js`**: Componentes de UI reutilizables como badges, pills, notificaciones (toasts) y el sistema de tooltips.
-- **`view-modals.js`**: Lógica específica para la gestión de formularios dentro de modales (Notas, Tags, Categorías).
-- **`crypto-utils.js`**: Utilidades criptográficas basadas en la Web Crypto API (AES-GCM, PBKDF2).
-- **`app-alarms.js`**: Servicio en segundo plano que monitoriza recordatorios y lanza notificaciones sonoras y de sistema.
-- **`app-settings.js`**: Lógica administrativa para la exportación/importación de datos CSV y mantenimiento de la base de datos local.
-- **`utils.js`**: Funciones auxiliares para el manejo de fechas y manipulación de archivos.
-- **`translations/`**: Directorio que contiene los diccionarios de idiomas (`es.js`, `en.js`) y el motor de traducción centralizado.
-- **`style.css`**: Sistema de diseño basado en variables CSS, con soporte nativo para temas claro y oscuro.
+- **`index.html`**: Single entry point (SPA - Single Page Application). Contains the base structure and modal containers.
+- **`store.js`**: The "heart" of the application. Manages global state (`state`), data mutations (`mutations`), and computed selectors (`getters`). Automatically synchronizes with the data service (`data-service.js`).
+- **`data-service.js`**: Data abstraction layer. Decides if information is read/saved in local storage (IndexedDB) or on a remote server.
+- **`app.js`**: Main orchestrator. Configures global events and coordinates system initialization.
+- **`view.js`**: Rendering engine for main views (Dashboard, Calendar, Notes List).
+- **`view-components.js`**: Reusable UI components like badges, pills, notifications (toasts), and the tooltip system.
+- **`view-modals.js`**: Specific logic for form management within modals (Notes, Tags, Categories).
+- **`crypto-utils.js`**: Cryptographic utilities based on the Web Crypto API (AES-GCM, PBKDF2).
+- **`app-alarms.js`**: Background service that monitors reminders and triggers sound and system notifications.
+- **`app-settings.js`**: Administrative logic for exporting/importing JSON data and maintaining the local database.
+- **`utils.js`**: Auxiliary functions for date handling and file manipulation.
+- **`translations/`**: Directory containing language dictionaries (`es.js`, `en.js`) and the centralized translation engine.
+- **`style.css`**: Design system based on CSS variables, with native support for light and dark themes.
 
-## Funcionalidades Clave
+## Key Features
 
-### 1. Gestión de Notas y Recordatorios
+### 1. Notes and Reminders Management
 
-DeskFlow diferencia inteligentemente entre:
+DeskFlow intelligently differentiates between:
 
-- **Notas**: Tareas o ideas sin fecha específica (sección "Notas").
-- **Recordatorios**: Eventos vinculados a una fecha y hora, integrados automáticamente en el calendario.
+- **Notes**: Tasks or ideas without a specific date ("Notes" section).
+- **Reminders**: Events linked to a date and time, automatically integrated into the calendar.
 
-### 2. Sistema de Alarmas Inteligente
+### 2. Intelligent Alarm System
 
-El servicio de alarmas (`app-alarms.js`) se ejecuta cada 10 segundos, permitiendo:
+The alarm service (`app-alarms.js`) runs every 10 seconds, allowing:
 
-- **Avisos Previos**: Notificación informativa 5 minutos antes del evento.
-- **Alarma Real**: Notificación crítica (visual y sonora) en el momento exacto.
-- **Notificaciones Nativas**: Integración con las notificaciones del Sistema Operativo mediante la API de Notificaciones de JavaScript.
+- **Advance Notices**: Informative notification 5 minutes before the event.
+- **Real Alarm**: Critical notification (visual and sound) at the exact moment.
+- **Native Notifications**: Integration with Operating System notifications via the JavaScript Notifications API.
 
-### 3. Organización mediante Tags y Categorías
+### 3. Organization through Tags and Categories
 
-- Sistema de etiquetado dinámico con colores personalizables.
-- **Tag de Sistema "Alarma"**: Una etiqueta protegida que se sincroniza automáticamente con el estado del recordatorio, permitiendo filtrar tareas críticas de forma visual.
+- Dynamic tagging system with customizable colors.
+- **"Alarm" System Tag**: A protected tag that automatically synchronizes with the reminder state, allowing critical tasks to be filtered visually.
 
-### 4. Calendario Multi-Vista
+### 4. Multi-View Calendar
 
-Vistas adaptables de Mes, Semana y Día, con persistencia de estado para una navegación fluida entre fechas.
+Adaptable Month, Week, and Day views, with state persistence for fluid navigation between dates.
 
-### 5. Seguridad y Privacidad Blindada
+### 5. Ironclad Security and Privacy
 
-DeskFlow implementa un sistema de seguridad de nivel bancario:
+DeskFlow implements a bank-level security system:
 
-- **Cifrado AES-GCM 256-bit**: Los datos se cifran localmente antes de tocar el disco (IndexedDB).
-- **Arquitectura de Bóveda (Vault)**: Una clave aleatoria maestra protege los datos. Esta clave está a su vez cifrada por la contraseña del usuario y una clave de recuperación maestra.
-- **Derivación PBKDF2**: Las contraseñas se procesan con 100,000 iteraciones de hashing para prevenir ataques de fuerza bruta.
-- **Conocimiento Cero (Zero-Knowledge)**: Ni el navegador ni un futuro servidor pueden leer el contenido de las notas sin la clave del usuario.
-- **Persistencia de Sesión**: Uso de `sessionStorage` para permitir refrescar la página sin solicitar la contraseña constantemente, manteniendo la seguridad al cerrar la pestaña.
+- **256-bit AES-GCM Encryption**: Data is encrypted locally before touching the disk (IndexedDB).
+- **Vault Architecture**: A random master key protects the data. This key is in turn encrypted by the user's password and a master recovery key.
+- **PBKDF2 Derivation**: Passwords are processed with 100,000 hashing iterations to prevent brute-force attacks.
+- **Zero-Knowledge**: Neither the browser nor a future server can read the content of the notes without the user's key.
+- **Session Persistence**: Use of `sessionStorage` to allow page refreshing without constantly requesting the password, maintaining security when closing the tab.
 
-### 5. Soporte Multi-idioma (i18n)
+### 6. Multi-language Support (i18n)
 
-DeskFlow detecta automáticamente el idioma del navegador y permite el cambio manual:
+DeskFlow automatically detects the browser language and allows manual switching:
 
-- **Traducción Estática**: Mediante atributos `data-t` en el HTML, el sistema traduce etiquetas al vuelo.
-- **Traducción Dinámica**: Uso de la función `t()` para mensajes del sistema y notificaciones.
-- **Localización de Fechas**: El calendario ajusta automáticamente el primer día de la semana (Lunes o Domingo) y el formato de fecha según el idioma.
+- **Static Translation**: Through `data-t` attributes in the HTML, the system translates labels on the fly.
+- **Dynamic Translation**: Use of the `t()` function for system messages and notifications.
+- **Date Localization**: The calendar automatically adjusts the first day of the week (Monday or Sunday) and the date format according to the language.
 
-## Gestión de Datos e Implementación de Backend
+## Data Management and Backend Implementation
 
-DeskFlow está diseñado siguiendo el patrón de **Service Layer**, lo que permite alternar entre almacenamiento local y remoto sin modificar la lógica de la interfaz de usuario.
+DeskFlow is designed following the **Service Layer** pattern, which allows switching between local and remote storage without modifying the user interface logic.
 
-### Arquitectura de Backend (Privacidad Total)
+### Backend Architecture (Total Privacy)
 
-Para migrar los datos a una base de datos en la nube, se debe realizar lo siguiente:
+To migrate data to a cloud database, the following must be performed:
 
-1.  **Activar el modo Backend**: En `js/data-service.js`, cambia la constante `USE_BACKEND` a `true`.
-2.  **Configurar la API**: Define la URL de tu servidor en la constante `API_BASE_URL`.
-3.  **Seguridad en Tránsito**: El sistema ya está preparado para enviar los **blobs cifrados** al servidor. El backend solo almacenará datos ilegibles para terceros.
-4.  **Implementar Endpoints**: El servidor deberá exponer rutas REST (o GraphQL) para:
-    - `GET /notes`: Recuperar la lista de notas.
-    - `POST /notes`: Guardar o sincronizar notas.
-    - `GET/POST /tags` y `/categories`: Gestión de diccionarios de etiquetas.
-    - `GET/POST /preferences`: Para persistir el tema e idioma elegidos por el usuario.
-5.  **Transparencia**: El archivo `store.js` ya utiliza `async/await`, por lo que simplemente esperará la respuesta de la red en lugar de la respuesta de IndexedDB, sin necesidad de cambios adicionales.
+1.  **Activate Backend mode**: In `js/data-service.js`, change the `USE_BACKEND` constant to `true`.
+2.  **Configure the API**: Define your server URL in the `API_BASE_URL` constant.
+3.  **Security in Transit**: The system is already prepared to send **encrypted blobs** to the server. The backend will only store data that is unreadable to third parties.
+4.  **Implement Endpoints**: The server must expose REST (or GraphQL) routes for:
+    - `GET /notes`: Retrieve the list of notes.
+    - `POST /notes`: Save or synchronize notes.
+    - `GET/POST /tags` and `/categories`: Management of tag dictionaries.
+    - `GET/POST /preferences`: To persist the user's chosen theme and language.
+5.  **Transparency**: The `store.js` file already uses `async/await`, so it will simply wait for the network response instead of the IndexedDB response, with no additional changes needed.
 
-### Persistencia Local (Modo actual)
+### Local Persistence (Current Mode)
 
-- **IndexedDB**: Almacena de forma persistente notas, preferencias (**tema e idioma**), tags y categorías.
-- **Exportación/Importación JSON**: Permite la portabilidad de los datos. El sistema valida la estructura del archivo JSON durante la importación para evitar la corrupción de datos.
+- **IndexedDB**: Persistently stores notes, preferences (**theme and language**), tags, and categories.
+- **JSON Export/Import**: Allows data portability. The system validates the structure of the JSON file during import to prevent data corruption.
 
-## Personalización (Theming)
+## Customization (Theming)
 
-Se utiliza variables CSS para el manejo de temas. El cambio entre modo claro y oscuro es instantáneo y se persiste en las preferencias del usuario.
+CSS variables are used for theme management. Switching between light and dark mode is instantaneous and is persisted in the user's preferences.
 
 ```css
 :root {

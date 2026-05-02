@@ -3,28 +3,28 @@ import { cryptoUtils } from "./crypto-utils.js";
 
 /**
  * DATA SERVICE LAYER
- * Este servicio centraliza el acceso a los datos. 
- * Facilita la transición futura a un Backend (REST API o GraphQL).
+ * This service centralizes data access. 
+ * Facilitates the future transition to a Backend (REST API or GraphQL).
  */
 
-// Cambiar a 'true' y configurar URL cuando el backend esté listo
+// Change to 'true' and configure URL when the backend is ready
 const USE_BACKEND = false;
 const API_BASE_URL = "https://api.deskflow.com/v1";
 
 /**
- * Helpers internos para procesar el cifrado/descifrado de forma centralizada.
- * Si no hay una llave activa (app bloqueada), devuelve los datos tal cual.
+ * Internal helpers to process encryption/decryption centrally.
+ * If there is no active key (app locked), it returns the data as is.
  */
 const processIncoming = async (items) => {
-  if (!storage._encryptionKey || !Array.isArray(items)) return items;
+  if (!storage._encryptionKey || !Array.isArray(items)) return items; // If no encryption key or not an array, return as is
   
   const results = await Promise.all(items.map(async item => {
     if (!item._encrypted) return item;
     try {
-      return await cryptoUtils.decrypt(item, storage._encryptionKey);
+      return await cryptoUtils.decrypt(item, storage._encryptionKey); // Decrypt the item
     } catch (e) {
-      console.error(`Error descifrando elemento ${item.id}:`, e);
-      return null; // Ignorar elementos que no se pueden descifrar
+      console.error(`Error decrypting item ${item.id}:`, e); // Log decryption error
+      return null; // Ignore elements that cannot be decrypted
     }
   }));
 
@@ -40,7 +40,7 @@ const processOutgoing = async (items) => {
 };
 
 export const dataService = {
-  // NOTAS
+  // NOTES
   async getAllNotes() {
     const rawData = USE_BACKEND 
       ? await (await fetch(`${API_BASE_URL}/notes`)).json()
@@ -58,7 +58,7 @@ export const dataService = {
     return storage.saveAll("notes", processed);
   },
 
-  // TAGS Y CATEGORÍAS
+  // TAGS AND CATEGORIES
   async getAllTags() {
     const raw = USE_BACKEND ? await (await fetch(`${API_BASE_URL}/tags`)).json() : await storage.getAll("tags");
     return processIncoming(raw);
@@ -79,7 +79,7 @@ export const dataService = {
     return USE_BACKEND ? null : storage.saveAll("categories", processed);
   },
 
-  // PREFERENCIAS Y MANTENIMIENTO
+  // PREFERENCES AND MAINTENANCE
   async getPreference(key, defaultValue) {
     return USE_BACKEND ? defaultValue : storage.getPreference(key, defaultValue);
   },

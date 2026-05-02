@@ -15,7 +15,7 @@ import {
   renderCategoryManager,
 } from "./view-modals.js";
 
-// Re-exportar para app.js
+// Re-export for app.js
 export {
   showToast,
   showConfirmModal,
@@ -27,18 +27,18 @@ export {
 const viewContainer = document.getElementById("view-container");
 
 /**
- * Auxiliar para determinar si una nota coincide con los criterios de búsqueda actuales
+ * Helper to determine if a note matches current search criteria
  */
 const matchesSearch = (note, query, includeTags, includeCats) => {
   if (!query) return true;
   const q = query.toLowerCase();
 
-  // Si no hay filtros específicos activos, buscamos por nombre de nota (título)
+  // If no specific filters are active, we search by note name (title)
   if (!includeTags && !includeCats) {
     return note.title.toLowerCase().includes(q);
   }
 
-  // Si hay filtros activos, el nombre de la nota ya no se busca (según petición)
+  // If there are active filters, the note name is no longer searched (as requested)
   let found = false;
   if (includeTags) {
     const tagNames = (note.tags || []).map(
@@ -54,8 +54,8 @@ const matchesSearch = (note, query, includeTags, includeCats) => {
 };
 
 /**
- * Lógica de ordenación solicitada:
- * 1. Prioridad primero, 2. Alarmas, 3. Por hora
+ * Requested sorting logic:
+ * 1. Priority first, 2. Alarms, 3. By time
  */
 const sortNotesLogic = (a, b) => {
   const priorityMap = { high: 0, medium: 1, low: 2 };
@@ -64,7 +64,7 @@ const sortNotesLogic = (a, b) => {
 
   if (pA !== pB) return pA - pB;
 
-  // Misma prioridad: Comparar por fecha (más antiguas primero)
+  // Same priority: Compare by date (oldest first)
   if (a.date && b.date && a.date !== b.date)
     return a.date.localeCompare(b.date);
   if (a.date && !b.date) return -1;
@@ -81,7 +81,7 @@ const sortNotesLogic = (a, b) => {
 };
 
 export function renderView() {
-  // Asegurar que el scroll vuelva al inicio al cambiar de pantalla
+  // Ensure scroll returns to top when switching views
   const mainContent = document.querySelector(".main-content");
   if (mainContent) mainContent.scrollTop = 0;
   window.scrollTo(0, 0);
@@ -120,14 +120,14 @@ export function updateUIStats() {
   document.getElementById("count-categories").innerText = stats.categories;
 }
 
-// --- Renderizadores Específicos ---
+// --- Specific Renderers ---
 function renderDashboard() {
   const query = document.getElementById("global-search")?.value || "";
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
   const todayStr = dateUtils.getTodayStr();
   const tomorrowStr = dateUtils.getTomorrowStr();
-  const todayTasks = state.notes
+  const todayTasks = state.notes // Filter notes for today
     .filter(
       (n) => n.date === todayStr && matchesSearch(n, query, incTags, incCats),
     )
@@ -139,18 +139,18 @@ function renderDashboard() {
     )
     .sort(sortNotesLogic);
 
-  // Generar la vista semanal para el Dashboard (usando la fecha actual)
-  const focusDate = new Date();
+  // Generate the weekly view for the Dashboard (using the current date)
+  const focusDate = new Date(); // Current date for dashboard week view
   const originalSubView = state.calendarSubView;
-  state.calendarSubView = "week"; // Forzamos subvista semanal temporalmente
-  const weekGridHtml = renderCalendarGrid(focusDate, 5); // Limitamos a 5 recordatorios por día en Dashboard
+  state.calendarSubView = "week"; // Force weekly subview temporarily
+  const weekGridHtml = renderCalendarGrid(focusDate, 5); // Limit to 5 reminders per day in Dashboard
   state.calendarSubView = originalSubView;
 
-  // Filtrar notas sin fecha para el listado inferior
+  // Filter undated notes for the bottom list
   const noDateTasksFull = state.notes
     .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
-  const noDateTotal = noDateTasksFull.length;
+  const noDateTotal = noDateTasksFull.length; // Total undated notes
   const noDateLimited = noDateTasksFull.slice(0, 6);
   const noDateCountDisplay = noDateTotal > 6 ? `${t('dash_showing')} 6 ${t('dash_of')} ${noDateTotal}` : `${t('dash_showing')} ${noDateTotal}`;
 
@@ -264,7 +264,7 @@ function renderCalendar() {
   const todayStr = dateUtils.getTodayStr();
   const focusDateStr = dateUtils.formatYYYYMMDD(focusDate);
   const isPastDay = focusDateStr < todayStr;
-  const locale = state.language === 'en' ? 'en-US' : 'es-ES';
+  const locale = state.language === 'en' ? 'en-US' : 'es-ES'; // Locale for date formatting
 
   let title = new Intl.DateTimeFormat(locale, {
     month: "long",
@@ -281,7 +281,7 @@ function renderCalendar() {
   const day = focusDate.getDay();
   const diffToMonday = focusDate.getDate() - day + (day === 0 ? -6 : 1);
   startOfWeek.setDate(diffToMonday);
-  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setHours(0, 0, 0, 0); // Start of the week
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 6);
   endOfWeek.setHours(23, 59, 59, 999);
@@ -292,7 +292,7 @@ function renderCalendar() {
     year: "numeric",
   }).format(focusDate);
 
-  // Calcular conteos para cada subvista
+  // Calculate counts for each subview
   const dayCount = state.notes.filter(n => n.date === focusDateStr && matchesSearch(n, query, incTags, incCats)).length;
   const weekCount = state.notes.filter(n => {
     if (!n.date) return false;
@@ -305,7 +305,7 @@ function renderCalendar() {
     return y === state.currentYear && (m - 1) === state.currentMonth && matchesSearch(n, query, incTags, incCats);
   }).length;
 
-  // Asignar el título principal sin el contador
+  // Assign main title without the counter
   if (state.calendarSubView === "week") {
     title = weekTitle;
   } else if (state.calendarSubView === "day") {
@@ -361,7 +361,7 @@ function renderCalendarGrid(focusDate, limit = null) {
   const firstDayOfWeek = state.language === 'en' ? 0 : 1;
 
   if (state.calendarSubView === "month") {
-    // Generar nombres de los días de la semana dinámicamente según el idioma
+    // Generate week day names dynamically according to language
     const weekDays = [];
     const baseDate = new Date(2021, 0, 3 + firstDayOfWeek); 
     for (let i = 0; i < 7; i++) {
@@ -385,7 +385,7 @@ function renderCalendarGrid(focusDate, limit = null) {
       0,
     ).getDate();
 
-    // Offset dinámico basado en el primer día de la semana
+    // Dynamic offset based on the first day of the week
     const offset = (firstDay - firstDayOfWeek + 7) % 7;
 
     for (let i = 0; i < offset; i++)
@@ -459,8 +459,8 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
         </div>`;
       }
 
-      // En móvil (responsive) y vista mes, permitimos que el click llegue al padre (calendar-day)
-      // para navegar a la vista día, en lugar de abrir el modal, ya que las notas son "puntos".
+      // On mobile (responsive) and month view, we let the click bubble to the parent (calendar-day)
+      // to navigate to day view, instead of opening the modal, as notes are represented as "dots".
       const clickHandler = state.calendarSubView === 'month' 
         ? `if(window.innerWidth > 768) { event.stopPropagation(); window.openNoteModal('${n.id}'); }`
         : `event.stopPropagation(); window.openNoteModal('${n.id}');`;
@@ -628,7 +628,7 @@ window.openNoteModal = openNoteModal;
 window.closeToast = (el) => {
   const toast = el.closest(".toast");
   toast.remove();
-  // Solo quitamos el efecto si no quedan más alarmas críticas en pantalla
+  // Only remove effect if no more critical alarms are visible
   if (!document.querySelector(".toast.high")) {
     document.body.classList.remove("alarm-active");
   }
@@ -656,7 +656,7 @@ window.seeAllNoDateNotes = () => {
   state.allNotesFilterExpired = false;
   state.allNotesFilterWithAlarm = false;
   state.allNotesPriorityFilter = null;
-  // Actualizar visualmente la navegación del sidebar
+  // Visually update sidebar navigation
   document
     .querySelectorAll(".nav-item")
     .forEach((b) => b.classList.remove("active"));
@@ -666,7 +666,7 @@ window.seeAllNoDateNotes = () => {
 window.seeFullWeek = () => {
   state.currentView = "calendar";
   state.calendarSubView = "week";
-  // Actualizar visualmente la navegación del sidebar
+  // Visually update sidebar navigation
   document
     .querySelectorAll(".nav-item")
     .forEach((b) => b.classList.remove("active"));
@@ -697,7 +697,7 @@ window.selectDayView = (d) => {
   state.calendarSubView = "day";
   state.currentView = "calendar";
 
-  // Actualizar visualmente la navegación del sidebar para reflejar que estamos en Calendario
+  // Visually update sidebar navigation to reflect we are in Calendar
   document
     .querySelectorAll(".nav-item")
     .forEach((b) => b.classList.remove("active"));
@@ -749,8 +749,8 @@ window.snoozeNote = (id) => {
     const [hours, minutes] = note.time.split(":").map(Number);
     targetDate.setHours(hours, minutes, 0, 0);
 
-    // Si la hora de la nota ya pasó (que es lo normal al posponer), 
-    // sumamos 5 minutos a partir de "ahora" para asegurar que suene pronto.
+    // If the note time has already passed (normal when snoozing),
+    // we add 5 minutes from "now" to ensure it rings soon.
     const baseDate = targetDate < now ? now : targetDate;
     const newTime = new Date(baseDate.getTime() + 5 * 60000);
 
@@ -767,7 +767,7 @@ window.snoozeNote = (id) => {
   }
 };
 
-// --- Listener para búsqueda ---
+// --- Search listener ---
 window.addEventListener("search-notes", () => {
   renderView();
 });
@@ -777,11 +777,11 @@ window.handleNoteDragStart = (e, id) => {
   e.dataTransfer.setData("text/plain", id);
   e.dataTransfer.effectAllowed = "move";
 
-  // Añadir clase visual al elemento original para que se vea "hueco"
+  // Add visual class to original element to make it look like a ghost
   const target = e.target.closest('[draggable="true"]');
   if (target) target.classList.add('is-dragging');
 
-  // Crear un elemento fantasma que incluya el título para mejor feedback en móviles
+  // Create a ghost element that includes the title for better feedback on mobile
   const dragIcon = document.createElement('div');
   dragIcon.id = 'drag-ghost';
   
@@ -799,19 +799,19 @@ window.handleNoteDragStart = (e, id) => {
   dragIcon.style.zIndex = '9999';
   document.body.appendChild(dragIcon);
 
-  // En móviles, el desplazamiento del icono ayuda a que no quede justo bajo el dedo (tapado)
+  // On mobile, offsetting the icon helps so it's not hidden under the finger
   e.dataTransfer.setDragImage(dragIcon, 20, 20);
 };
 
 window.handleNoteDragEnd = (e) => {
-  // Quitar clase visual al elemento original
+  // Remove visual class from original element
   document.querySelectorAll(".is-dragging").forEach(el => el.classList.remove("is-dragging"));
 
   document.querySelectorAll(".drag-zone").forEach((zone) => {
     zone.classList.remove("zone-valid", "zone-invalid", "drag-over");
   });
 
-  // Eliminar el icono fantasma del DOM
+  // Remove ghost icon from DOM
   const ghost = document.getElementById('drag-ghost');
   if (ghost) ghost.remove();
 };
@@ -836,19 +836,19 @@ window.handleNoteDrop = (e) => {
   e.preventDefault();
   e.currentTarget.classList.remove("drag-over", "zone-valid", "zone-invalid");
   const id = e.dataTransfer.getData("text/plain");
-  const targetDate = e.currentTarget.dataset.dropDate; // "" para notas, "YYYY-MM-DD" para calendario
+  const targetDate = e.currentTarget.dataset.dropDate; // "" for notes, "YYYY-MM-DD" for calendar
   const todayStr = dateUtils.getTodayStr();
   
   const note = getters.getNoteById(id);
   if (!note || note.date === targetDate) return;
 
-  // Validación: No permitir mover recordatorios a fechas pasadas
+  // Validation: Don't allow moving reminders to past dates
   if (targetDate && targetDate < todayStr) {
     showToast(t('toast_err_past_date'), "error");
     return;
   }
 
-  // Validación de hora al soltar en el día de hoy (solo si tiene hora definida)
+  // Time validation when dropping onto today (only if time is defined)
   if (targetDate && targetDate === todayStr && note.time) {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -863,7 +863,7 @@ window.handleNoteDrop = (e) => {
 
   const updatedNote = { ...note, date: targetDate };
   
-  // Si vuelve a ser una nota simple, limpiamos metadatos de recordatorio
+  // If it's a simple note again, we clear reminder metadata
   if (isNowNote) {
     updatedNote.time = "";
     updatedNote.alarm = false;
@@ -871,7 +871,7 @@ window.handleNoteDrop = (e) => {
 
   mutations.updateNote(id, updatedNote);
 
-  // Feedback dinámico según la conversión
+  // Dynamic feedback according to conversion
   let msg = `${t('toast_moved')} ${dateUtils.formatDisplayDate(targetDate)}`;
   if (wasNote && !isNowNote) msg = `${t('toast_converted_rem')} ${dateUtils.formatDisplayDate(targetDate)}`;
   else if (!wasNote && isNowNote) msg = t('toast_converted_note');

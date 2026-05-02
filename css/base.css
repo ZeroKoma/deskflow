@@ -10,12 +10,12 @@
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --radius: 12px;
 
-  /* Prioridades */
-  --low: #22c55e; /* Verde estándar */
-  --medium: #eab308; /* Amarillo estándar */
-  --high: #ef4444; /* Rojo estándar */
+  /* Priorities */
+  --low: #22c55e; /* Standard Green */
+  --medium: #eab308; /* Standard Yellow */
+  --high: #ef4444; /* Standard Red */
 
-  /* Escala de Espaciado (Coherencia Visual) */
+  /* Spacing Scale (Visual Consistency) */
   --space-xs: 0.25rem; /* 4px */
   --space-s: 0.5rem; /* 8px */
   --space-m: 0.75rem; /* 12px */
@@ -24,7 +24,7 @@
   --space-2xl: 2rem; /* 32px */
   --space-3xl: 3rem; /* 48px */
 
-  /* Variables de Espaciado Responsivo */
+  /* Responsive Spacing Variables */
   --container-h-padding: var(--space-2xl);
 }
 
@@ -37,13 +37,13 @@
   --border: #334155;
   --white: #1e293b;
 
-  /* Prioridades en Modo Oscuro: Colores vibrantes estándar */
+  /* Priorities in Dark Mode: Standard vibrant colors */
   --low: #22c55e;
   --medium: #eab308;
   --high: #ef4444;
 }
 
-/* Asegura que los iconos nativos de fecha/hora sean visibles en modo oscuro */
+/* Ensures that native date/time icons are visible in dark mode */
 [data-theme="dark"] #date::-webkit-calendar-picker-indicator,
 [data-theme="dark"] #time::-webkit-calendar-picker-indicator {
   filter: brightness(0) invert(1) !important;

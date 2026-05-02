@@ -58,7 +58,7 @@ const defaultTags = [
 ];
 
 /**
- * Esquemas de validación para garantizar la integridad de IndexedDB
+ * Validation schemas to ensure IndexedDB integrity
  */
 const validators = {
   note: (n) => 
@@ -83,7 +83,7 @@ const validators = {
 };
 
 /**
- * Validación de reglas de negocio para Notas/Recordatorios
+ * Business rule validation for Notes/Reminders
  */
 const validateNoteBusinessRules = (note) => {
   if (!note.title || note.title.trim().length === 0) {
@@ -91,16 +91,16 @@ const validateNoteBusinessRules = (note) => {
   }
 
   if (note.date) {
-    const todayStr = dateUtils.getTodayStr();
+    const todayStr = dateUtils.getTodayStr(); // Get today's date string
     if (note.date < todayStr) {
-      return { valid: false, error: "No se pueden programar recordatorios en fechas pasadas" };
+      return { valid: false, error: "Reminders cannot be scheduled for past dates" };
     }
 
     if (note.date === todayStr && note.time) {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       if (note.time.slice(0, 5) < currentTime) {
-        return { valid: false, error: "No puedes programar un recordatorio para una hora que ya pasó hoy" };
+        return { valid: false, error: "You cannot schedule a reminder for a time that has already passed today" };
       }
     }
   }
@@ -111,7 +111,7 @@ const syncAlarmTag = (note) => {
   if (!note.tags) note.tags = [];
   const alarmTag = state.tags.find(t => t.name === "Alarma");
   if (!alarmTag) return;
-  const tagIndex = note.tags.indexOf(alarmTag.id);
+  const tagIndex = note.tags.indexOf(alarmTag.id); // Find index of alarm tag
   if (note.alarm) { if (tagIndex === -1) note.tags.push(alarmTag.id); }
   else { if (tagIndex !== -1) note.tags.splice(tagIndex, 1); }
 };
@@ -125,7 +125,7 @@ const _state = {
   currentYear: new Date().getFullYear(),
   currentDay: new Date().getDate(),
   calendarSubView: "month",
-  theme: "dark", // Valor por defecto hasta que initStore cargue el real
+  theme: "dark", // Default value until initStore loads the actual one
   language: "es",
   allNotesFilterAll: true,
   allNotesFilterWithDate: false,
@@ -188,21 +188,21 @@ export const mutations = {
   },
 
   saveNotes() {
-    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    // Convert Proxy to plain object before saving to IndexedDB
     const rawNotes = JSON.parse(JSON.stringify(state.notes));
     const valid = rawNotes.filter(validators.note);
     dataService.saveAllNotes(valid).catch(console.error);
   },
 
   saveTags() {
-    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    // Convert Proxy to plain object before saving to IndexedDB
     const rawTags = JSON.parse(JSON.stringify(state.tags));
     const valid = rawTags.filter(validators.tag);
     dataService.saveAllTags(valid).catch(console.error);
   },
 
   saveCategories() {
-    // Convertimos el Proxy a un objeto plano antes de guardar en IndexedDB
+    // Convert Proxy to plain object before saving to IndexedDB
     const rawCategories = JSON.parse(JSON.stringify(state.categories));
     const valid = rawCategories.filter(validators.category);
     dataService.saveAllCategories(valid).catch(console.error);
@@ -249,7 +249,7 @@ export const mutations = {
     const updated = { ...noteData, id };
     if (!validators.note(updated)) return;
 
-    // Si cambió fecha u hora, reseteamos el rastreo de alarmas para que vuelvan a sonar
+    // If date or time changed, reset alarm tracking keys
     if (existing.date !== updated.date || existing.time !== updated.time) {
       updated.lastAlarmKey = null;
       updated.lastPreAlarmKey = null;

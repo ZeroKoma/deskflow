@@ -9,39 +9,39 @@ import { t } from './translations/translations.js';
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-  // Suscribir la actualización de la UI al estado antes de cargar datos
+  // Subscribe UI updates to the state before loading data
   subscribe(() => {
     translateStaticUI();
     renderView();
     updateUIStats();
   });
 
-  // 1. Cargar preferencias básicas (idioma/tema) antes de mostrar nada
+  // 1. Load basic preferences (language/theme) before showing anything
   await mutations.initStore();
   applyTheme();
   translateStaticUI();
 
-  // 2. Gestionar el desbloqueo de seguridad
+  // 2. Manage security unlocking
   const salt = await storage.getPreference("crypto_salt");
   const unlockModal = document.getElementById("unlock-modal");
   
-  // Si no hay 'salt', es la primera vez (configuración)
+  // If there is no 'salt', it's the first time (setup)
   if (!salt) {
     document.getElementById("unlock-title").innerText = t('crypto_title_first');
     document.getElementById("unlock-desc").innerText = t('crypto_desc_first');
   }
 
-  // Intentar desbloqueo automático si ya hay una sesión activa
+  // Attempt automatic unlock if a session is already active
   if (salt && await mutations.tryResumeSession()) {
     unlockModal.style.display = "none";
     setupGlobalEvents();
     requestNotificationPermission();
     setFavicon();
     startAlarmService();
-    return; // Saltamos el resto de la lógica del modal
+    return; // Skip the rest of the modal logic
   }
 
-  // Lógica para ver/ocultar contraseña
+  // Password show/hide logic
   const togglePassBtn = document.getElementById("toggle-password-visibility");
   const passwordInput = document.getElementById("unlock-password");
   
@@ -51,7 +51,7 @@ async function init() {
     togglePassBtn.innerHTML = isPassword ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
   });
 
-  // Poner el foco automáticamente en el campo de contraseña
+  // Automatically set focus on the password field
   passwordInput.focus();
 
   document.getElementById("unlock-form").addEventListener("submit", async (e) => {
@@ -61,12 +61,12 @@ async function init() {
     errorEl.style.display = "none";
 
     try {
-      // Esto deriva la clave, verifica si es correcta y recarga los datos reales
+      // This derives the key, verifies if it's correct, and reloads the actual data
       await mutations.unlockStorage(password);
       
       unlockModal.style.display = "none";
       
-      // 3. Inicialización completa tras desbloquear
+      // 3. Complete initialization after unlocking
       setupGlobalEvents();
       requestNotificationPermission();
       setFavicon();
@@ -79,18 +79,18 @@ async function init() {
 }
 
 /**
- * Traduce elementos que están fijos en el HTML (Sidebar, botones fijos, etc)
+ * Translates elements that are fixed in the HTML (Sidebar, fixed buttons, etc.)
  */
 function translateStaticUI() {
-  // Actualizar el atributo lang del documento para accesibilidad y SEO
+  // Update document lang attribute for accessibility and SEO
   document.documentElement.lang = state.language;
 
-  // Traducir textos
+  // Translate labels
   document.querySelectorAll('[data-t]').forEach(el => {
     el.innerText = t(el.dataset.t);
   });
 
-  // Traducir placeholders
+  // Translate placeholders
   document.querySelectorAll('[data-t-placeholder]').forEach(el => {
     el.placeholder = t(el.dataset.tPlaceholder);
   });
@@ -100,7 +100,7 @@ function setFavicon() {
   const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
   link.type = 'image/svg+xml';
   link.rel = 'icon';
-  // SVG de un maletín profesional con el color azul corporativo de DeskFlow (#2563eb)
+  // Professional briefcase SVG with DeskFlow corporate blue (#2563eb)
   link.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%232563eb" d="M128 64c0-35.3 28.7-64 64-64h128c35.3 0 64 28.7 64 64v64h64c35.3 0 64 28.7 64 64v288c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V192c0-35.3 28.7-64 64-64h64V64zm64 64h128V64H192v64z"/></svg>';
   document.head.appendChild(link);
 }
@@ -127,19 +127,19 @@ export function applyTheme() {
 }
 
 function setupGlobalEvents() {
-  // Lógica de Menú Hamburguesa para Móvil
+  // Hamburger Menu Logic for Mobile
   const topBar = document.querySelector('.top-bar');
   const sidebar = document.querySelector('.sidebar');
   const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-  // Función auxiliar para sincronizar los iconos de los botones de menú
+  // Helper function to sync menu icons
   const updateToggleIcons = (isOpen) => {
-    // Solo el botón de escritorio cambia de icono
+    // Only desktop button changes icon
     const desktopBtn = document.getElementById('sidebar-open-btn');
     if (desktopBtn) desktopBtn.innerHTML = isOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
   };
 
-  // Función para cerrar el sidebar solo en dispositivos móviles tras una acción
+  // Function to close sidebar only on mobile after an action
   const closeSidebarOnMobile = () => {
     if (window.innerWidth <= 768) {
       sidebar.classList.remove('open');
@@ -148,7 +148,7 @@ function setupGlobalEvents() {
     }
   };
 
-  // Cerrar sidebar al hacer click en el overlay (zona oscura fuera del drawer)
+  // Close sidebar when clicking the overlay
   sidebarOverlay?.addEventListener('click', closeSidebarOnMobile);
 
   if (topBar && !document.getElementById('mobile-header-row')) {
@@ -175,7 +175,7 @@ function setupGlobalEvents() {
 
     topBar.prepend(mobileHeader);
 
-    // Listener para alternar el buscador en móvil
+    // Listener to toggle search on mobile
     searchToggle?.addEventListener('click', () => {
       const isActive = topBar.classList.toggle('search-active');
       const icon = searchToggle.querySelector('i');
@@ -189,7 +189,7 @@ function setupGlobalEvents() {
       sidebarOverlay.classList.toggle('active');
     });
 
-    // Sincronización inicial: Si el sidebar empieza abierto, actualizar icono y activar overlay (solo en móvil)
+    // Initial sync: If sidebar starts open, update icon and activate overlay (mobile only)
     const startOpen = sidebar.classList.contains('open');
     if (startOpen) {
       if (window.innerWidth <= 768) {
@@ -199,12 +199,12 @@ function setupGlobalEvents() {
     }
   }
 
-  // Lógica de Menú para Escritorio
+  // Menu Logic for Desktop
   const desktopMenuBtn = document.getElementById('sidebar-open-btn');
   if (desktopMenuBtn) {
     desktopMenuBtn.addEventListener('click', () => {
       const isOpen = sidebar.classList.toggle('open');
-      // Solo activamos el overlay si estamos en móvil (ancho < 768px)
+      // Only activate overlay if on mobile (width < 768px)
       if (window.innerWidth <= 768) {
         sidebarOverlay.classList.toggle('active');
       }
@@ -212,13 +212,13 @@ function setupGlobalEvents() {
     });
   }
 
-  // Cerrar sidebar al hacer click en el botón 'X' (solo se ve en responsive)
+  // Close sidebar clicking 'X' (responsive only)
   document.getElementById('sidebar-close-btn').addEventListener('click', () => {
     sidebar.classList.remove('open');
     sidebarOverlay.classList.remove('active');
   });
 
-  // Navegación Sidebar
+  // Sidebar Navigation
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const view = e.currentTarget.dataset.view;
@@ -231,7 +231,7 @@ function setupGlobalEvents() {
     });
   });
 
-  // Resumen Prioridades Clicks
+  // Priority Summary Clicks
   document.querySelectorAll(".sidebar-stats .stat-item").forEach(item => {
     item.addEventListener("click", () => {
       state.allNotesPriorityFilter = item.dataset.priority || null;
@@ -242,7 +242,7 @@ function setupGlobalEvents() {
       state.allNotesFilterExpired = item.dataset.filter === 'expired';
 
       state.currentView = "all-notes";
-      // Actualizar visualmente la navegación del sidebar
+      // Update sidebar navigation active state
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
       const allNotesBtn = document.querySelector('[data-view="all-notes"]');
       if (allNotesBtn) allNotesBtn.classList.add("active");
@@ -250,14 +250,14 @@ function setupGlobalEvents() {
     });
   });
 
-  // Toggle Tema
+  // Theme Toggle
   document.getElementById("theme-toggle").addEventListener("change", (e) => {
     const theme = e.target.checked ? "dark" : "light";
     mutations.setTheme(theme);
     document.documentElement.setAttribute("data-theme", theme);
   });
 
-  // Inyectar Selector de Idioma en el Sidebar (si no existe)
+  // Inject Language Selector in Sidebar (if missing)
   if (sidebar && !document.getElementById('language-select-container')) {
     const langContainer = document.createElement('div');
     langContainer.id = 'language-select-container';
@@ -276,11 +276,11 @@ function setupGlobalEvents() {
     });
   }
 
-  // Modal y Formulario
+  // Modal and Form
   document.getElementById("add-note-btn").addEventListener("click", () => openNoteModal());
   document.getElementById("note-form").addEventListener("submit", handleFormSubmit);
   
-  // Cerrar Modal
+  // Close Modal
   document.getElementById("modal-x").addEventListener("click", () => document.getElementById("note-modal").style.display = "none");
   document.getElementById("close-modal").addEventListener("click", () => document.getElementById("note-modal").style.display = "none");
 
@@ -322,7 +322,7 @@ function setupGlobalEvents() {
     renderTagManager();
   });
 
-  // Centralización de acciones de UI para evitar el uso de 'window'
+  // Centralize UI actions to avoid 'window' pollution
   const uiActions = {
     'edit-tag': (id) => {
       const tag = state.tags.find(t => t.id === id);
@@ -384,7 +384,7 @@ function setupGlobalEvents() {
     }
   };
 
-  // Delegación de eventos global
+  // Global event delegation
   document.addEventListener('click', (e) => {
     const target = e.target.closest('[data-action]');
     if (!target) return;
@@ -426,7 +426,7 @@ function setupGlobalEvents() {
     renderCategoryManager();
   });
 
-  // Configuración y Reset
+  // Settings and Reset
   const settingsModal = document.getElementById("settings-modal");
   document.getElementById("manage-settings-btn").addEventListener("click", () => {
     settings.updateStorageInfoUI();
@@ -441,7 +441,7 @@ function setupGlobalEvents() {
   document.getElementById("delete-past-notes-btn").addEventListener("click", settings.deletePastNotes);
   document.getElementById("reset-app-btn").addEventListener("click", settings.resetApp);
 
-  // Control del switch de alarma basado en la hora
+  // Alarm switch control based on time
   const timeInput = document.getElementById("time");
   const alarmInput = document.getElementById("alarm");
 
@@ -478,7 +478,7 @@ function setupGlobalEvents() {
 
   document.getElementById("clear-date").addEventListener("click", () => {
     document.getElementById("date").value = "";
-    // Disparar el evento 'input' para que el título del modal se actualice
+    // Trigger 'input' to update modal title
     document.getElementById("date").dispatchEvent(new Event('input'));
   });
 
@@ -487,7 +487,7 @@ function setupGlobalEvents() {
     timeInput.dispatchEvent(new Event('input'));
   });
 
-  // Exportar e Importar
+  // Export and Import
   document.getElementById("export-data").addEventListener("click", settings.exportData);
 
   const importInput = document.getElementById("import-data-input");
@@ -499,7 +499,7 @@ function setupGlobalEvents() {
   });
 
   document.getElementById("global-search").addEventListener("input", (e) => {
-    // Lógica de filtrado delegada a view.js
+    // Filtering logic delegated via event
     window.dispatchEvent(new CustomEvent('search-notes', { detail: e.target.value }));
   });
 
@@ -519,7 +519,7 @@ function setupGlobalEvents() {
     }
   };
 
-  // Refrescar al cambiar opciones de búsqueda
+  // Refresh on search option change
   document.getElementById("search-tags").addEventListener("change", () => {
     updateSearchPlaceholder();
     renderView();

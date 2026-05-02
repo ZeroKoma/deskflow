@@ -105,7 +105,7 @@ export function renderTagManager() {
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 15px; height: 15px; border-radius: 50%; background: ${tag.color}"></div>
           <span>${tag.name}</span>
-        </div>
+        </div> <!-- Dynamic -->
         ${
           isProtected
             ? `<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;"><i class="fas fa-lock"></i>&nbsp;&nbsp;${t('tag_sys_lock')}</span>`
@@ -122,7 +122,7 @@ export function renderTagManager() {
 export function renderCategoryManager() {
   const container = document.getElementById("categories-list-container");
   container.innerHTML = state.categories
-    .map(
+    .map( // Dynamic list
       (cat) => `
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border);">
       <div style="display: flex; align-items: center; gap: 10px;">
@@ -130,7 +130,7 @@ export function renderCategoryManager() {
         <span>${cat.name}</span>
       </div>
       <div style="display: flex; gap: 10px;">
-        <button data-action="edit-category" data-id="${cat.id}" class="btn-ghost" style="padding:4px"><i class="fas fa-pencil-alt"></i></button>
+        <button data-action="edit-category" data-id="${cat.id}" class="btn-ghost" style="padding:4px"><i class="fas fa-pencil-alt"></i></button> <!-- Dynamic -->
         <button data-action="delete-category" data-id="${cat.id}" class="btn-ghost" style="color:var(--high); padding:4px"><i class="fas fa-times"></i></button>
       </div>
     </div>`,

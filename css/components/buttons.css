@@ -1,11 +1,10 @@
-/* Botones de acción en tarjetas */
 .btn-icon-trash-outline,
 .btn-icon-trash-fill {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer !important;
-  color: var(--high) !important; /* Icono en color rojo garantizado */
+  color: var(--high) !important;
   padding: 8px 12px;
   transition: all 0.2s ease;
 }
@@ -17,7 +16,6 @@
   border-color: var(--high);
 }
 
-/* Buttons & Forms */
 .btn-primary {
   background: transparent;
   color: var(--primary);
@@ -44,7 +42,7 @@
 .btn-primary.disabled-btn {
   opacity: 0.6;
   cursor: not-allowed;
-  background: var(--bg-main); /* Cambiar fondo para que parezca menos clicable */
+  background: var(--bg-main);
   color: var(--text-muted);
   border-color: var(--border);
   box-shadow: none;
@@ -131,7 +129,6 @@
   transform: translateY(-2px);
 }
 
-/* Interface Controls */
 .hamburger-btn,
 .search-toggle-btn,
 .sidebar-close-btn {
@@ -147,7 +144,6 @@
 .search-toggle-btn { font-size: 1.25rem; display: none; }
 .sidebar-close-btn { font-size: 1.5rem; position: absolute; top: var(--space-l); right: var(--space-l); z-index: 2100; display: none; }
 
-/* --- Responsive Buttons --- */
 @media (max-width: 768px) {
   .hamburger-btn.desktop-menu-btn {
     display: none;

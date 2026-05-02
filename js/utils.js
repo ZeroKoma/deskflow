@@ -23,7 +23,7 @@ export const dateUtils = {
     const dayName = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
     const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
 
-    // Formateamos la fecha corta según el estándar del idioma seleccionado
+    // Format short date according to selected language standard
     const shortDate = date.toLocaleDateString(locale, {
       day: '2-digit',
       month: '2-digit',

@@ -1,9 +1,9 @@
 /**
  * DeskFlow Crypto Utilities
- * Encapsula la lógica de Web Crypto API para AES-GCM (Cifrado Autenticado)
+ * Encapsulates Web Crypto API logic for AES-GCM (Authenticated Encryption)
  */
 export const cryptoUtils = {
-  // Deriva una clave de 256 bits a partir de una contraseña y un salt
+  // Derives a 256-bit key from password and salt
   async deriveKey(password, salt) {
     const encoder = new TextEncoder();
     const passwordKey = await crypto.subtle.importKey(
@@ -30,7 +30,7 @@ export const cryptoUtils = {
 
   async encrypt(data, key) {
     const encoder = new TextEncoder();
-    const iv = crypto.getRandomValues(new Uint8Array(12)); // Vector de Inicialización
+    const iv = crypto.getRandomValues(new Uint8Array(12)); // Initialization Vector
     const encrypted = await crypto.subtle.encrypt(
       { name: "AES-GCM", iv },
       key,

@@ -1,12 +1,10 @@
-/* Layout Containers */
 .app-container {
   display: flex;
   height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
-  position: relative; /* Cambiado de fixed para permitir el efecto "push" */
+  position: relative;
   height: 100vh;
   width: 0;
   padding: 0;
@@ -16,7 +14,7 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  flex-shrink: 0; /* Importante para que no se colapse */
+  flex-shrink: 0;
   z-index: 100;
   transition:
     width 0.3s ease,
@@ -133,7 +131,7 @@
   transform: translateX(4px);
 }
 
-/* Estado de alerta para el texto de Alarma en el sidebar */
+/* Alert state for Alarm text in sidebar */
 .stat-item.alarm-alert-active {
   color: var(--high) !important;
 }
@@ -216,11 +214,6 @@
   z-index: 1200;
 }
 
-/* Reordenación para escritorio: 
-   1. Hamburguesa (Izquierda) 
-   2. Buscador + Checks (Centro) 
-   3. Botón Crear (Derecha - dentro de mobile-header-row) 
-*/
 .top-bar > .hamburger-btn.desktop-menu-btn {
   order: 1;
 }
@@ -235,7 +228,6 @@
   order: 3;
 }
 
-/* --- Sidebar Overlay --- */
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -244,7 +236,7 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(2px);
-  z-index: 1099; /* Justo debajo del sidebar en móvil */
+  z-index: 1099;
   opacity: 0;
   visibility: hidden;
   transition:
@@ -257,7 +249,6 @@
   visibility: visible;
 }
 
-/* Ocultar elementos móviles en escritorio */
 @media (min-width: 769px) {
   #mobile-menu-btn,
   .mobile-logo {
@@ -265,7 +256,6 @@
   }
 }
 
-/* --- Generic Layout Helpers --- */
 .flex-between {
   display: flex;
   justify-content: space-between;
@@ -311,7 +301,6 @@
   text-transform: capitalize;
 }
 
-/* --- App Specific Layout --- */
 .view-container-padding {
   padding: var(--space-2xl) var(--container-h-padding);
 }
@@ -329,7 +318,6 @@
   margin-bottom: var(--space-2xl);
 }
 
-/* --- Responsive Layout --- */
 @media (max-width: 768px) {
   :root {
     --container-h-padding: var(--space-l);
@@ -387,7 +375,7 @@
   .top-bar .mobile-header-row {
     display: flex !important;
     align-items: center;
-    justify-content: flex-start; /* Cambiamos a flex-start para controlar grupos con márgenes */
+    justify-content: flex-start;
     width: 100%;
     order: 1 !important;
     gap: var(--space-l);
@@ -415,7 +403,6 @@
     margin-bottom: var(--space-m);
   }
 
-  /* Ocultar solo las acciones para dar espacio al buscador expandido sin quitar el logo */
   .top-bar.search-active .actions {
     display: none !important;
   }
@@ -425,7 +412,7 @@
     transform: none;
     margin-bottom: 0;
     font-size: 1.5rem;
-    margin-right: auto !important; /* El margen auto empuja los siguientes elementos a la derecha */
+    margin-right: auto !important;
     align-items: flex-start;
   }
 
@@ -443,7 +430,6 @@
     width: 100%;
   }
 
-  /* Alinear los filtros (checks) al centro en móvil */
   .top-bar .flex-center-gap-20 > div {
     display: flex;
     justify-content: center;
@@ -461,7 +447,6 @@
     overflow-y: visible;
   }
 
-  /* Tipografía */
   .view-title {
     font-size: 1.6rem;
     font-weight: 800;

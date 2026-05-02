@@ -172,12 +172,12 @@ export const es = {
   tag_mgr_placeholder: "Nombre del tag...",
   cat_mgr_placeholder: "Nombre de la categoría...",
 
-  // Ajustes (Botones)
+  // Settings (Buttons)
   nav_export: "Exportar (JSON)",
   nav_import: "Importar (JSON)",
   nav_delete_past: "Limpiar Notas Pasadas",
   nav_reset: "Resetear Aplicación Completamente",
-  // Seguridad
+  // Security
   crypto_title_first: "Configurar Contraseña de Seguridad",
   crypto_title_unlock: "Desbloquear DeskFlow",
   crypto_desc_first: "Tus datos se cifrarán localmente. Si olvidas esta contraseña, no podrás recuperar tus notas.",

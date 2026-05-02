@@ -1,5 +1,3 @@
-/* --- Search & Filters UI --- */
-
 .search-box {
   background: var(--bg-main);
   padding: var(--space-xs) var(--space-l);
@@ -63,7 +61,6 @@
 
 .filter-checkbox-group.color-high { color: var(--high); }
 
-/* --- Custom Round Checkboxes --- */
 .round-checkbox {
   appearance: none;
   -webkit-appearance: none;
@@ -85,7 +82,6 @@
 .round-checkbox::before { content: ""; width: 8px; height: 8px; border-radius: 50%; transform: scale(0); transition: 120ms transform ease; background-color: white; }
 .round-checkbox:checked::before { transform: scale(1); }
 
-/* --- Responsive Search --- */
 @media (max-width: 768px) {
   .filters-bar {
     min-width: 0;
@@ -100,12 +96,12 @@
     display: none;
   }
   .filter-checkbox-group {
-    flex: 0 1 30%; /* Permite que los 3 primeros ocupen la primera línea */
+    flex: 0 1 30%; /* Allows the first 3 to occupy the first line */
     justify-content: center;
-    font-size: 0.72rem; /* Tamaño optimizado para que quepan 3 en pantallas pequeñas */
+    font-size: 0.72rem; /* Optimized size to fit 3 on small screens */
     white-space: nowrap;
   }
-  /* Fuerza a 'Alarmas' y 'Caducadas' a la línea inferior con más espacio */
+  /* Force 'Alarms' and 'Expired' to the bottom line with more space */
   .filter-checkbox-group:nth-of-type(n+4) {
     flex: 0 1 45%;
     margin-top: var(--space-xs);
