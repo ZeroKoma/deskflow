@@ -96,11 +96,11 @@ CSS variables are used for theme management. Switching between light and dark mo
 ```css
 :root {
   --primary: #2563eb;
-  /* ... variables de luz ... */
+  /* ... light variables ... */
 }
 [data-theme="dark"] {
   --bg-main: #0f172a;
-  /* ... variables de oscuridad ... */
+  /* ... dark variables ... */
 }
 ```
 
