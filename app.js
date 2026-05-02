@@ -143,11 +143,13 @@ function setupGlobalEvents() {
   // Resumen Prioridades Clicks
   document.querySelectorAll(".sidebar-stats .stat-item").forEach(item => {
     item.addEventListener("click", () => {
-      state.allNotesPriorityFilter = item.dataset.priority;
-      state.allNotesFilterAll = true;
+      state.allNotesPriorityFilter = item.dataset.priority || null;
+      state.allNotesFilterAll = !!item.dataset.priority;
       state.allNotesFilterWithDate = false;
       state.allNotesFilterNoDate = false;
-      state.allNotesFilterExpired = false; // Asegurar que vemos notas activas al filtrar prioridad
+      state.allNotesFilterWithAlarm = item.dataset.filter === 'withAlarm';
+      state.allNotesFilterExpired = item.dataset.filter === 'expired';
+
       state.currentView = "all-notes";
       // Actualizar visualmente la navegación del sidebar
       document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));

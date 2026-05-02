@@ -96,6 +96,19 @@ export function updateUIStats() {
   document.getElementById("stat-medium").innerText = stats.medium;
   document.getElementById("stat-low").innerText = stats.low;
 
+  const statWithAlarm = document.getElementById("stat-with-alarm");
+  if (statWithAlarm) statWithAlarm.innerText = stats.withAlarm;
+
+  const todayStr = dateUtils.getTodayStr();
+  const hasAlarmsToday = state.notes.some(n => n.date === todayStr && n.alarm);
+  const alarmIcon = document.querySelector('.stat-item[data-filter="withAlarm"] i');
+  if (alarmIcon) {
+    alarmIcon.classList.toggle('pulse-animation', hasAlarmsToday);
+  }
+
+  const statExpiredSidebar = document.getElementById("stat-expired-sidebar");
+  if (statExpiredSidebar) statExpiredSidebar.innerText = stats.expired;
+
   document.getElementById("count-all").innerText = stats.all;
   const expiredBadge = document.getElementById("count-expired");
   if (expiredBadge) expiredBadge.innerText = stats.expired;
@@ -498,6 +511,7 @@ function renderAllNotes(filtered = null) {
     if (state.allNotesFilterExpired) return isPast;
     if (state.allNotesFilterWithDate) return !!n.date && !isPast;
     if (state.allNotesFilterNoDate) return !n.date;
+    if (state.allNotesFilterWithAlarm) return n.alarm && !isPast;
 
     return false;
   });
@@ -542,6 +556,11 @@ function renderNoteList(title, data) {
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterNoDate ? "checked" : ""} onchange="window.toggleAllNotesFilter('noDate', this.checked)"> 
                         <span>Notas (${stats.activeNoDate})</span>
+                    </label>
+                    <label class="filter-checkbox-group">
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterWithAlarm ? "checked" : ""} onchange="window.toggleAllNotesFilter('withAlarm', this.checked)"> 
+                        <span>Alarmas (${stats.withAlarm})</span>
                     </label>
                     <div class="flex-grow"></div>
                     <label class="filter-checkbox-group color-high">
@@ -608,6 +627,7 @@ window.clearPriorityFilter = () => {
   state.allNotesFilterWithDate = false;
   state.allNotesFilterNoDate = false;
   state.allNotesFilterExpired = false;
+  state.allNotesFilterWithAlarm = false;
   renderView();
 };
 window.toggleAllNotesFilter = (type, val) => {
@@ -615,6 +635,7 @@ window.toggleAllNotesFilter = (type, val) => {
   state.allNotesFilterWithDate = type === "withDate";
   state.allNotesFilterNoDate = type === "noDate";
   state.allNotesFilterExpired = type === "expired";
+  state.allNotesFilterWithAlarm = type === "withAlarm";
   renderView();
 };
 window.seeAllNoDateNotes = () => {
@@ -623,6 +644,7 @@ window.seeAllNoDateNotes = () => {
   state.allNotesFilterNoDate = true;
   state.allNotesFilterWithDate = false;
   state.allNotesFilterExpired = false;
+  state.allNotesFilterWithAlarm = false;
   state.allNotesPriorityFilter = null;
   // Actualizar visualmente la navegación del sidebar
   document

@@ -48,6 +48,7 @@ export const state = {
   allNotesFilterAll: true,
   allNotesFilterWithDate: false,
   allNotesFilterNoDate: false,
+  allNotesFilterWithAlarm: false,
   allNotesPriorityFilter: null,
   allNotesFilterExpired: false,
 };
@@ -248,6 +249,7 @@ export const getters = {
       all: activeNotes.length,
       all_total: state.notes.length,
       expired: state.notes.filter((n) => n.date && n.date < todayStr).length,
+      withAlarm: activeNotes.filter((n) => n.alarm).length,
       withDate: state.notes.filter((n) => !!n.date).length,
       activeWithDate: activeNotes.filter((n) => !!n.date).length,
       activeNoDate: activeNotes.filter((n) => !n.date).length,

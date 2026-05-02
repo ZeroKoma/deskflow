@@ -202,6 +202,8 @@ body {
   margin-right: var(--space-s);
   font-size: 0.75rem;
   vertical-align: middle;
+  width: 1rem;
+  text-align: center;
 }
 
 .stat-item[data-priority="high"] i { color: var(--high); }
@@ -557,7 +559,7 @@ body {
   border-radius: 20px;
   border: 1px solid var(--border);
   flex: 1;
-  min-width: 600px;
+  min-width: 700px;
 }
 .priority-filter-tag {
   display: flex;
@@ -1714,4 +1716,17 @@ body.alarm-active .alarm-overlay {
   .note-tooltip {
     display: none !important; /* El hover no existe en touch y ensucia la UI */
   }
+}
+
+/* Efecto de Pulso para Alarmas Hoy */
+@keyframes pulse-alarm {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.8; color: var(--high); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pulse-animation {
+  display: inline-block;
+  animation: pulse-alarm 2s infinite ease-in-out;
+  color: var(--high);
 }
