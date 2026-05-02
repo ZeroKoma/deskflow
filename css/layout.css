@@ -133,6 +133,21 @@
   transform: translateX(4px);
 }
 
+/* Estado de alerta para el texto de Alarma en el sidebar */
+.stat-item.alarm-alert-active {
+  color: var(--high) !important;
+}
+
+.stat-item.alarm-alert-active span {
+  font-weight: 700;
+  animation: alarm-text-pulse 2s infinite ease-in-out;
+}
+
+@keyframes alarm-text-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .theme-switch {
   margin-top: auto;
   padding: var(--space-l);

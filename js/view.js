@@ -101,9 +101,11 @@ export function updateUIStats() {
 
   const todayStr = dateUtils.getTodayStr();
   const hasAlarmsToday = state.notes.some(n => n.date === todayStr && n.alarm);
-  const alarmIcon = document.querySelector('.stat-item[data-filter="withAlarm"] i');
-  if (alarmIcon) {
-    alarmIcon.classList.toggle('pulse-animation', hasAlarmsToday);
+  const alarmStatItem = document.querySelector('.stat-item[data-filter="withAlarm"]');
+  if (alarmStatItem) {
+    alarmStatItem.classList.toggle('alarm-alert-active', hasAlarmsToday);
+    const alarmIcon = alarmStatItem.querySelector('i');
+    if (alarmIcon) alarmIcon.classList.toggle('pulse-animation', hasAlarmsToday);
   }
 
   const statExpiredSidebar = document.getElementById("stat-expired-sidebar");
