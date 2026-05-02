@@ -728,34 +728,31 @@ window.navigateCalendar = (diff) => {
 window.snoozeNote = (id) => {
   const note = getters.getNoteById(id);
   if (note) {
-    const date = new Date();
+    const now = new Date();
+    let targetDate = new Date();
+
     if (note.date) {
       const [year, month, day] = note.date.split("-").map(Number);
-      date.setFullYear(year, month - 1, day);
+      targetDate.setFullYear(year, month - 1, day);
     }
 
     const [hours, minutes] = note.time.split(":").map(Number);
-    date.setHours(hours, minutes, 0, 0);
+    targetDate.setHours(hours, minutes, 0, 0);
 
-    // Añadir 5 minutos
-    date.setMinutes(date.getMinutes() + 5);
+    // Si la hora de la nota ya pasó (que es lo normal al posponer), 
+    // sumamos 5 minutos a partir de "ahora" para asegurar que suene pronto.
+    const baseDate = targetDate < now ? now : targetDate;
+    const newTime = new Date(baseDate.getTime() + 5 * 60000);
 
-    if (note.date) {
-      note.date = dateUtils.formatYYYYMMDD(date);
-    }
-    note.time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-    note.alarm = true; // Reactivar la alarma para la nueva hora
-    note.lastAlarmKey = null; // Resetear rastreo para que pueda sonar de nuevo
-    note.lastPreAlarmKey = null;
+    mutations.updateNote(id, {
+      ...note,
+      date: dateUtils.formatYYYYMMDD(newTime),
+      time: `${String(newTime.getHours()).padStart(2, "0")}:${String(newTime.getMinutes()).padStart(2, "0")}`,
+      alarm: true,
+      lastAlarmKey: null,
+      lastPreAlarmKey: null
+    });
 
-    mutations.saveNotes();
-    const toast = document.getElementById(`toast-${id}`);
-    if (toast) {
-      toast.remove();
-      if (!document.querySelector(".toast.high")) {
-        document.body.classList.remove("alarm-active");
-      }
-    }
     showToast("Alarma pospuesta 5 minutos", "info");
   }
 };

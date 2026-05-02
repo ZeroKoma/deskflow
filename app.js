@@ -33,11 +33,17 @@ function setFavicon() {
 }
 
 function requestNotificationPermission() {
-  if ("Notification" in window && Notification.permission === "default") {
+  if (!("Notification" in window)) {
+    console.warn("Este navegador no soporta notificaciones.");
+    return;
+  }
+
+  console.log("Estado de permisos de notificación:", Notification.permission);
+
+  if (Notification.permission === "default") {
     Notification.requestPermission().then(permission => {
-      if (permission === "granted") {
-        showToast("Notificaciones activadas correctamente", "info");
-      }
+      console.log("Nuevo estado de permiso:", permission);
+      if (permission === "granted") showToast("Notificaciones activadas", "info");
     });
   }
 }
@@ -266,6 +272,14 @@ function setupGlobalEvents() {
         renderCategoryManager();
         showToast("Categoría eliminada", "info");
       });
+    },
+    'view-day': (id, target) => {
+      window.selectDayView(id);
+      uiActions['close-toast'](null, target);
+    },
+    'snooze': (id, target) => {
+      window.snoozeNote(id);
+      uiActions['close-toast'](null, target);
     },
     'close-toast': (id, target) => {
       const toast = target.closest('.toast');
