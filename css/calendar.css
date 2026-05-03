@@ -194,7 +194,7 @@
   min-height: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .note-content-grid {
     grid-template-columns: 1fr;
     gap: var(--space-m);
