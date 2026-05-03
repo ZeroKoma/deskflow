@@ -447,18 +447,22 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
       if (isFull) {
         return `
         <div class="card note-card-full priority-${n.priority} ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
-            <div class="flex-1 note-content-stack">
-                <div class="card-header-row">
-                    <h3 class="m-0">${n.title}</h3>
+            <div class="flex-1 note-content-grid">
+                <div class="note-info-col">
+                    <div class="card-header-row">
+                        <h3 class="m-0">${n.title}</h3>
+                    </div>
+                    <div class="badge-row">
+                        ${renderCategoryBadge(n.category)}
+                        ${renderTagPills(n.tags)}
+                    </div>
+                    <div class="meta-row">
+                        ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
+                    </div>
                 </div>
-                <div class="badge-row">
-                    ${renderCategoryBadge(n.category)}
-                    ${renderTagPills(n.tags)}
+                <div class="note-desc-col">
+                    <p class="note-desc">${n.description || t('no_desc')}</p>
                 </div>
-                <div class="meta-row">
-                    ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                </div>
-                <p class="note-desc">${n.description || t('no_desc')}</p>
             </div>
             <div class="card-actions-col">
                         <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-outline" data-note-id="${n.id}" data-hint="${t('btn_delete')}"><i class="fas fa-trash"></i></button>
@@ -605,19 +609,23 @@ function renderNoteList(title, data) {
                       const expiredClass = isPast ? "expired" : "";
                       return `
                 <div class="card note-card-full priority-${n.priority} bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
-                    <div class="flex-1 note-content-stack">
-                        <div class="card-header-row">
-                            <h3 class="m-0">${n.title}</h3>
+                    <div class="flex-1 note-content-grid">
+                        <div class="note-info-col">
+                            <div class="card-header-row">
+                                <h3 class="m-0">${n.title}</h3>
+                            </div>
+                            <div class="badge-row">
+                                ${renderCategoryBadge(n.category)}
+                                ${renderTagPills(n.tags)}
+                            </div>
+                            <div class="meta-row">
+                                <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? t('no_date_recurrent') : t('no_date')}</span>
+                                ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
+                            </div>
                         </div>
-                        <div class="badge-row">
-                            ${renderCategoryBadge(n.category)}
-                            ${renderTagPills(n.tags)}
+                        <div class="note-desc-col">
+                            <p class="note-desc">${n.description || t('no_desc')}</p>
                         </div>
-                        <div class="meta-row">
-                            <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? t('no_date_recurrent') : t('no_date')}</span>
-                            ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
-                        </div>
-                        <p class="note-desc">${n.description || t('no_desc')}</p>
                     </div>
                     <div class="card-actions-col">
                         <button onclick="event.stopPropagation(); window.deleteNote('${n.id}')" class="btn-icon-trash-fill" data-note-id="${n.id}" data-hint="${t('btn_delete')}"><i class="fas fa-trash"></i></button>

@@ -173,3 +173,36 @@
     border-radius: var(--radius);
   }
 }
+
+/* --- Note Card Grid Layout --- */
+.note-content-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) 1.5fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.note-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.note-desc-col {
+  border-left: 1px solid var(--border);
+  padding-left: var(--space-xl);
+  min-height: 100%;
+}
+
+@media (max-width: 768px) {
+  .note-content-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-m);
+  }
+  .note-desc-col {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px dashed var(--border);
+    padding-top: var(--space-m);
+  }
+}
