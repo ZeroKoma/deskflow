@@ -120,6 +120,8 @@ document.addEventListener("mouseover", (e) => {
     const note = getters.getNoteById(target.dataset.noteId);
     const hint = target.dataset.hint;
     if (note) {
+      const todayStr = dateUtils.getTodayStr();
+      const isPast = note.date && note.date < todayStr;
       tooltip.style.display = "block";
       tooltip.style.borderLeftColor = `var(--${note.priority})`;
 
@@ -131,7 +133,7 @@ document.addEventListener("mouseover", (e) => {
         tooltip.innerHTML = `
           <div style="font-weight: 700; margin-bottom: 5px;">${note.title}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-            <i class="far fa-calendar-alt"></i> ${note.date ? dateUtils.formatDisplayDate(note.date) : "--"}
+            <i class="far fa-calendar-alt"></i> <span class="${isPast ? 'expired-date-text' : ''}">${note.date ? dateUtils.formatDisplayDate(note.date) : "--"}</span>
             ${note.time ? `<i class="far fa-clock" style="margin-left:8px"></i> ${note.time}` : ""}
           </div>
           <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">

@@ -407,7 +407,7 @@ export const getters = {
     const today = new Date();
     const todayStr = dateUtils.getTodayStr();
     const activeNotes = state.notes.filter(
-      (n) => (!n.date || n.date >= todayStr) && !n.completed, // NEW: Exclude completed notes from active
+      (n) => (!n.date || n.date >= todayStr) && !n.completed,
     );
     return {
       high: activeNotes.filter((n) => n.priority === "high").length,

@@ -9,31 +9,76 @@
 @import "components/states.css";
 
 /* Estilos para Notas Finalizadas (aspecto similar a caducadas) */
-.completed {
-  opacity: 0.6 !important;
-  filter: grayscale(0.8) !important;
-  text-decoration: line-through;
-}
-
-/* Sobrescribir fondos de prioridad para que se vean grises */
+.card.completed,
 .dashboard-note-item.completed,
-.note-pill.completed,
-.note-card-full.completed {
-  background-color: #e2e8f0 !important; /* Gris claro */
+.note-pill.completed {
+  opacity: 0.5 !important;
+  filter: none !important; 
+  text-decoration: line-through;
+  cursor: default;
+  background-color: #e2e8f0 !important;
   border-color: #cbd5e1 !important;
   color: #64748b !important;
 }
 
-/* Ajuste para Modo Oscuro */
-[data-theme="dark"] .dashboard-note-item.completed,
-[data-theme="dark"] .note-pill.completed,
-[data-theme="dark"] .note-card-full.completed {
-  background-color: #334155 !important; /* Gris oscuro */
-  border-color: #475569 !important;
-  color: #94a3b8 !important;
+.card.expired,
+.dashboard-note-item.expired,
+.note-pill.expired {
+  opacity: 0.5 !important;
+  filter: none !important;
+  cursor: default;
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  border-style: dashed !important;
+  color: #475569 !important;
+}
+
+/* Mantenemos el aspecto apagado para badges y tags sin afectar a la fecha */
+.completed .category-badge, .completed .tag-pill,
+.expired .category-badge, .expired .tag-pill {
+  filter: grayscale(1);
+  opacity: 0.7;
 }
 
 .completed-icon {
   color: #10b981; /* Color esmeralda/verde */
   margin-right: 6px;
+}
+
+.expired-icon {
+  color: #ef4444; /* Rojo de alerta */
+  margin-right: 6px;
+}
+
+/* Ajuste de tamaño para la fecha y hora específicamente en el Dashboard */
+.dashboard-note-item .meta-row {
+  font-size: 0.72rem; /* Tamaño más pequeño y elegante */
+  margin-top: 2px;
+  opacity: 0.9;
+}
+
+.dashboard-note-item .expired-date-text {
+  font-size: 0.72rem !important; /* Forzamos el tamaño pequeño incluso si está caducada */
+}
+
+/* Reforzamos el verde del check para que no se vea gris */
+[data-theme] .completed-icon {
+  color: #10b981 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  font-weight: 700 !important;
+}
+
+/* Reforzamos al máximo la especificidad para ganar a las reglas de tema (dark/light) */
+[data-theme] .expired-date-text,
+[data-theme] .expired-date-text i,
+[data-theme] .expired-icon,
+[data-theme] .note-card-full .expired-date-text,
+[data-theme] .dashboard-note-item .expired-date-text,
+[data-theme] .note-card-full .expired-date-text i,
+[data-theme] .dashboard-note-item .expired-date-text i {
+  color: #ff3333 !important; /* Rojo puro vibrante */
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  filter: none !important;
 }

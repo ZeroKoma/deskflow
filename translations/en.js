@@ -191,8 +191,8 @@ export const en = {
   // Settings (Buttons)
   nav_export: "Export (JSON)",
   nav_import: "Import (JSON)",
-  nav_delete_past: "Clear Past Notes",
-  nav_clear_completed: "Clear Completed Notes",
+  nav_delete_past: "Clear Past Reminders",
+  nav_clear_completed: "Clear Completed Notes/Reminders",
   nav_reset: "Reset Application Completely",
 
   // Security

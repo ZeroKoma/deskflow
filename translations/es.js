@@ -191,8 +191,8 @@ export const es = {
   // Settings (Buttons)
   nav_export: "Exportar (JSON)",
   nav_import: "Importar (JSON)",
-  nav_delete_past: "Limpiar Notas Pasadas",
-  nav_clear_completed: "Limpiar Notas Finalizadas",
+  nav_delete_past: "Limpiar Recordatorios Pasados",
+  nav_clear_completed: "Limpiar Notas/Recordatorios Finalizados",
   nav_reset: "Resetear Aplicación Completamente",
   // Security
   crypto_title_first: "Configurar Contraseña de Seguridad",

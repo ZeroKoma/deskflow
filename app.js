@@ -14,7 +14,7 @@ async function init() {
     translateStaticUI();
     renderView();
     updateUIStats();
-    updateClearCompletedButton(); // NEW: Update the button text with count
+    updateSettingsCounters(); // NEW: Update settings buttons text with count
   });
 
   // 1. Load basic preferences (language/theme) before showing anything
@@ -549,11 +549,18 @@ function handleFormSubmit(e) {
   }
 }
 
-// NEW: Function to update the "Clear Completed" button text
-function updateClearCompletedButton() {
+// NEW: Function to update counters in settings view
+function updateSettingsCounters() {
   const clearCompletedBtnText = document.getElementById('clear-completed-text');
   if (clearCompletedBtnText) {
     const completedCount = state.notes.filter(n => n.completed).length;
     clearCompletedBtnText.innerText = `${t('nav_clear_completed')} (${completedCount})`;
+  }
+
+  const clearPastBtnText = document.getElementById('clear-past-text');
+  if (clearPastBtnText) {
+    const todayStr = dateUtils.getTodayStr();
+    const pastCount = state.notes.filter(n => n.date && n.date < todayStr).length;
+    clearPastBtnText.innerText = `${t('nav_delete_past')} (${pastCount})`;
   }
 }

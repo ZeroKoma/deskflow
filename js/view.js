@@ -127,7 +127,7 @@ export function updateUIStats() {
   setIfOk("count-all", stats.all);
   const expiredBadge = document.getElementById("count-expired");
   if (expiredBadge) expiredBadge.innerText = stats.expired;
-  setIfOk("count-calendar", stats.withDate);
+  setIfOk("count-calendar", stats.activeWithDate);
   setIfOk("count-tags", stats.tags);
   setIfOk("count-categories", stats.categories);
 }
@@ -140,8 +140,7 @@ function renderDashboard() {
   const todayStr = dateUtils.getTodayStr();
   const tomorrowStr = dateUtils.getTomorrowStr();
   const todayTasks = state.notes // Filter notes for today
-    .filter((n) =>
-      n.date === todayStr && matchesSearch(n, query, incTags, incCats),
+    .filter((n) => n.date === todayStr && matchesSearch(n, query, incTags, incCats),
     )
     .sort(sortNotesLogic);
   const tomorrowTasks = state.notes
@@ -251,6 +250,7 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
                     <div class="flex-1 notes-stack-mini">
                         <span style="font-weight: 500;">
                             ${note.completed ? '<i class="fas fa-check-circle completed-icon"></i>' : ''}
+                            ${isPast && !note.completed ? '<i class="fas fa-exclamation-circle expired-icon"></i>' : ''}
                             ${note.title}
                         </span>
                         <div class="badge-row">
@@ -258,7 +258,10 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
                             ${renderTagPills(note.tags)}
                         </div>
                     </div>
-                    <span class="note-time">${note.time || "--:--"}</span>
+                    <div class="meta-row">
+                        <span class="${isPast ? 'expired-date-text' : ''}"><i class="far fa-calendar-alt"></i> ${note.date ? dateUtils.formatDisplayDate(note.date) : t('no_date')}</span>
+                        ${note.time ? `<span><i class="far fa-clock"></i> ${note.time}</span>` : ""}
+                    </div>
                 </div>`;
                     })
                     .join("")
@@ -440,9 +443,10 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
   const incTags = document.getElementById("search-tags")?.checked;
   const incCats = document.getElementById("search-categories")?.checked;
   const todayStr = dateUtils.getTodayStr();
+  const isTodayCell = dateStr === todayStr;
+
   const dayNotes = state.notes
-    .filter(
-      (n) => n.date === dateStr && matchesSearch(n, query, incTags, incCats),
+    .filter((n) => n.date === dateStr && matchesSearch(n, query, incTags, incCats),
     )
     .sort(sortNotesLogic);
     
@@ -462,6 +466,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
                     <div class="card-header-row">
                         <h3 class="m-0">
                             ${n.completed ? '<i class="fas fa-check-circle completed-icon"></i>' : ''}
+                            ${isPast && !n.completed ? '<i class="fas fa-exclamation-circle expired-icon"></i>' : ''}
                             ${n.title}
                         </h3>
                     </div>
@@ -470,6 +475,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
                         ${renderTagPills(n.tags)}
                     </div>
                     <div class="meta-row">
+                        <span class="${isPast ? 'expired-date-text' : ''}"><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : t('no_date')}</span>
                         ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                     </div>
                 </div>
@@ -489,7 +495,11 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
         ? `if(window.innerWidth > 768) { event.stopPropagation(); window.openNoteModal('${n.id}'); }`
         : `event.stopPropagation(); window.openNoteModal('${n.id}');`;
 
-      return `<div class="note-pill priority-${n.priority} ${expiredClass} ${completedClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="${clickHandler}" data-hint="${t('hint_drag_move')}">${n.completed ? '<i class="fas fa-check-circle" style="margin-right:4px"></i>' : ''}${n.title}</div>`;
+      const statusIcon = n.completed 
+        ? '<i class="fas fa-check-circle completed-icon" style="margin-right:4px"></i>' 
+        : (isPast ? '<i class="fas fa-exclamation-circle expired-icon" style="margin-right:4px"></i>' : '');
+
+      return `<div class="note-pill priority-${n.priority} ${expiredClass} ${completedClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="${clickHandler}" data-hint="${t('hint_drag_move')}">${statusIcon}${n.title}</div>`;
     })
     .join("");
 
@@ -541,18 +551,19 @@ function renderAllNotes(filtered = null) {
     )
       return false;
 
-    // NEW: If filtering by completed, only show completed notes
-    if (state.allNotesFilterCompleted) return n.completed;
-    // NEW: If not filtering by completed, exclude completed notes from other filters
-    if (n.completed && !state.allNotesFilterAll) return false;
-
     const isPast = n.date && n.date < todayStr;
 
-    if (state.allNotesFilterAll) return true; // Show all non-completed notes
-    if (state.allNotesFilterExpired) return isPast; // Show expired non-completed notes
-    if (state.allNotesFilterWithDate) return !!n.date && !isPast; // Show active reminders
-    if (state.allNotesFilterNoDate) return !n.date; // Show notes without date
-    if (state.allNotesFilterWithAlarm) return n.alarm && !isPast; // Show active alarms
+    // Filtros exclusivos
+    if (state.allNotesFilterCompleted) return n.completed;
+    if (state.allNotesFilterExpired) return isPast && !n.completed;
+
+    // Para el resto de filtros, EXCLUIMOS finalizadas y caducadas (ya tienen sus secciones)
+    if (n.completed || isPast) return false;
+
+    if (state.allNotesFilterAll) return true; 
+    if (state.allNotesFilterWithDate) return !!n.date;
+    if (state.allNotesFilterNoDate) return !n.date;
+    if (state.allNotesFilterWithAlarm) return n.alarm;
 
     return false;
   });
@@ -586,7 +597,7 @@ function renderNoteList(title, data) {
                     <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
                                ${state.allNotesFilterAll ? "checked" : ""} onchange="window.toggleAllNotesFilter('all', this.checked)"> 
-                        <span>${t('filter_all')} (${stats.all_total})</span>
+                        <span>${t('filter_all')} (${stats.all})</span>
                     </label>
                     <label class="filter-checkbox-group">
                         <input type="checkbox" class="round-checkbox" 
@@ -638,6 +649,7 @@ function renderNoteList(title, data) {
                             <div class="card-header-row">
                                 <h3 class="m-0">
                                     ${n.completed ? '<i class="fas fa-check-circle completed-icon"></i>' : ''}
+                                    ${isPast && !n.completed ? '<i class="fas fa-exclamation-circle expired-icon"></i>' : ''}
                                     ${n.title}
                                 </h3>
                             </div>
@@ -646,7 +658,9 @@ function renderNoteList(title, data) {
                                 ${renderTagPills(n.tags)}
                             </div>
                             <div class="meta-row">
-                                <span><i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? t('no_date_recurrent') : t('no_date')}</span>
+                                <span class="${isPast ? 'expired-date-text' : ''}">
+                                    <i class="far fa-calendar-alt"></i> ${n.date ? dateUtils.formatDisplayDate(n.date) : n.time ? t('no_date_recurrent') : t('no_date')}
+                                </span>
                                 ${n.time ? `<span><i class="far fa-clock"></i> ${n.time}</span>` : ""}
                             </div>
                         </div>
@@ -745,7 +759,7 @@ function renderSettings() {
                     <div style="padding-top: var(--space-l); border-top: 1px solid var(--border);">
                         <h4 style="margin-bottom: var(--space-m); color: var(--text-muted)">${t('settings_maint')}</h4>
                         <button data-action="delete-past" class="btn-secondary" style="width: 100%; border-color: var(--medium); color: var(--medium);">
-                            <i class="fas fa-broom"></i> <span>${t('nav_delete_past')}</span>
+                            <i class="fas fa-broom"></i> <span id="clear-past-text">${t('nav_delete_past')}</span>
                         </button>
                         <button data-action="clear-completed" class="btn-secondary" style="width: 100%; border-color: var(--success); color: var(--success); margin-top: 10px;" id="clear-completed-btn">
                             <i class="fas fa-check-double"></i> <span id="clear-completed-text">${t('nav_clear_completed')}</span>
