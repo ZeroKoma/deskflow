@@ -94,6 +94,11 @@ function translateStaticUI() {
   document.querySelectorAll('[data-t-placeholder]').forEach(el => {
     el.placeholder = t(el.dataset.tPlaceholder);
   });
+
+  // Traducir atributos title
+  document.querySelectorAll('[data-t-title]').forEach(el => {
+    el.title = t(el.dataset.t_title || el.dataset.tTitle);
+  });
 }
 
 function setFavicon() {
@@ -163,7 +168,7 @@ function setupGlobalEvents() {
 
     const mobileLogo = document.createElement('div');
     mobileLogo.className = 'logo mobile-logo';
-    mobileLogo.innerHTML = '<div><i class="fas fa-layer-group"></i> <span>DeskFlow</span></div>';
+    mobileLogo.innerHTML = `<div><i class="fas fa-layer-group"></i> <span>${t('nav_logo')}</span></div>`;
 
     const searchToggle = document.getElementById('search-toggle-btn');
     const actions = document.querySelector('.top-bar .actions');
@@ -240,6 +245,7 @@ function setupGlobalEvents() {
       state.allNotesFilterNoDate = false;
       state.allNotesFilterWithAlarm = item.dataset.filter === 'withAlarm';
       state.allNotesFilterExpired = item.dataset.filter === 'expired';
+      state.allNotesFilterCompleted = item.dataset.filter === 'completed';
 
       state.currentView = "all-notes";
       // Visually update sidebar navigation
@@ -394,6 +400,7 @@ function setupGlobalEvents() {
     'export-data': () => settings.exportData(),
     'import-data': () => document.getElementById("import-data-input").click(),
     'delete-past': () => settings.deletePastNotes(),
+    'clear-completed': () => settings.clearCompletedNotes(),
     'reset-app': () => settings.resetApp(),
     'close-toast': (id, target) => {
       const toast = target.closest('.toast');
@@ -439,6 +446,15 @@ function setupGlobalEvents() {
   };
 
   alarmInput.addEventListener("change", (e) => syncAlarmTagUI(e.target.checked));
+
+  const completedInput = document.getElementById("completed");
+  completedInput.addEventListener("change", (e) => {
+    // Si se marca como finalizada, desactivamos la alarma y el tag visualmente en el modal
+    if (e.target.checked) {
+      alarmInput.checked = false;
+      syncAlarmTagUI(false);
+    }
+  });
 
   timeInput.addEventListener("input", () => {
     if (!timeInput.value) {
@@ -519,7 +535,8 @@ function handleFormSubmit(e) {
     tags: Array.from(document.querySelectorAll('input[name="note-tags"]:checked')).map(cb => cb.value),
     // Preservamos las llaves de alarmas; el store decidirá si resetearlas si cambia la fecha/hora
     lastAlarmKey: existing ? existing.lastAlarmKey : null,
-    lastPreAlarmKey: existing ? existing.lastPreAlarmKey : null
+    lastPreAlarmKey: existing ? existing.lastPreAlarmKey : null,
+    completed: document.getElementById("completed").checked, // NEW: Get completed state
   };
 
   try {

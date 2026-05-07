@@ -7,6 +7,7 @@ export function openNoteModal(id = null, defaultDate = null) {
   const modalTitle = document.getElementById("modal-title");
   const dateInput = document.getElementById("date");
   const alarmInput = document.getElementById("alarm");
+  const completedSwitchContainer = document.getElementById("completed-switch-container");
   const deleteBtn = document.getElementById("delete-note-modal");
   noteModal.style.display = "flex";
   dateInput.min = dateUtils.getTodayStr();
@@ -25,6 +26,7 @@ export function openNoteModal(id = null, defaultDate = null) {
     document.getElementById("priority").value = note.priority;
     document.getElementById("category").value = note.category;
     document.getElementById("description").value = note.description;
+    document.getElementById("completed").checked = note.completed || false;
     document.getElementById("alarm").checked = note.alarm;
     renderTagSelection(note.tags || []);
     alarmInput.disabled = !note.time;
@@ -34,6 +36,7 @@ export function openNoteModal(id = null, defaultDate = null) {
     // Reset form for new note
     document.getElementById("note-form").reset();
     document.getElementById("note-id").value = "";
+    document.getElementById("completed").checked = false;
 
     // Set default date if provided
     if (defaultDate) {
@@ -48,6 +51,10 @@ export function openNoteModal(id = null, defaultDate = null) {
     renderTagSelection([]);
     alarmInput.disabled = true;
     deleteBtn.style.display = "none";
+  }
+
+  if (completedSwitchContainer) {
+    completedSwitchContainer.style.display = id ? 'flex' : 'none'; // Show only if editing
   }
 
   // Add event listener for dynamic title update

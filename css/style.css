@@ -7,3 +7,33 @@
 @import "modals.css";
 @import "components/search.css";
 @import "components/states.css";
+
+/* Estilos para Notas Finalizadas (aspecto similar a caducadas) */
+.completed {
+  opacity: 0.6 !important;
+  filter: grayscale(0.8) !important;
+  text-decoration: line-through;
+}
+
+/* Sobrescribir fondos de prioridad para que se vean grises */
+.dashboard-note-item.completed,
+.note-pill.completed,
+.note-card-full.completed {
+  background-color: #e2e8f0 !important; /* Gris claro */
+  border-color: #cbd5e1 !important;
+  color: #64748b !important;
+}
+
+/* Ajuste para Modo Oscuro */
+[data-theme="dark"] .dashboard-note-item.completed,
+[data-theme="dark"] .note-pill.completed,
+[data-theme="dark"] .note-card-full.completed {
+  background-color: #334155 !important; /* Gris oscuro */
+  border-color: #475569 !important;
+  color: #94a3b8 !important;
+}
+
+.completed-icon {
+  color: #10b981; /* Color esmeralda/verde */
+  margin-right: 6px;
+}

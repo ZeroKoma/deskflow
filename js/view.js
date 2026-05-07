@@ -62,6 +62,10 @@ const sortNotesLogic = (a, b) => {
   const pA = priorityMap[a.priority] ?? 1;
   const pB = priorityMap[b.priority] ?? 1;
 
+  // NEW: Completed notes always go to the end
+  if (a.completed && !b.completed) return 1;
+  if (!a.completed && b.completed) return -1;
+
   if (pA !== pB) return pA - pB;
 
   // Same priority: Compare by date (oldest first)
@@ -103,6 +107,7 @@ export function updateUIStats() {
   setIfOk("stat-high", stats.high);
   setIfOk("stat-medium", stats.medium);
   setIfOk("stat-low", stats.low);
+  setIfOk("stat-completed", stats.completed); // NEW
 
   const statWithAlarm = document.getElementById("stat-with-alarm");
   if (statWithAlarm) statWithAlarm.innerText = stats.withAlarm;
@@ -135,18 +140,18 @@ function renderDashboard() {
   const todayStr = dateUtils.getTodayStr();
   const tomorrowStr = dateUtils.getTomorrowStr();
   const todayTasks = state.notes // Filter notes for today
-    .filter(
-      (n) => n.date === todayStr && matchesSearch(n, query, incTags, incCats),
+    .filter((n) =>
+      n.date === todayStr && matchesSearch(n, query, incTags, incCats),
     )
     .sort(sortNotesLogic);
   const tomorrowTasks = state.notes
-    .filter(
-      (n) =>
-        n.date === tomorrowStr && matchesSearch(n, query, incTags, incCats),
+    .filter((n) =>
+      n.date === tomorrowStr && matchesSearch(n, query, incTags, incCats),
     )
     .sort(sortNotesLogic);
 
   // Generate weekly view for Dashboard (using the current date)
+  // NEW: Pass completed filter to renderCalendarGrid
   const focusDate = new Date(); // Current date for dashboard week view
   const originalSubView = state.calendarSubView;
   state.calendarSubView = "week"; // Force weekly subview temporarily
@@ -199,7 +204,7 @@ function renderDashboard() {
                   noDateLimited.length > 0
                     ? noDateLimited
                         .map((note) => `
-                    <div class="dashboard-note-item priority-${note.priority}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${note.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${note.id}" onclick="window.openNoteModal('${note.id}')" data-hint="${t('hint_drag_calendar')}">
+                    <div class="dashboard-note-item priority-${note.priority} ${note.completed ? "completed" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${note.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${note.id}" onclick="window.openNoteModal('${note.id}')" data-hint="${t('hint_drag_calendar')}">
                         <div class="flex-1 notes-stack-mini">
                             <span style="font-weight: 600;">${note.title}</span>
                             <div class="badge-row">
@@ -239,10 +244,15 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
               displayedTasks.length > 0
                 ? displayedTasks.map((note) => {
                       const isPast = note.date && note.date < todayStr;
+                      const expiredClass = isPast && !note.completed ? "expired" : "";
+                      const completedClass = note.completed ? "completed" : "";
                       return `
-                <div class="dashboard-note-item priority-${note.priority} ${isPast ? "expired" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${note.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${note.id}" onclick="window.openNoteModal('${note.id}')" data-hint="${t('hint_drag_move')}">
+                <div class="dashboard-note-item priority-${note.priority} ${expiredClass} ${completedClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${note.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${note.id}" onclick="window.openNoteModal('${note.id}')" data-hint="${t('hint_drag_move')}">
                     <div class="flex-1 notes-stack-mini">
-                        <span style="font-weight: 500;">${note.title}</span>
+                        <span style="font-weight: 500;">
+                            ${note.completed ? '<i class="fas fa-check-circle completed-icon"></i>' : ''}
+                            ${note.title}
+                        </span>
                         <div class="badge-row">
                             ${renderCategoryBadge(note.category)}
                             ${renderTagPills(note.tags)}
@@ -311,7 +321,6 @@ function renderCalendar() {
     const [y, m] = n.date.split("-").map(Number);
     return y === state.currentYear && (m - 1) === state.currentMonth && matchesSearch(n, query, incTags, incCats);
   }).length;
-
   // Assign main title without the counter
   if (state.calendarSubView === "week") {
     title = weekTitle;
@@ -442,15 +451,19 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
   const notesHtml = displayedNotes
     .map((n) => {
       const isPast = n.date && n.date < todayStr;
-      const expiredClass = isPast ? "expired" : "";
+      const expiredClass = isPast && !n.completed ? "expired" : "";
+      const completedClass = n.completed ? "completed" : "";
 
       if (isFull) {
         return `
-        <div class="card note-card-full priority-${n.priority} ${expiredClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
+        <div class="card note-card-full priority-${n.priority} ${expiredClass} ${completedClass}" data-note-id="${n.id}" onclick="event.stopPropagation(); window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
             <div class="flex-1 note-content-grid">
                 <div class="note-info-col">
                     <div class="card-header-row">
-                        <h3 class="m-0">${n.title}</h3>
+                        <h3 class="m-0">
+                            ${n.completed ? '<i class="fas fa-check-circle completed-icon"></i>' : ''}
+                            ${n.title}
+                        </h3>
                     </div>
                     <div class="badge-row">
                         ${renderCategoryBadge(n.category)}
@@ -476,7 +489,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
         ? `if(window.innerWidth > 768) { event.stopPropagation(); window.openNoteModal('${n.id}'); }`
         : `event.stopPropagation(); window.openNoteModal('${n.id}');`;
 
-      return `<div class="note-pill priority-${n.priority} ${expiredClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="${clickHandler}" data-hint="${t('hint_drag_move')}">${n.title}</div>`;
+      return `<div class="note-pill priority-${n.priority} ${expiredClass} ${completedClass}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${n.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${n.id}" onclick="${clickHandler}" data-hint="${t('hint_drag_move')}">${n.completed ? '<i class="fas fa-check-circle" style="margin-right:4px"></i>' : ''}${n.title}</div>`;
     })
     .join("");
 
@@ -492,7 +505,7 @@ function renderDayCell(label, dateStr, isToday = false, isFull = false, limit = 
     "calendar-day",
     "drag-zone",
     isToday ? "current-day" : "",
-    isWeekend ? "weekend" : "",
+    isWeekend ? "weekend" : "", // NEW: Add weekend class
     isFull ? "day-cell-full" : ""
   ].filter(Boolean).join(" ");
 
@@ -528,13 +541,18 @@ function renderAllNotes(filtered = null) {
     )
       return false;
 
+    // NEW: If filtering by completed, only show completed notes
+    if (state.allNotesFilterCompleted) return n.completed;
+    // NEW: If not filtering by completed, exclude completed notes from other filters
+    if (n.completed && !state.allNotesFilterAll) return false;
+
     const isPast = n.date && n.date < todayStr;
 
-    if (state.allNotesFilterAll) return true;
-    if (state.allNotesFilterExpired) return isPast;
-    if (state.allNotesFilterWithDate) return !!n.date && !isPast;
-    if (state.allNotesFilterNoDate) return !n.date;
-    if (state.allNotesFilterWithAlarm) return n.alarm && !isPast;
+    if (state.allNotesFilterAll) return true; // Show all non-completed notes
+    if (state.allNotesFilterExpired) return isPast; // Show expired non-completed notes
+    if (state.allNotesFilterWithDate) return !!n.date && !isPast; // Show active reminders
+    if (state.allNotesFilterNoDate) return !n.date; // Show notes without date
+    if (state.allNotesFilterWithAlarm) return n.alarm && !isPast; // Show active alarms
 
     return false;
   });
@@ -559,7 +577,7 @@ function renderNoteList(title, data) {
                     ? `
                 <div class="priority-filter-tag">
                     <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">${t('filter_priority')}: ${priorityLabels[state.allNotesPriorityFilter]}</span>
-                    <i class="fas fa-times" style="cursor: pointer; font-size: 0.8rem; color: var(--text-muted);" title="Quitar filtro" onclick="window.clearPriorityFilter()"></i>
+                    <i class="fas fa-times" style="cursor: pointer; font-size: 0.8rem; color: var(--text-muted);" title="${t('btn_remove_filter')}" onclick="window.clearPriorityFilter()"></i>
                 </div>
                 `
                     : ""
@@ -585,6 +603,11 @@ function renderNoteList(title, data) {
                                ${state.allNotesFilterWithAlarm ? "checked" : ""} onchange="window.toggleAllNotesFilter('withAlarm', this.checked)"> 
                         <span>${t('filter_alarms')} (${stats.withAlarm})</span>
                     </label>
+                    <label class="filter-checkbox-group color-success"> <!-- NEW -->
+                        <input type="checkbox" class="round-checkbox" 
+                               ${state.allNotesFilterCompleted ? "checked" : ""} onchange="window.toggleAllNotesFilter('completed', this.checked)"> 
+                        <span>${t('filter_completed')} (${stats.completed})</span>
+                    </label>
                     <div class="flex-grow"></div>
                     <label class="filter-checkbox-group color-high">
                         <input type="checkbox" class="round-checkbox" 
@@ -606,13 +629,17 @@ function renderNoteList(title, data) {
                 : data
                     .map((n) => {
                       const isPast = n.date && n.date < todayStr;
-                      const expiredClass = isPast ? "expired" : "";
+                      const expiredClass = isPast && !n.completed ? "expired" : "";
+                      const completedClass = n.completed ? "completed" : ""; // NEW
                       return `
-                <div class="card note-card-full priority-${n.priority} bg-sidebar ${expiredClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
+                <div class="card note-card-full priority-${n.priority} bg-sidebar ${expiredClass} ${completedClass}" data-note-id="${n.id}" onclick="window.openNoteModal('${n.id}')" data-hint="${t('hint_edit')}">
                     <div class="flex-1 note-content-grid">
                         <div class="note-info-col">
                             <div class="card-header-row">
-                                <h3 class="m-0">${n.title}</h3>
+                                <h3 class="m-0">
+                                    ${n.completed ? '<i class="fas fa-check-circle completed-icon"></i>' : ''}
+                                    ${n.title}
+                                </h3>
                             </div>
                             <div class="badge-row">
                                 ${renderCategoryBadge(n.category)}
@@ -720,6 +747,9 @@ function renderSettings() {
                         <button data-action="delete-past" class="btn-secondary" style="width: 100%; border-color: var(--medium); color: var(--medium);">
                             <i class="fas fa-broom"></i> <span>${t('nav_delete_past')}</span>
                         </button>
+                        <button data-action="clear-completed" class="btn-secondary" style="width: 100%; border-color: var(--success); color: var(--success); margin-top: 10px;">
+                            <i class="fas fa-check-double"></i> <span>${t('nav_clear_completed')}</span>
+                        </button>
                     </div>
 
                     <div style="padding-top: var(--space-l); border-top: 1px solid var(--border);">
@@ -760,6 +790,7 @@ window.clearPriorityFilter = () => {
   state.allNotesFilterNoDate = false;
   state.allNotesFilterExpired = false;
   state.allNotesFilterWithAlarm = false;
+  state.allNotesFilterCompleted = false;
 };
 window.toggleAllNotesFilter = (type, val) => {
   state.allNotesFilterAll = type === "all";
@@ -767,6 +798,7 @@ window.toggleAllNotesFilter = (type, val) => {
   state.allNotesFilterNoDate = type === "noDate";
   state.allNotesFilterExpired = type === "expired";
   state.allNotesFilterWithAlarm = type === "withAlarm";
+  state.allNotesFilterCompleted = type === "completed";
 };
 window.seeAllNoDateNotes = () => {
   state.currentView = "all-notes";
@@ -775,6 +807,7 @@ window.seeAllNoDateNotes = () => {
   state.allNotesFilterWithDate = false;
   state.allNotesFilterExpired = false;
   state.allNotesFilterWithAlarm = false;
+  state.allNotesFilterCompleted = false; // NEW
   state.allNotesPriorityFilter = null;
   // Visually update sidebar navigation
   document
@@ -857,7 +890,11 @@ window.navigateCalendar = (diff) => {
 
 window.snoozeNote = (id) => {
   const note = getters.getNoteById(id);
-  if (note) {
+  if (!note) return;
+  if (note.completed) { // NEW: Cannot snooze completed tasks
+    showToast(t('toast_err_snooze_completed'), "error");
+    return;
+  }
     const now = new Date();
     let targetDate = new Date();
 
@@ -884,7 +921,6 @@ window.snoozeNote = (id) => {
     });
 
     showToast(t('toast_snoozed'), "info");
-  }
 };
 
 // --- Search Listener ---
@@ -895,11 +931,13 @@ window.addEventListener("search-notes", () => {
 window.handleNoteDragStart = (e, id) => {
   const note = getters.getNoteById(id);
   e.dataTransfer.setData("text/plain", id);
-  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.effectAllowed = "move"; // NEW: Add completed class to ghost
 
   // Add visual class to original element to make it look like a ghost
   const target = e.target.closest('[draggable="true"]');
   if (target) target.classList.add('is-dragging');
+
+  const completedClass = note && note.completed ? 'completed' : ''; // NEW
 
   // Create a ghost element that includes the title for better feedback on mobile
   const dragIcon = document.createElement('div');
@@ -909,7 +947,7 @@ window.handleNoteDragStart = (e, id) => {
   const iconClass = isReminder ? 'fa-calendar-check' : 'fa-sticky-note';
   const noteTitle = note ? note.title : t('hint_moving');
 
-  dragIcon.innerHTML = `
+  dragIcon.innerHTML = ` <!-- NEW: Add completedClass to the ghost element -->
     <div style="background: var(--primary); color: white; padding: 10px 16px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 10px; border: 2px solid rgba(255,255,255,0.2);">
         <i class="fas ${iconClass}" style="font-size: 1.2rem;"></i>
         <span style="font-weight: 600; font-size: 0.9rem; white-space: nowrap;">${noteTitle.substring(0, 25)}${noteTitle.length > 25 ? '...' : ''}</span>
@@ -982,19 +1020,30 @@ window.handleNoteDrop = (e) => {
   const isNowNote = !targetDate;
 
   const updatedNote = { ...note, date: targetDate };
-  
+
   // If it's a simple note again, we clear reminder metadata
   if (isNowNote) {
     updatedNote.time = "";
     updatedNote.alarm = false;
   }
 
+  // NEW: If a completed note is dropped onto a date, uncomplete it.
+  if (note.completed && targetDate) { // Dropping a completed note onto a date
+    updatedNote.completed = false;
+    // If it had an alarm previously, reactivate it (syncAlarmTag will handle it)
+    if (note.alarm) updatedNote.alarm = true;
+  } else { // Other cases, preserve completed status
+    updatedNote.completed = note.completed;
+  }
+
   mutations.updateNote(id, updatedNote);
 
   // Dynamic feedback according to conversion
-  let msg = `${t('toast_moved')} ${dateUtils.formatDisplayDate(targetDate)}`;
-  if (wasNote && !isNowNote) msg = `${t('toast_converted_rem')} ${dateUtils.formatDisplayDate(targetDate)}`;
-  else if (!wasNote && isNowNote) msg = t('toast_converted_note');
-  
+  let msg = '';
+  if (note.completed && targetDate) msg = t('toast_uncompleted_on_move'); // NEW
+  else if (!note.date && targetDate) msg = `${t('toast_converted_rem')} ${dateUtils.formatDisplayDate(targetDate)}`;
+  else if (note.date && !targetDate) msg = t('toast_converted_note');
+  else if (note.date && targetDate) msg = `${t('toast_moved')} ${dateUtils.formatDisplayDate(targetDate)}`;
+  else msg = t('toast_moved_no_date'); // NEW
   showToast(msg, "info");
 };

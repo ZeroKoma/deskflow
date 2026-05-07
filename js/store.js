@@ -132,6 +132,7 @@ const _state = {
   allNotesFilterNoDate: false,
   allNotesFilterWithAlarm: false,
   allNotesPriorityFilter: null,
+  allNotesFilterCompleted: false, // NEW: Filter for completed notes
   allNotesFilterExpired: false,
 };
 
@@ -145,7 +146,7 @@ export const mutations = {
     const loadedCategories = await dataService.getAllCategories();
 
     // 2. Populate state (if IDB is empty, default values are maintained)
-    if (loadedNotes.length) state.notes = loadedNotes.filter(validators.note);
+    if (loadedNotes.length) state.notes = loadedNotes.filter(validators.note).map(n => ({ ...n, completed: n.completed || false })); // NEW: Ensure completed property is set
     if (loadedTags.length) state.tags = loadedTags.filter(validators.tag);
     if (loadedCategories.length) state.categories = loadedCategories.filter(validators.category);
     
@@ -212,7 +213,7 @@ export const mutations = {
     const validation = validateNoteBusinessRules(noteData);
     if (!validation.valid) throw new Error(validation.error);
 
-    const note = { ...noteData, id: noteData.id || Date.now().toString() };
+    const note = { ...noteData, id: noteData.id || Date.now().toString(), completed: noteData.completed || false }; // NEW: Add completed property
     if (!validators.note(note)) return;
 
     syncAlarmTag(note);
@@ -223,7 +224,9 @@ export const mutations = {
   bulkAddNotes(notesArray) {
     if (!Array.isArray(notesArray)) return;
     notesArray.filter(validators.note).forEach(newNote => {
+      newNote.completed = newNote.completed || false; // NEW: Ensure completed property is set for bulk adds
       const index = state.notes.findIndex(n => n.id === newNote.id);
+      // If a note with the same ID exists, update it; otherwise, add it.
       if (index !== -1) {
         state.notes[index] = newNote;
       } else {
@@ -246,12 +249,19 @@ export const mutations = {
     if (existingIndex === -1) return;
 
     const existing = state.notes[existingIndex];
-    const updated = { ...noteData, id };
+    const updated = { ...noteData, id }; // NEW: Ensure completed is a boolean, default to false if not provided (for older notes)
+    updated.completed = typeof noteData.completed === 'boolean' ? noteData.completed : existing.completed || false;
+
     if (!validators.note(updated)) return;
 
     // If date or time changed, reset alarm tracking keys
     if (existing.date !== updated.date || existing.time !== updated.time) {
       updated.lastAlarmKey = null;
+      updated.lastPreAlarmKey = null;
+    }
+    // NEW: If note is marked completed, disable alarm
+    if (updated.completed) {
+      updated.alarm = false;
       updated.lastPreAlarmKey = null;
     }
 
@@ -357,9 +367,14 @@ export const mutations = {
     this.saveNotes();
   },
 
+  deleteCompletedNotes() {
+    state.notes = state.notes.filter((n) => !n.completed);
+    this.saveNotes();
+  },
+
   restoreState(backup) {
     if (!backup) return;
-    state.notes = Array.isArray(backup.notes) ? backup.notes.filter(validators.note) : [];
+    state.notes = Array.isArray(backup.notes) ? backup.notes.filter(validators.note).map(n => ({ ...n, completed: n.completed || false })) : []; // NEW: Ensure completed property is set
     state.tags = Array.isArray(backup.tags) ? backup.tags.filter(validators.tag) : [...defaultTags];
     state.categories = Array.isArray(backup.categories) ? backup.categories.filter(validators.category) : [...defaultCategories];
 
@@ -370,7 +385,7 @@ export const mutations = {
 
   mergeState(data) {
     // 1. Merge Notes (bulkAddNotes manages upsert by ID)
-    this.bulkAddNotes(data.notes || []);
+    this.bulkAddNotes((data.notes || []).map(n => ({ ...n, completed: n.completed || false }))); // NEW: Ensure completed property is set
 
     // 2. Merge Tags
     (data.tags || []).filter(validators.tag).forEach(t => {
@@ -390,17 +405,18 @@ export const mutations = {
 export const getters = {
   getStats() {
     const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const todayStr = dateUtils.getTodayStr();
     const activeNotes = state.notes.filter(
-      (n) => !n.date || n.date >= todayStr,
+      (n) => (!n.date || n.date >= todayStr) && !n.completed, // NEW: Exclude completed notes from active
     );
     return {
       high: activeNotes.filter((n) => n.priority === "high").length,
       medium: activeNotes.filter((n) => n.priority === "medium").length,
       low: activeNotes.filter((n) => n.priority === "low").length,
       all: activeNotes.length,
-      all_total: state.notes.length,
-      expired: state.notes.filter((n) => n.date && n.date < todayStr).length,
+      all_total: state.notes.length, // Total notes including completed and expired
+      expired: state.notes.filter((n) => n.date && n.date < todayStr && !n.completed).length, // NEW: Exclude completed from expired
+      completed: state.notes.filter((n) => n.completed).length, // NEW: Count completed notes
       withAlarm: activeNotes.filter((n) => n.alarm).length,
       withDate: state.notes.filter((n) => !!n.date).length,
       activeWithDate: activeNotes.filter((n) => !!n.date).length,

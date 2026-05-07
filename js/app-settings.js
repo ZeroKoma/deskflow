@@ -149,6 +149,19 @@ export function deletePastNotes() {
   });
 }
 
+export function clearCompletedNotes() {
+  const completedCount = state.notes.filter(n => n.completed).length;
+  if (completedCount === 0) {
+    showToast(t('toast_no_completed'), "info");
+    return;
+  }
+  showConfirmModal(t('conf_delete_completed'), () => {
+    mutations.deleteCompletedNotes();
+    showToast(t('toast_completed_deleted'), "info");
+    closeSettingsModal();
+  });
+}
+
 export function resetApp() {
   showConfirmModal(t('conf_reset_app'), () => {
     mutations.resetApp();

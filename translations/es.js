@@ -14,10 +14,13 @@ export const es = {
   stat_high: "Alta",
   stat_medium: "Media",
   stat_low: "Baja",
+  btn_sidebar_open: "Abrir menú",
+  btn_sidebar_close: "Cerrar menú",
   stat_alarms: "Alarmas",
   stat_with_alarm: "Con Alarma",
   stat_expired: "Caducadas",
   stat_all: "Todo",
+  stat_completed: "Finalizadas", // NEW
   stat_with_date: "Con Fecha",
   stat_tags: "Tags",
   stat_cats: "Categorías",
@@ -56,6 +59,7 @@ export const es = {
   filter_reminders: "Recordatorios",
   filter_notes: "Notas",
   filter_alarms: "Alarmas",
+  filter_completed: "Finalizadas", // NEW
   filter_expired: "Caducadas",
   no_results: "No se encontraron resultados",
 
@@ -92,6 +96,12 @@ export const es = {
   label_desc: "Descripción",
   label_tags: "Tags",
   label_alarm: "Activar alarma",
+  btn_search_toggle_title: "Alternar búsqueda",
+  btn_clear_date_title: "Eliminar fecha",
+  btn_clear_time_title: "Eliminar hora",
+  btn_remove_filter: "Quitar filtro",
+  author_by: "Por",
+  label_completed: "Marcar como finalizada", // NEW
 
   // Toasts & Alarms
   toast_notif_on: "Notificaciones activadas",
@@ -103,6 +113,7 @@ export const es = {
   toast_cat_updated: "Categoría actualizada",
   toast_cat_created: "Categoría creada",
   toast_deleted: "Nota eliminada correctamente",
+  toast_err_snooze_completed: "No puedes posponer una tarea finalizada.", // NEW
   toast_snoozed: "Alarma pospuesta 5 minutos",
   toast_err_system_tag: "Esta etiqueta de sistema no se puede modificar",
   toast_err_system_tag_del: "Esta etiqueta de sistema no se puede eliminar",
@@ -118,8 +129,11 @@ export const es = {
   alarm_snooze: "Posponer",
   undo: "Deshacer",
   toast_no_past: "No hay notas pasadas",
+  toast_no_completed: "No hay notas finalizadas",
   toast_past_deleted: "Notas eliminadas",
+  toast_completed_deleted: "Notas finalizadas eliminadas",
   conf_delete_past: "¿Eliminar notas pasadas?",
+  conf_delete_completed: "¿Eliminar todas las notas finalizadas? Esta acción es irreversible.",
   conf_reset_app: "¿BORRAR TODO? Esta acción es irreversible.",
   toast_reset_success: "Aplicación reseteada correctamente",
   storage_free: "Espacio libre",
@@ -133,6 +147,8 @@ export const es = {
   toast_converted_rem: "Convertido en Recordatorio para el",
   toast_converted_note: "Convertido en Nota (Sin fecha)",
   toast_move_err_past_today: "No puedes mover un recordatorio con hora pasada al día de hoy",
+  toast_uncompleted_on_move: "Tarea desmarcada como finalizada y movida.", // NEW
+  toast_moved_no_date: "Nota movida.", // NEW
   toast_move_err_past: "No puedes programar recordatorios en fechas pasadas",
   hint_moving: "Moviendo...",
   hint_view_day_notes: "Haz clic para ver las notas de este día",
@@ -176,6 +192,7 @@ export const es = {
   nav_export: "Exportar (JSON)",
   nav_import: "Importar (JSON)",
   nav_delete_past: "Limpiar Notas Pasadas",
+  nav_clear_completed: "Limpiar Notas Finalizadas",
   nav_reset: "Resetear Aplicación Completamente",
   // Security
   crypto_title_first: "Configurar Contraseña de Seguridad",
