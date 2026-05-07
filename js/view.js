@@ -747,8 +747,8 @@ function renderSettings() {
                         <button data-action="delete-past" class="btn-secondary" style="width: 100%; border-color: var(--medium); color: var(--medium);">
                             <i class="fas fa-broom"></i> <span>${t('nav_delete_past')}</span>
                         </button>
-                        <button data-action="clear-completed" class="btn-secondary" style="width: 100%; border-color: var(--success); color: var(--success); margin-top: 10px;">
-                            <i class="fas fa-check-double"></i> <span>${t('nav_clear_completed')}</span>
+                        <button data-action="clear-completed" class="btn-secondary" style="width: 100%; border-color: var(--success); color: var(--success); margin-top: 10px;" id="clear-completed-btn">
+                            <i class="fas fa-check-double"></i> <span id="clear-completed-text">${t('nav_clear_completed')}</span>
                         </button>
                     </div>
 

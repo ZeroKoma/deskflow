@@ -14,6 +14,7 @@ async function init() {
     translateStaticUI();
     renderView();
     updateUIStats();
+    updateClearCompletedButton(); // NEW: Update the button text with count
   });
 
   // 1. Load basic preferences (language/theme) before showing anything
@@ -545,5 +546,14 @@ function handleFormSubmit(e) {
     document.getElementById("note-modal").style.display = "none";
   } catch (error) {
     showToast(error.message, "error");
+  }
+}
+
+// NEW: Function to update the "Clear Completed" button text
+function updateClearCompletedButton() {
+  const clearCompletedBtnText = document.getElementById('clear-completed-text');
+  if (clearCompletedBtnText) {
+    const completedCount = state.notes.filter(n => n.completed).length;
+    clearCompletedBtnText.innerText = `${t('nav_clear_completed')} (${completedCount})`;
   }
 }
