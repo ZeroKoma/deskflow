@@ -49,6 +49,8 @@
   width: 90%;
   max-width: 550px;
   animation: slideIn 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow:
     0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -262,8 +264,6 @@ input:checked + .slider:before {
   .modal-content {
     padding: var(--space-l);
     width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
   }
 
   .form-row {
