@@ -149,12 +149,27 @@ function renderDashboard() {
     )
     .sort(sortNotesLogic);
 
-  // Generate weekly view for Dashboard (using the current date)
-  // NEW: Pass completed filter to renderCalendarGrid
-  const focusDate = new Date(); // Current date for dashboard week view
+  // Generate weekly view for Dashboard
+  const focusDate = new Date();
+  const firstDayOfWeek = state.language === 'en' ? 0 : 1;
+  const startOfWeek = new Date(focusDate);
+  const dayOfWeek = focusDate.getDay();
+  const diff = focusDate.getDate() - ((dayOfWeek - firstDayOfWeek + 7) % 7);
+  startOfWeek.setDate(diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const weekCount = state.notes.filter(n => {
+    if (!n.date) return false;
+    const noteDate = new Date(n.date + 'T00:00:00');
+    return noteDate >= startOfWeek && noteDate <= endOfWeek && matchesSearch(n, query, incTags, incCats);
+  }).length;
+
   const originalSubView = state.calendarSubView;
   state.calendarSubView = "week"; // Force weekly subview temporarily
-  const weekGridHtml = renderCalendarGrid(focusDate, 5); // Limit to 5 per day in Dashboard
+  const weekGridHtml = renderCalendarGrid(focusDate);
   state.calendarSubView = originalSubView;
 
   // Filter undated notes for the bottom list
@@ -162,8 +177,6 @@ function renderDashboard() {
     .filter((n) => !n.date && matchesSearch(n, query, incTags, incCats))
     .sort(sortNotesLogic);
   const noDateTotal = noDateTasksFull.length; // Total undated notes
-  const noDateLimited = noDateTasksFull.slice(0, 6);
-  const noDateCountDisplay = noDateTotal > 6 ? `${t('dash_showing')} 6 ${t('dash_of')} ${noDateTotal}` : `${t('dash_showing')} ${noDateTotal}`;
 
   viewContainer.innerHTML = `
     <div class="view-container-padding">
@@ -178,7 +191,7 @@ function renderDashboard() {
         <div class="card dashboard-column planning-card">
             <div class="flex-between column-title">
                 <h3 class="m-0">
-                    ${t('dash_weekly')} <span class="title-count">${t('dash_weekly_hint')}</span>
+                    ${t('dash_weekly')} <span class="title-count">(${weekCount})</span>
                 </h3>
                 <button class="btn-ghost btn-sm-border" onclick="window.seeFullWeek()" title="${t('dash_view_full_week')}">
                     <i class="fas fa-eye"></i>
@@ -192,7 +205,7 @@ function renderDashboard() {
         <div class="card dashboard-column mb-0">
             <div class="flex-between column-title">
                 <h3 class="m-0">
-                    ${t('dash_notes')} <span class="title-count">(${noDateCountDisplay})</span>
+                    ${t('dash_notes')} <span class="title-count">(${noDateTotal})</span>
                 </h3>
                 <button class="btn-ghost btn-sm-border" onclick="window.seeAllNoDateNotes()" title="${t('dash_view_all_notes')}">
                     <i class="fas fa-eye"></i>
@@ -200,8 +213,8 @@ function renderDashboard() {
             </div>
             <div class="notes-grid-300">
                 ${
-                  noDateLimited.length > 0
-                    ? noDateLimited
+                  noDateTasksFull.length > 0
+                    ? noDateTasksFull
                         .map((note) => `
                     <div class="dashboard-note-item priority-${note.priority} ${note.completed ? "completed" : ""}" draggable="true" ondragstart="window.handleNoteDragStart(event, '${note.id}')" ondragend="window.handleNoteDragEnd(event)" data-note-id="${note.id}" onclick="window.openNoteModal('${note.id}')" data-hint="${t('hint_drag_calendar')}">
                         <div class="flex-1 notes-stack-mini">
@@ -225,14 +238,12 @@ function renderDashboard() {
 function renderDashboardColumn(title, tasks, icon, color, targetDate) {
   const todayStr = dateUtils.getTodayStr();
   const totalCount = tasks.length;
-  const displayedTasks = tasks.slice(0, 3);
-  const countDisplay = totalCount > 3 ? `${t('dash_showing')} 3 ${t('dash_of')} ${totalCount}` : `${t('dash_showing')} ${totalCount}`;
 
   return `
     <div class="card dashboard-column drag-zone" data-drop-date="${targetDate}" ondragover="window.handleNoteDragOver(event)" ondragleave="window.handleNoteDragLeave(event)" ondrop="window.handleNoteDrop(event)">
         <div class="flex-between column-title">
             <h3 class="m-0">
-                ${title} <span class="title-count">(${countDisplay})</span>
+                ${title} <span class="title-count">(${totalCount})</span>
             </h3>
             <button class="btn-ghost btn-sm-border" onclick="window.selectDayView('${targetDate}')" title="${t('dash_view_day')}">
                 <i class="fas fa-eye"></i>
@@ -240,8 +251,8 @@ function renderDashboardColumn(title, tasks, icon, color, targetDate) {
         </div>
         <div class="notes-stack">
             ${
-              displayedTasks.length > 0
-                ? displayedTasks.map((note) => {
+              tasks.length > 0
+                ? tasks.map((note) => {
                       const isPast = note.date && note.date < todayStr;
                       const expiredClass = isPast && !note.completed ? "expired" : "";
                       const completedClass = note.completed ? "completed" : "";
